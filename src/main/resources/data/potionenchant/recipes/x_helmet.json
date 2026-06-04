@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DDD",
+    "DPD"
+  ],
+  "key": {
+    "D": { "item": "minecraft:nether_star" },
+    "P": { "item": "potionenchant:universal_potion_bottle" }
+  },
+  "result": {
+    "item": "potionenchant:x_helmet",
+    "count": 1
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DDD",
+    "DBD",
+    "DDD"
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "B": {
+      "item": "potionenchant:mysterious_empty_bottle"
+    }
+  },
+  "result": {
+    "item": "potionenchant:universal_potion_bottle",
+    "count": 1
+  }
+}

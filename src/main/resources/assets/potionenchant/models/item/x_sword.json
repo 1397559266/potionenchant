@@ -1,0 +1,12 @@
+{
+  "parent": "item/handheld",
+  "textures": {
+    "layer0": "potionenchant:item/tool/swordx"
+  },
+  "overrides": [
+    {
+      "predicate": { "potionenchant:supermode": 1.0 },
+      "model": "potionenchant:item/x_sword_supermode"
+    }
+  ]
+}

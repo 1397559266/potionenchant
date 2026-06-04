@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BBB",
+    "DOD",
+    "OOO"
+  ],
+  "key": {
+    "B": { "item": "minecraft:glass_bottle" },
+    "D": { "item": "minecraft:diamond" },
+    "O": { "item": "minecraft:obsidian" }
+  },
+  "result": {
+    "item": "potionenchant:potion_enchanting_table"
+  }
+}

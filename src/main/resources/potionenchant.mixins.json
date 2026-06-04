@@ -1,0 +1,52 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.diexv.potionenchant.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "potionenchant.refmap.json",
+  "plugin": "net.diexv.potionenchant.mixin.plugin.PotionEnchantMixinPlugin",
+  "mixins": [
+    "accessor.LivingEntityAccessor",
+    "accessor.MobEffectInstanceAccessor",
+    "accessor.SyncEntityDataAccessor",
+    "accessor.SynchedEntityDataAccessor",
+    "AnvilMenuMixin",
+    "ArmorCapMixin",
+    "BarrageMixin",
+    "EnchantmentDiscoverableMixin",
+    "FirmnessArmorMixin",
+    "HurtMixin",
+    "LifeLinkMixin",
+    "LivingEntityMixin",
+    "MobEffectInstanceLevelLimitMixin",
+    "MobEffectInstanceMixin",
+    "PlayerTickMixin",
+    "ReforgeMixin",
+    "RevivalMixin",
+    "TaczGunDamageMixin",
+    "TooltipColorMixin",
+    "TrackingArrowMixin",
+    "XSwordSupermodeMixin",
+    "XSwordSyncedDataMixin"
+  ],
+  "client": [
+    "ItemRendererMixin",
+    "GameRendererMixin",
+    "PlayerRendererMixin",
+    "PotionEnchantTooltipMixin",
+    "PotionHudMixin",
+    "TooltipScrollMouseMixin",
+    "UniversalHandRenderMixin",
+    "UniversalPotionBottleTooltipBackgroundMixin",
+    "XSwordTooltipFontMixin",
+    "accessor.FontAccessor",
+    "accessor.ShaderInstanceAccessor",
+    "accessor.UniformAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}

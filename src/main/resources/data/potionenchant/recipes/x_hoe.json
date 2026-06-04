@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BB ",
+    " S ",
+    " S "
+  ],
+  "key": {
+    "B": { "item": "minecraft:nether_star" },
+    "S": { "item": "potionenchant:universal_potion_bottle" }
+  },
+  "result": {
+    "item": "potionenchant:x_hoe"
+  }
+}

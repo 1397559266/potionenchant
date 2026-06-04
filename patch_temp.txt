@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: src\main\java\net\diexv\potionenchant\mixin\LivingEntityMixin.java
+@@        // 2. X护甲毁灭模式 —— 玩家满血
+-        if (entity instanceof Player armorPlayer && ArmorXFeatureHandler.isWearingFullXArmor(armorPlayer) && ArmorXFeatureHandler.isDestructionModeEnabled(armorPlayer)) {
++        if (entity instanceof Player armorPlayer && armorPlayer.getInventory() != null && ArmorXFeatureHandler.isWearingFullXArmor(armorPlayer) && ArmorXFeatureHandler.isDestructionModeEnabled(armorPlayer)) {
+@@        // 3. X护甲毁灭模式 —— 玩家满血
+-        if (ArmorXFeatureHandler.isWearingFullXArmor(player) && ArmorXFeatureHandler.isDestructionModeEnabled(player)) {
++        if (player.getInventory() != null && ArmorXFeatureHandler.isWearingFullXArmor(player) && ArmorXFeatureHandler.isDestructionModeEnabled(player)) {
+*** End Patch

@@ -1,0 +1,43 @@
+*** Begin Patch
+*** Update File: src/main/java/net/diexv/potionenchant/agent/DiexvAgent.java
+@@ 
+      INST.addTransformer(new DiexvAgent(), true);
+-      String[] parentClasses = {
+-              "net.minecraft.world.entity.LivingEntity",
+-              "net.minecraft.world.entity.Mob",
+-      };
+-      for (String name : parentClasses) {
+-        try {
+-          Class<?> cls = Class.forName(name);
+-          INST.retransformClasses(cls);
+-          System.out.println("[DiexvAgent] Retransformed " + name);
+-        } catch (Throwable e) {
+-          System.err.println("[DiexvAgent] Retransform failed for " + name + ": " + e);
++      // Retransform 已加载的父类，使凋灵/末影龙继承到清空后的方法
++      // 每个类独立 try-catch，一个失败不影响另一个
++      String[][] retransformTargets = {
++          {"net.minecraft.world.entity.LivingEntity", "LivingEntity"},
++          {"net.minecraft.world.entity.Mob", "Mob"},
++      };
++      for (String[] target : retransformTargets) {
++        String fullName = target[0];
++        String shortName = target[1];
++        try {
++          Class<?> cls = Class.forName(fullName, false, DiexvAgent.class.getClassLoader());
++          try {
++            DiexvBase.UNSAFE.ensureClassInitialized(cls);
++          } catch (ExceptionInInitializerError e) {
++            System.err.println("[DiexvAgent] " + shortName + " <clinit> failed, skip retransform");
++            continue;
++          }
++          INST.retransformClasses(cls);
++          System.out.println("[DiexvAgent] Retransformed " + shortName);
++        } catch (ExceptionInInitializerError | NoClassDefFoundError e) {
++          System.err.println("[DiexvAgent] " + shortName + " not ready, skip: " + e);
++        } catch (UnmodifiableClassException e) {
++          System.err.println("[DiexvAgent] " + shortName + " is unmodifiable, skip");
++        } catch (Throwable e) {
++          System.err.println("[DiexvAgent] Retransform " + shortName + " failed: " + e);
+        }
+      }
+*** End Patch

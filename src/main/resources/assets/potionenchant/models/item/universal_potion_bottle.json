@@ -1,0 +1,10 @@
+{
+  "loader": "potionenchant:cosmic",
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "potionenchant:item/universal_potion_bottle"
+  },
+  "cosmic": {
+    "mask": "potionenchant:item/mask"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "potionenchant:block/potion_enchanting_table" }
+  }
+}

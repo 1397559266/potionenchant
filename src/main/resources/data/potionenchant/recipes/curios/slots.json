@@ -1,0 +1,46 @@
+{
+  "slots": [
+    {
+      "identifier": "charm",
+      "name": "curios.slot.charm",
+      "type": "charm",
+      "size": 1,
+      "enable": true
+    },
+    {
+      "identifier": "necklace",
+      "name": "curios.slot.necklace",
+      "type": "necklace",
+      "size": 1,
+      "enable": true
+    },
+    {
+      "identifier": "ring",
+      "name": "curios.slot.ring",
+      "type": "ring",
+      "size": 2,
+      "enable": true
+    },
+    {
+      "identifier": "bracelet",
+      "name": "curios.slot.bracelet",
+      "type": "bracelet",
+      "size": 2,
+      "enable": true
+    },
+    {
+      "identifier": "head",
+      "name": "curios.slot.head",
+      "type": "head",
+      "size": 1,
+      "enable": true
+    },
+    {
+      "identifier": "back",
+      "name": "curios.slot.back",
+      "type": "back",
+      "size": 1,
+      "enable": true
+    }
+  ]
+}

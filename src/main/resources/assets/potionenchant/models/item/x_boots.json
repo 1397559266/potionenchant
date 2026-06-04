@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "potionenchant:item/armor/armorx_boots"
+  }
+}

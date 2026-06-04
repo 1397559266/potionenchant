@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " B ",
+    " B ",
+    " S "
+  ],
+  "key": {
+    "B": { "item": "minecraft:nether_star" },
+    "S": { "item": "minecraft:command_block" }
+  },
+  "result": {
+    "item": "potionenchant:x_sword"
+  }
+}
