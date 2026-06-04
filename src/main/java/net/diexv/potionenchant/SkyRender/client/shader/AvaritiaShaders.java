@@ -179,17 +179,13 @@ public final class AvaritiaShaders {
      */
     public static void refreshCosmicUVs() {
         Minecraft mc = Minecraft.getInstance();
-        try {
-            for (int i = 0; i < COSMIC_TEXTURE_COUNT; ++i) {
-                TextureAtlasSprite sprite = mc.getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
-                        .apply(PotionEnchantMod.rl("item/cosmic_" + i));
-                COSMIC_UVS[i * 4] = sprite.getU0();
-                COSMIC_UVS[i * 4 + 1] = sprite.getV0();
-                COSMIC_UVS[i * 4 + 2] = sprite.getU1();
-                COSMIC_UVS[i * 4 + 3] = sprite.getV1();
-            }
-        } catch (Exception ex) {
-            PotionEnchantMod.LOGGER.error("[AvaritiaShaders] Failed to refresh cosmic UVs from block atlas!", ex);
+        for (int i = 0; i < COSMIC_TEXTURE_COUNT; ++i) {
+            TextureAtlasSprite sprite = mc.getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
+                    .apply(PotionEnchantMod.rl("item/cosmic_" + i));
+            COSMIC_UVS[i * 4]     = sprite.getU0();
+            COSMIC_UVS[i * 4 + 1] = sprite.getV0();
+            COSMIC_UVS[i * 4 + 2] = sprite.getU1();
+            COSMIC_UVS[i * 4 + 3] = sprite.getV1();
         }
     }
 
@@ -227,6 +223,7 @@ public final class AvaritiaShaders {
      * TextureStitchEvent.Post 时确保 UV 重新刷新
      * 此时方块图集已完全准备好，所有 cosmic 纹理都在正确位置
      */
+
     @SubscribeEvent
     public static void onTextureStitchPost(TextureStitchEvent.Post event) {
         if (event.getAtlas().location().equals(InventoryMenu.BLOCK_ATLAS)) {
@@ -267,3 +264,4 @@ public final class AvaritiaShaders {
 
     private AvaritiaShaders() {}
 }
+

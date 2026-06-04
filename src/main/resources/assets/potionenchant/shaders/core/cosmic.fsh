@@ -99,7 +99,7 @@ void main (void)
 
         float scale = mult * 0.5 + 2.75;
         float u = rawu * scale * externalScale;
-        float v = (rawv + time * 0.05 * oneOverExternalScale) * scale * 0.6 * externalScale;
+        float v = (rawv + time * 0.007 * oneOverExternalScale) * scale * 0.6 * externalScale;
 
         vec2 tex = vec2(u, v);
 
