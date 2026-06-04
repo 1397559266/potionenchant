@@ -21,9 +21,9 @@ import java.util.List;
 public final class CosmicItemLateRenderQueue {
     private static final List<Entry> ENTRIES = new ArrayList<>();
 
-    public static void enqueue(CosmicBakeModel renderer, ItemStack stack, ItemDisplayContext context, PoseStack poseStack, int packedLight, int packedOverlay, BakedModel model) {
+    public static void enqueue(CosmicBakeModel renderer, ItemStack stack, ItemDisplayContext context, PoseStack poseStack, int packedLight, int packedOverlay, BakedModel model, RenderType renderType) {
         PoseStack.Pose pose = poseStack.last();
-        ENTRIES.add(new Entry(renderer, stack.copy(), context, new Matrix4f(pose.pose()), new Matrix3f(pose.normal()), new Matrix4f(RenderSystem.getModelViewMatrix()), new Matrix4f(RenderSystem.getProjectionMatrix()), packedLight, packedOverlay, model));
+        ENTRIES.add(new Entry(renderer, stack.copy(), context, new Matrix4f(pose.pose()), new Matrix3f(pose.normal()), new Matrix4f(RenderSystem.getModelViewMatrix()), new Matrix4f(RenderSystem.getProjectionMatrix()), packedLight, packedOverlay, model, renderType));
     }
 
     public static void renderBeforeHand() {
@@ -32,10 +32,6 @@ public final class CosmicItemLateRenderQueue {
 
     public static void renderAfterHand() {
         renderMatchingEntries(true, true);
-    }
-
-    public static void renderAfterLevel() {
-        renderAfterHand();
     }
 
     private static void renderMatchingEntries(boolean includeFirstPersonHand, boolean clearSkippedEntries) {
@@ -68,8 +64,9 @@ public final class CosmicItemLateRenderQueue {
                 PoseStack poseStack = new PoseStack();
                 poseStack.last().pose().set(entry.pose());
                 poseStack.last().normal().set(entry.normal());
-                entry.renderer().renderShaderLayer(entry.stack(), entry.context(), poseStack, buffers, entry.packedLight(), entry.packedOverlay(), entry.model(), AvaritiaShaders.COSMIC_AFTER_LEVEL_RENDER_TYPE, true);
+                entry.renderer().renderShaderLayer(entry.stack(), entry.context(), poseStack, buffers, entry.packedLight(), entry.packedOverlay(), entry.model(), entry.renderType(), true);
 
+                // 结束延迟渲染类型批次
                 buffers.endBatch(AvaritiaShaders.COSMIC_AFTER_LEVEL_RENDER_TYPE);
                 buffers.endBatch(AvaritiaShaders.COSMIC_HAND_AFTER_LEVEL_RENDER_TYPE);
                 iterator.remove();
@@ -87,7 +84,7 @@ public final class CosmicItemLateRenderQueue {
         return context == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || context == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND;
     }
 
-    private record Entry(CosmicBakeModel renderer, ItemStack stack, ItemDisplayContext context, Matrix4f pose, Matrix3f normal, Matrix4f modelView, Matrix4f projection, int packedLight, int packedOverlay, BakedModel model) {}
+    private record Entry(CosmicBakeModel renderer, ItemStack stack, ItemDisplayContext context, Matrix4f pose, Matrix3f normal, Matrix4f modelView, Matrix4f projection, int packedLight, int packedOverlay, BakedModel model, RenderType renderType) {}
 
     private CosmicItemLateRenderQueue() {}
 }

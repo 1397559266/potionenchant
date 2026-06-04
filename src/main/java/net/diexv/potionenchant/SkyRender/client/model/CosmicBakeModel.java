@@ -50,7 +50,7 @@ public final class CosmicBakeModel implements BakedModel {
             @Override
             public BakedModel resolve(final @NotNull BakedModel originalModel, final @NotNull ItemStack stack, final ClientLevel world, final LivingEntity entity, final int seed) {
                 CosmicBakeModel.this.entity = entity;
-                CosmicBakeModel.this.world = ((world == null) ? ((entity == null) ? null : ((ClientLevel) entity.level())) : null);
+                CosmicBakeModel.this.world = (world != null) ? world : (entity == null ? null : (ClientLevel) entity.level());
                 return CosmicBakeModel.this.wrapped.getOverrides().resolve(originalModel, stack, world, entity, seed);
             }
         };
@@ -60,88 +60,50 @@ public final class CosmicBakeModel implements BakedModel {
     }
 
     public void renderItem(ItemStack stack, ItemDisplayContext transformType, PoseStack pStack, MultiBufferSource buffers, int packedLight, int packedOverlay) {
-        // 当光影激活时，使用延迟渲染队列以确保兼容性
-        if (ItemShaderModCompat.shouldDeferCosmicItemRendering() && transformType != ItemDisplayContext.GUI) {
-            ItemShaderModCompat.logCompatModeOnce();
-            BakedModel model = resolveWrappedModel(stack);
-            CosmicItemLateRenderQueue.enqueue(this, stack, transformType, pStack, packedLight, packedOverlay, model);
-            return;
-        }
-
-        // 非光影模式直接渲染
-        renderCosmicDirect(stack, transformType, pStack, buffers, packedLight, packedOverlay);
-    }
-
-    /**
-     * 被延迟渲染队列调用的方法，渲染宇宙着色器层到主缓冲
-     */
-    public void renderShaderLayer(ItemStack stack, ItemDisplayContext transformType, PoseStack pStack, MultiBufferSource buffers, int packedLight, int packedOverlay, BakedModel model, RenderType renderType, boolean isOculusPass) {
         if (stack.getItem() == ModItems.UNIVERSAL_POTION_BOTTLE.get()) {
             this.parentState = TransformUtils.DEFAULT_TOOL;
         }
 
-        Minecraft mc = Minecraft.getInstance();
-        float yaw = 0.0F;
-        float pitch = 0.0F;
-        float scale = 1F;
+        RenderType renderType = AvaritiaShaders.COSMIC_RENDER_TYPE;
 
-        boolean isCosmicItem = stack.getItem() == ModItems.UNIVERSAL_POTION_BOTTLE.get()
-                || stack.getItem() == ModItems.UNIVERSAL_ENCHANTMENT_BOOK.get();
-
-        if ((AvaritiaShaders.inventoryRender || transformType == ItemDisplayContext.GUI) && !isCosmicItem) {
-            scale = 1.0F;
-        } else {
-            assert mc.player != null;
-            yaw = (float) (mc.player.getYRot() * 2.0F * Math.PI / 360.0);
-            pitch = -(float) (mc.player.getXRot() * 2.0F * Math.PI / 360.0);
-        }
-        AvaritiaShaders.cosmicTime.set((System.currentTimeMillis() - AvaritiaShaders.renderTime) / 2000.0F);
-        AvaritiaShaders.cosmicYaw.set(yaw);
-        AvaritiaShaders.cosmicPitch.set(pitch);
-        AvaritiaShaders.cosmicExternalScale.set(scale);
-        AvaritiaShaders.cosmicOpacity.set(1.0F);
-        for (int i = 0; i < 25; ++i) {
-            TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(PotionEnchantMod.rl("item/misc/cosmic_" + i));
-            AvaritiaShaders.COSMIC_UVS[i * 4] = sprite.getU0();
-            AvaritiaShaders.COSMIC_UVS[i * 4 + 1] = sprite.getV0();
-            AvaritiaShaders.COSMIC_UVS[i * 4 + 2] = sprite.getU1();
-            AvaritiaShaders.COSMIC_UVS[i * 4 + 3] = sprite.getV1();
-        }
-        AvaritiaShaders.cosmicUVs.set(AvaritiaShaders.COSMIC_UVS);
-        VertexConsumer cons = buffers.getBuffer(renderType);
-        List<TextureAtlasSprite> atlasSprite = new ArrayList<>();
-        for (ResourceLocation res : maskSprite) {
-            atlasSprite.add(Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(res));
-        }
-        LinkedList<BakedQuad> quads = new LinkedList<>();
-        for (TextureAtlasSprite sprite : atlasSprite) {
-            List<BlockElement> unbaked = ITEM_MODEL_GENERATOR.processFrames(atlasSprite.indexOf(sprite), "layer" + atlasSprite.indexOf(sprite), sprite.contents());
-            for (BlockElement element : unbaked) {
-                for (Map.Entry<Direction, BlockElementFace> entry : element.faces.entrySet()) {
-                    quads.add(FACE_BAKERY.bakeQuad(element.from, element.to, entry.getValue(), sprite, entry.getKey(), new PerspectiveModelState(ImmutableMap.of()), element.rotation, element.shade, PotionEnchantMod.rl("dynamic")));
-                }
-            }
-        }
-
-        mc.getItemRenderer().renderQuadList(pStack, cons, quads, stack, packedLight, packedOverlay);
-    }
-
-    private void renderCosmicDirect(ItemStack stack, ItemDisplayContext transformType, PoseStack pStack, MultiBufferSource buffers, int packedLight, int packedOverlay) {
-        if (stack.getItem() == ModItems.UNIVERSAL_POTION_BOTTLE.get()) {
-            this.parentState = TransformUtils.DEFAULT_TOOL;
-        }
-        BakedModel model = resolveWrappedModel(stack);
+        BakedModel model = this.wrapped.getOverrides().resolve(this.wrapped, stack, this.world, this.entity, 0);
         ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
         assert model != null;
+
+        // 1. 先渲染基础物品模型（这个不受光影影响）
         for (BakedModel bakedModel : model.getRenderPasses(stack, true)) {
-            for (RenderType rendertype : bakedModel.getRenderTypes(stack, true)) {
-                itemRenderer.renderModelLists(bakedModel, stack, packedLight, packedOverlay, pStack, buffers.getBuffer(rendertype));
+            for (RenderType rt : bakedModel.getRenderTypes(stack, true)) {
+                itemRenderer.renderModelLists(bakedModel, stack, packedLight, packedOverlay, pStack, buffers.getBuffer(rt));
             }
         }
         if (buffers instanceof MultiBufferSource.BufferSource bs) {
             bs.endBatch();
         }
+
+        // 2. 判断是否使用延迟渲染（光影兼容模式）
+        if (!AvaritiaShaders.inventoryRender && ItemShaderModCompat.shouldDeferCosmicItemRendering() && transformType != ItemDisplayContext.GUI) {
+            ItemShaderModCompat.logCompatModeOnce();
+            CosmicItemLateRenderQueue.enqueue(this, stack, transformType, pStack, packedLight, packedOverlay, model, renderType);
+            return;
+        }
+
+        // 3. 非光影模式直接渲染着色器层
+        renderShaderLayer(stack, transformType, pStack, buffers, packedLight, packedOverlay, model, renderType, false);
+    }
+
+    public void renderShaderLayer(ItemStack stack, ItemDisplayContext transformType, PoseStack pStack, MultiBufferSource buffers, int packedLight, int packedOverlay, BakedModel model, RenderType renderType, boolean lateRender) {
+        if (stack.getItem() == ModItems.UNIVERSAL_POTION_BOTTLE.get()) {
+            this.parentState = TransformUtils.DEFAULT_TOOL;
+        }
+
         Minecraft mc = Minecraft.getInstance();
+
+        // 确定最终使用的渲染类型（延迟渲染用 AfterLevel 版本）
+        RenderType targetRenderType = lateRender ? AvaritiaShaders.lateRenderType(renderType, transformType) : renderType;
+
+        // 检查着色器是否就绪
+        if (!isShaderLayerReady()) return;
+
         float yaw = 0.0F;
         float pitch = 0.0F;
         float scale = 1F;
@@ -156,6 +118,8 @@ public final class CosmicBakeModel implements BakedModel {
             yaw = (float) (mc.player.getYRot() * 2.0F * Math.PI / 360.0);
             pitch = -(float) (mc.player.getXRot() * 2.0F * Math.PI / 360.0);
         }
+
+        // 设置着色器 uniform
         AvaritiaShaders.cosmicTime.set((System.currentTimeMillis() - AvaritiaShaders.renderTime) / 2000.0F);
         AvaritiaShaders.cosmicYaw.set(yaw);
         AvaritiaShaders.cosmicPitch.set(pitch);
@@ -169,7 +133,9 @@ public final class CosmicBakeModel implements BakedModel {
             AvaritiaShaders.COSMIC_UVS[i * 4 + 3] = sprite.getV1();
         }
         AvaritiaShaders.cosmicUVs.set(AvaritiaShaders.COSMIC_UVS);
-        VertexConsumer cons = buffers.getBuffer(AvaritiaShaders.COSMIC_RENDER_TYPE);
+
+        // 构建并渲染着色器层四边形
+        VertexConsumer cons = buffers.getBuffer(targetRenderType);
         List<TextureAtlasSprite> atlasSprite = new ArrayList<>();
         for (ResourceLocation res : maskSprite) {
             atlasSprite.add(Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(res));
@@ -185,10 +151,24 @@ public final class CosmicBakeModel implements BakedModel {
         }
 
         mc.getItemRenderer().renderQuadList(pStack, cons, quads, stack, packedLight, packedOverlay);
+
+        if (!lateRender && buffers instanceof MultiBufferSource.BufferSource bs) {
+            bs.endBatch(targetRenderType);
+        }
     }
 
-    private BakedModel resolveWrappedModel(ItemStack stack) {
-        return this.wrapped.getOverrides().resolve(this.wrapped, stack, this.world, this.entity, 0);
+    private boolean isShaderLayerReady() {
+        return AvaritiaShaders.cosmicShader != null
+                && AvaritiaShaders.cosmicTime != null
+                && AvaritiaShaders.cosmicYaw != null
+                && AvaritiaShaders.cosmicPitch != null
+                && AvaritiaShaders.cosmicExternalScale != null
+                && AvaritiaShaders.cosmicOpacity != null
+                && AvaritiaShaders.cosmicUVs != null;
+    }
+
+    private static boolean isFirstPersonHandContext(ItemDisplayContext context) {
+        return context == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || context == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND;
     }
 
     @Override

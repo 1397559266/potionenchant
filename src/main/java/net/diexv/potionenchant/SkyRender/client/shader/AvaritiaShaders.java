@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RegisterShadersEvent;
@@ -98,6 +99,17 @@ public final class AvaritiaShaders {
             .setOutputState(RenderStateShardAccess.MAIN_TARGET)
             .setWriteMaskState(RenderStateShardAccess.COLOR_WRITE)
             .createCompositeState(false));
+
+    public static RenderType lateRenderType(RenderType renderType, ItemDisplayContext context) {
+        if (isFirstPersonHandContext(context)) {
+            return COSMIC_HAND_AFTER_LEVEL_RENDER_TYPE;
+        }
+        return COSMIC_AFTER_LEVEL_RENDER_TYPE;
+    }
+
+    private static boolean isFirstPersonHandContext(ItemDisplayContext context) {
+        return context == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || context == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND;
+    }
 
     public static final RenderType BLACK_HOLE_RENDER_TYPE = RenderType.create(PotionEnchantMod.MODID + ":black_hole", DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS, 256, true, false, RenderType.CompositeState.builder()
             .setShaderState(new RenderStateShard.ShaderStateShard(() -> blackHoleShader))

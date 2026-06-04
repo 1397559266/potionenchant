@@ -1,19 +1,12 @@
 package net.diexv.potionenchant.client.compat.oculus;
 
 import net.diexv.potionenchant.PotionEnchantMod;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraftforge.fml.ModList;
 
 public final class ItemShaderModCompat {
     private static boolean loggedCompatMode;
-    private static final boolean OCULUS_LOADED;
-
-    static {
-        boolean oculus = false;
-        try {
-            Class.forName("net.irisshaders.iris.api.v0.IrisApi");
-            oculus = true;
-        } catch (ClassNotFoundException ignored) {}
-        OCULUS_LOADED = oculus;
-    }
+    private static final boolean OCULUS_LOADED = ModList.get().isLoaded("oculus");
 
     public static boolean isOculusLoaded() {
         return OCULUS_LOADED;
