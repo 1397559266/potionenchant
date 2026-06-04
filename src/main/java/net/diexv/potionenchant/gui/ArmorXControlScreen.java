@@ -34,7 +34,7 @@ public class ArmorXControlScreen extends Screen {
     private enum PanelMode { POTION, ENCHANT }
     private PanelMode currentMode = PanelMode.POTION;
     private EditBox searchBox;
-    private final GuiZoom zoom = new GuiZoom();
+    private final GuiZoom zoom = new GuiZoom("armor_x_control");
     private Button confirmButton, cancelButton;
 
     private List<MobEffectInfo> allEffects = new ArrayList<>();
@@ -1049,6 +1049,12 @@ public class ArmorXControlScreen extends Screen {
 
     @Override
     public boolean isPauseScreen() { return false; }
+
+    @Override
+    public void onClose() {
+        zoom.saveToConfig();
+        super.onClose();
+    }
 
     private static class MobEffectInfo {
         final MobEffect effect;

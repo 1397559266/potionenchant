@@ -36,7 +36,7 @@ public class UniversalPotionBottleScreen extends Screen {
     private final ItemStack bottleItem;
     
     private EditBox searchBox;
-    private final GuiZoom zoom = new GuiZoom();
+    private final GuiZoom zoom = new GuiZoom("universal_potion_bottle");
     private Button confirmButton;
     private Button cancelButton;
     
@@ -1225,6 +1225,12 @@ public class UniversalPotionBottleScreen extends Screen {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    @Override
+    public void onClose() {
+        zoom.saveToConfig();
+        super.onClose();
     }
     
     private static class MobEffectInfo {

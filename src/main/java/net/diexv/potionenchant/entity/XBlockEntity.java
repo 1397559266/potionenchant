@@ -28,6 +28,7 @@ import net.diexv.potionenchant.util.XSwordTargetTracker;
 import net.diexv.potionenchant.mixin.accessor.LivingEntityAccessor;
 import net.diexv.potionenchant.event.ArmorXFeatureHandler;
 
+import java.util.Comparator;
 import java.util.List;
 
 public class XBlockEntity extends Monster implements PowerableMob {
@@ -42,6 +43,7 @@ public class XBlockEntity extends Monster implements PowerableMob {
     private int bombTickCounter = 0;
 
     private static final double DAMAGE_RADIUS = 5.0;
+    private static final double BOMB_SCAN_RADIUS = 50.0;
 
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes()
@@ -147,37 +149,50 @@ public class XBlockEntity extends Monster implements PowerableMob {
         if (!level().isClientSide) {
             dealDamageToNearbyMobs();
 
-            // 每2tick向上方发射一个Bomb
+            // 每4tick扫描怪物并发射追踪Bomb
             bombTickCounter++;
-            if (bombTickCounter >= 2) {
+            if (bombTickCounter >= 4) {
                 bombTickCounter = 0;
-                fireBombUpward();
+                fireBombAtNearestMonster();
             }
         }
 
         updateSwelling();
     }
 
-    private void fireBombUpward() {
+    // 扫描50格内最近的怪物，在其上方10格生成追踪Bomb
+    private void fireBombAtNearestMonster() {
         LivingEntity owner = this.getOwner();
         if (owner == null) return;
         var bombType = ModEntities.BOMB.get();
         if (bombType == null) return;
 
-        BombEntity bomb = new BombEntity(bombType, this.getX(), this.getY() + 5.0, this.getZ(), level());
+        Vec3 center = this.position();
+        AABB scanArea = new AABB(
+            center.x - BOMB_SCAN_RADIUS, center.y - BOMB_SCAN_RADIUS, center.z - BOMB_SCAN_RADIUS,
+            center.x + BOMB_SCAN_RADIUS, center.y + BOMB_SCAN_RADIUS, center.z + BOMB_SCAN_RADIUS);
+        List<LivingEntity> monsters = level().getEntitiesOfClass(LivingEntity.class, scanArea,
+            e -> e instanceof Monster && e.isAlive()
+                 && !(e instanceof XBlockEntity) && e != owner
+                 && e.distanceToSqr(this) <= BOMB_SCAN_RADIUS * BOMB_SCAN_RADIUS);
+
+        if (monsters.isEmpty()) return;
+
+        // 找最近的怪物
+        LivingEntity nearest = monsters.stream()
+            .min(Comparator.comparingDouble(e -> e.distanceToSqr(this)))
+            .orElse(null);
+        if (nearest == null) return;
+
+        // 在怪物上方10格生成Bomb
+        BombEntity bomb = new BombEntity(bombType, nearest.getX(), nearest.getY() + 10.0, nearest.getZ(), level());
         bomb.setOwner(owner);
+        bomb.setFiredByXBlock(true);
         bomb.setAttacking(true);
-        // 设为无目标，让它自己飞行10格后扫描
-        bomb.setTarget(null);
+        bomb.setTarget(nearest);
         bomb.setNoGravity(false);
         bomb.noPhysics = false;
-        bomb.setFiredByXBlock(true);
-        // 随机角度偏移：主方向向上，带水平散开
-        double angle = this.random.nextDouble() * Math.PI * 2;
-        double horizontalStrength = 0.3 + this.random.nextDouble() * 0.5;
-        double vx = Math.cos(angle) * horizontalStrength;
-        double vz = Math.sin(angle) * horizontalStrength;
-        bomb.setDeltaMovement(new Vec3(vx, 1.5, vz));
+        bomb.setDeltaMovement(new Vec3(0, -0.5, 0)); // 初始轻微下落速度
         level().addFreshEntity(bomb);
     }
 
@@ -194,22 +209,22 @@ public class XBlockEntity extends Monster implements PowerableMob {
         for (LivingEntity entity : entities) {
             if (!isHostileMob(entity)) continue;
             spawnVisualLightning(entity.position());
-                            DamageSource damageSource = new DamageSource(
-                    entity.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE)
-                        .getHolderOrThrow(net.minecraft.world.damagesource.DamageTypes.FELL_OUT_OF_WORLD));
-                float damageMultiplier = 1.0f;
-                if (blockOwner instanceof Player player2) {
-                    damageMultiplier = net.diexv.potionenchant.event.ArmorXFeatureHandler.getRangedDamageMultiplier(player2);
-                }
-                // 毁灭模式：秒杀
-                if (blockOwner instanceof Player destructionPlayer && ArmorXFeatureHandler.isDestructionModeEnabled(destructionPlayer)) {
-                    XSwordTargetTracker.mark(entity);
-                    entity.getEntityData().set(LivingEntityAccessor.HEALTH(), 0.0F);
-                    entity.die(damageSource);
-                } else {
-                    entity.hurt(damageSource, 1.0f * damageMultiplier);
-                }
-                entity.invulnerableTime = 0;
+            DamageSource damageSource = new DamageSource(
+                entity.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE)
+                    .getHolderOrThrow(net.minecraft.world.damagesource.DamageTypes.FELL_OUT_OF_WORLD));
+            float damageMultiplier = 1.0f;
+            if (blockOwner instanceof Player player2) {
+                damageMultiplier = net.diexv.potionenchant.event.ArmorXFeatureHandler.getRangedDamageMultiplier(player2);
+            }
+            // 毁灭模式：秒杀
+            if (blockOwner instanceof Player destructionPlayer && ArmorXFeatureHandler.isDestructionModeEnabled(destructionPlayer)) {
+                XSwordTargetTracker.mark(entity);
+                entity.getEntityData().set(LivingEntityAccessor.HEALTH(), 0.0F);
+                entity.die(damageSource);
+            } else {
+                entity.hurt(damageSource, 1.0f * damageMultiplier);
+            }
+            entity.invulnerableTime = 0;
         }
     }
 

@@ -28,6 +28,7 @@ import net.minecraftforge.network.PlayMessages;
 import net.diexv.potionenchant.event.ArmorXFeatureHandler;
 import net.diexv.potionenchant.util.XSwordTargetTracker;
 import net.diexv.potionenchant.mixin.accessor.LivingEntityAccessor;
+import net.minecraft.world.entity.ExperienceOrb;
 
 import java.util.List;
 
@@ -129,7 +130,7 @@ public class BombEntity extends AbstractArrow implements PowerableMob {
                 e -> !(e instanceof BombEntity) &&
                      !(e instanceof Player) &&
                      !(e instanceof XBlockEntity) &&
-                     !e.getType().equals(net.minecraft.world.entity.EntityType.ITEM) &&
+                     !e.getType().equals(net.minecraft.world.entity.EntityType.ITEM) && !(e instanceof ExperienceOrb) &&
                      (owner == null || e != owner));
 
             if (!entities.isEmpty()) {
@@ -184,7 +185,7 @@ public class BombEntity extends AbstractArrow implements PowerableMob {
             e -> !(e instanceof BombEntity) &&
                  !(e instanceof Player) &&
                  !(e instanceof XBlockEntity) &&
-                 !(e instanceof net.minecraft.world.entity.item.ItemEntity) &&
+                 !(e instanceof net.minecraft.world.entity.item.ItemEntity) && !(e instanceof ExperienceOrb) &&
                  (owner == null || e != owner));
 
         for (Entity entity : entities) {

@@ -44,6 +44,8 @@ public class SymbiosisHandler {
         try {
             Entity attacker = event.getSource().getEntity();
             if (attacker instanceof LivingEntity && attacker != victim) {
+                // 清除无敌帧，确保反射伤害必定命中
+                ((LivingEntity) attacker).invulnerableTime = 0;
                 ((LivingEntity) attacker).hurt(event.getSource(), event.getAmount());
             }
         } finally {

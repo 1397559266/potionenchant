@@ -72,7 +72,7 @@ public class ArmorEffectHandler {
 
         if (currentEffect == null) {
             shouldReapply = true;
-        } else if (currentEffect.getAmplifier() != mergedEffect.getAmplifier()) {
+        } else if (currentEffect.getAmplifier() < mergedEffect.getAmplifier()) {
             shouldReapply = true;
         } else if (remainingTicks <= 0) {
             shouldReapply = true;
@@ -85,21 +85,20 @@ public class ArmorEffectHandler {
         }
     }
 
-    // 刷新效果：已存在同等级效果时直接延长持续时长并同步，否则走 addEffect
+    // 刷新效果：已有同等级效果→只延长持续时间（无副作用），否则 addEffect
     private void refreshEffect(LivingEntity entity, MergedEffectData mergedEffect, MobEffectInstance currentEffect,
                                Map<String, Integer> timers, String effectKey) {
         int effectDuration = 20 * 20;
 
         if (currentEffect != null && currentEffect.getAmplifier() == mergedEffect.getAmplifier()) {
-            // 效果已存在且等级相同 → 直接延长持续时间
+            // 已有同等级效果 → 直接延长持续时间，不触发 onEffectUpdated 的副作用
             ((MobEffectInstanceAccessor) currentEffect).setDuration(effectDuration);
-            // 同步到客户端（非玩家实体通过 ServerLevel 广播）
-            if (entity.level() instanceof ServerLevel serverLevel) {
-                serverLevel.getServer().getPlayerList().broadcastAll(
-                    new ClientboundUpdateMobEffectPacket(entity.getId(), currentEffect)
-                );
+            if (!entity.level().isClientSide) {
+                ((ServerLevel)entity.level()).getChunkSource().broadcastAndSend(entity,
+                    new ClientboundUpdateMobEffectPacket(entity.getId(), currentEffect));
             }
         } else {
+            // 新效果或升等级 → 正常 addEffect
             entity.addEffect(new MobEffectInstance(
                 mergedEffect.getEffect(),
                 effectDuration,

@@ -22,7 +22,7 @@ public class UniversalEnchantmentBookScreen extends Screen {
     private final ItemStack targetItem;
     private final ItemStack bookItem;
     private EditBox searchBox;
-    private final GuiZoom zoom = new GuiZoom();
+    private final GuiZoom zoom = new GuiZoom("universal_enchantment_book");
     private Button confirmButton, cancelButton;
     private Map<Enchantment, Integer> levelAdjustments = new HashMap<>();
     private EditBox levelEditBox;
@@ -557,6 +557,12 @@ public class UniversalEnchantmentBookScreen extends Screen {
     }
 
     @Override public boolean isPauseScreen() { return false; }
+
+    @Override
+    public void onClose() {
+        zoom.saveToConfig();
+        super.onClose();
+    }
 
     private List<String> wrapTextByWidth(String text, int maxWidth) {
         List<String> lines = new ArrayList<>();

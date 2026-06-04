@@ -40,7 +40,7 @@ public class PotionEnchantingTableScreen extends Screen {
     private int leftX, leftY, leftW, leftH;
     private int rightX, rightY, rightW, rightH;
     private int btnY, confirmX, cancelX;
-    private final GuiZoom zoom = new GuiZoom();
+    private final GuiZoom zoom = new GuiZoom("potion_enchanting_table");
 
     private static class PotionOption { MobEffect effect; int level; int cost; String clue; }
 
@@ -379,6 +379,7 @@ public class PotionEnchantingTableScreen extends Screen {
 
     @Override public void onClose() {
         if (Minecraft.getInstance().player != null) Minecraft.getInstance().player.closeContainer();
+        zoom.saveToConfig();
         super.onClose();
     }
     @Override public boolean mouseScrolled(double mx, double my, double delta) {

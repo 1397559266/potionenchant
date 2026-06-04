@@ -17,10 +17,22 @@ public class GuiZoom {
     public EditBox headerEditBox;
     private boolean updatingFromText;
 
+    /** 所属 GUI 的唯一标识符，用于持久化 */
+    private final String screenId;
+
     private static final float MIN = 0.1f, MAX = 5.0f;
     private static final int PANEL = 32;
 
+    public GuiZoom(String screenId) {
+        this.screenId = screenId;
+    }
+
     public void init(Font font, int screenW, int screenH) {
+        // 从配置文件加载持久化的缩放值
+        GuiZoomManager.ZoomData data = GuiZoomManager.get(screenId);
+        level = data.level;
+        headerLevel = data.headerLevel;
+
         // 右侧面板缩放输入框
         editBox = new EditBox(font, screenW - PANEL + 3, 30, PANEL - 6, 14,
             Component.translatable("gui.potionenchant.zoom"));
@@ -123,5 +135,10 @@ public class GuiZoom {
         headerEditBox.setWidth(w);
         headerEditBox.setHeight(14);
         headerEditBox.render(g, mouseX, mouseY, pt);
+    }
+
+    /** 将当前缩放值持久化到磁盘 */
+    public void saveToConfig() {
+        GuiZoomManager.save(screenId, level, headerLevel);
     }
 }

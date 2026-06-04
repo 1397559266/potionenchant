@@ -149,7 +149,9 @@ void main (void)
             cosmictex.x = umin * (1.0 - oru) + umax * oru;
             cosmictex.y = vmin * (1.0 - orv) + vmax * orv;
 
-            tcol = texture(Sampler0, cosmictex);
+            ivec2 texSize = textureSize(Sampler0, 0);
+            vec2 pixelCoord = cosmictex * texSize;
+            tcol = texelFetch(Sampler0, ivec2(pixelCoord), 0);
 
             // alpha计算（星体更明显）
             float a = tcol.r * (0.8 + (1.0 / mult) * 1.2) * (1.0 - smoothstep(0.15, 0.48, abs(rawv - 0.5))) * 1.5;
