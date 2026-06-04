@@ -2,3 +2,18 @@
 /.gradle/
 /build/
 /build/classes/java/main/
+
+# IDE
+.idea/
+
+# 运行目录
+run/
+
+# 临时文件
+patch1.txt
+patch_temp.txt
+PE1.txt
+*.patch
+*.diff
+*.bak
+*~
