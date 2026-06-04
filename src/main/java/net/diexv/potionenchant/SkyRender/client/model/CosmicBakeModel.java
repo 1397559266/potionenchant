@@ -38,12 +38,22 @@ import java.util.*;
 public final class CosmicBakeModel implements BakedModel {
     private static final ItemModelGenerator ITEM_MODEL_GENERATOR = new ItemModelGenerator();
     private static final FaceBakery FACE_BAKERY = new FaceBakery();
+    private static final int COSMIC_TEXTURE_COUNT = 25;
     private final List<ResourceLocation> maskSprite;
     private final BakedModel wrapped;
     private final ItemOverrides overrideList;
     private ModelState parentState;
     private LivingEntity entity;
     private ClientLevel world;
+
+    public static boolean isBlockContext(ItemDisplayContext context) {
+        return switch (context) {
+            case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND,
+                 FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND,
+                 GROUND, FIXED, GUI -> true;
+            default -> false;
+        };
+    }
 
     public CosmicBakeModel(final BakedModel wrapped, final List<ResourceLocation> maskSprite) {
         this.overrideList = new ItemOverrides() {
@@ -60,120 +70,161 @@ public final class CosmicBakeModel implements BakedModel {
     }
 
     public void renderItem(ItemStack stack, ItemDisplayContext transformType, PoseStack pStack, MultiBufferSource buffers, int packedLight, int packedOverlay) {
-        if (stack.getItem() == ModItems.UNIVERSAL_POTION_BOTTLE.get()) {
-            this.parentState = TransformUtils.DEFAULT_TOOL;
-        }
-
         RenderType renderType = AvaritiaShaders.COSMIC_RENDER_TYPE;
 
+        if (stack.getItem() == ModItems.UNIVERSAL_POTION_BOTTLE.get()) {
+            this.parentState = TransformUtils.DEFAULT_TOOL;
+        } else {
+            this.parentState = TransformUtils.stateFromItemTransforms(wrapped.getTransforms());
+        }
+
+        // 先渲染基底模型
         BakedModel model = this.wrapped.getOverrides().resolve(this.wrapped, stack, this.world, this.entity, 0);
         ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
         assert model != null;
-
-        // 1. 先渲染基础物品模型（这个不受光影影响）
+        Set<RenderType> baseRenderTypes = new LinkedHashSet<>();
         for (BakedModel bakedModel : model.getRenderPasses(stack, true)) {
-            for (RenderType rt : bakedModel.getRenderTypes(stack, true)) {
-                itemRenderer.renderModelLists(bakedModel, stack, packedLight, packedOverlay, pStack, buffers.getBuffer(rt));
+            for (RenderType rendertype : bakedModel.getRenderTypes(stack, true)) {
+                itemRenderer.renderModelLists(bakedModel, stack, packedLight, packedOverlay, pStack, buffers.getBuffer(rendertype));
+                baseRenderTypes.add(rendertype);
             }
         }
-        if (buffers instanceof MultiBufferSource.BufferSource bs) {
-            bs.endBatch();
+        if (buffers instanceof MultiBufferSource.BufferSource source) {
+            baseRenderTypes.forEach(source::endBatch);
         }
 
-        // 2. 判断是否使用延迟渲染（光影兼容模式）
-        if (!AvaritiaShaders.inventoryRender && ItemShaderModCompat.shouldDeferCosmicItemRendering() && transformType != ItemDisplayContext.GUI) {
-            ItemShaderModCompat.logCompatModeOnce();
+        // 光影兼容：延迟渲染（包含手持渲染用的GUI上下文）
+        boolean shouldDefer = !AvaritiaShaders.inventoryRender
+            && supportsLateRenderType(renderType)
+            && (ItemShaderModCompat.shouldDeferItemShaderLayer(transformType)
+                || (ItemShaderModCompat.shouldDeferCosmicItemRendering() && transformType == ItemDisplayContext.GUI));
+        if (shouldDefer) {
+            if (!isShaderLayerReady(renderType)) {
+                return;
+            }
             CosmicItemLateRenderQueue.enqueue(this, stack, transformType, pStack, packedLight, packedOverlay, model, renderType);
             return;
         }
 
-        // 3. 非光影模式直接渲染着色器层
+        // 正常渲染星空层
         renderShaderLayer(stack, transformType, pStack, buffers, packedLight, packedOverlay, model, renderType, false);
     }
 
     public void renderShaderLayer(ItemStack stack, ItemDisplayContext transformType, PoseStack pStack, MultiBufferSource buffers, int packedLight, int packedOverlay, BakedModel model, RenderType renderType, boolean lateRender) {
-        if (stack.getItem() == ModItems.UNIVERSAL_POTION_BOTTLE.get()) {
-            this.parentState = TransformUtils.DEFAULT_TOOL;
+        if (!isShaderLayerReady(renderType)) {
+            return;
         }
 
         Minecraft mc = Minecraft.getInstance();
+        boolean isGUIMode = AvaritiaShaders.inventoryRender || transformType == ItemDisplayContext.GUI;
 
-        // 确定最终使用的渲染类型（延迟渲染用 AfterLevel 版本）
-        RenderType targetRenderType = lateRender ? AvaritiaShaders.lateRenderType(renderType, transformType) : renderType;
+        // 提前上传 uniform（使用 AvaritiaShaders 的统一方法）
+        AvaritiaShaders.uploadCosmicUniforms();
 
-        // 检查着色器是否就绪
-        if (!isShaderLayerReady()) return;
-
-        float yaw = 0.0F;
-        float pitch = 0.0F;
-        float scale = 1F;
-
-        boolean isCosmicItem = stack.getItem() == ModItems.UNIVERSAL_POTION_BOTTLE.get()
-                || stack.getItem() == ModItems.UNIVERSAL_ENCHANTMENT_BOOK.get();
-
-        if ((AvaritiaShaders.inventoryRender || transformType == ItemDisplayContext.GUI) && !isCosmicItem) {
-            scale = 1.0F;
-        } else {
-            assert mc.player != null;
-            yaw = (float) (mc.player.getYRot() * 2.0F * Math.PI / 360.0);
-            pitch = -(float) (mc.player.getXRot() * 2.0F * Math.PI / 360.0);
+        if (lateRender) {
+            renderType = lateRenderType(renderType, transformType);
         }
 
-        // 设置着色器 uniform
-        AvaritiaShaders.cosmicTime.set((System.currentTimeMillis() - AvaritiaShaders.renderTime) / 2000.0F);
-        AvaritiaShaders.cosmicYaw.set(yaw);
-        AvaritiaShaders.cosmicPitch.set(pitch);
-        AvaritiaShaders.cosmicExternalScale.set(scale);
-        AvaritiaShaders.cosmicOpacity.set(1.0F);
-        for (int i = 0; i < 25; ++i) {
-            TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(PotionEnchantMod.rl("item/misc/cosmic_" + i));
-            AvaritiaShaders.COSMIC_UVS[i * 4] = sprite.getU0();
-            AvaritiaShaders.COSMIC_UVS[i * 4 + 1] = sprite.getV0();
-            AvaritiaShaders.COSMIC_UVS[i * 4 + 2] = sprite.getU1();
-            AvaritiaShaders.COSMIC_UVS[i * 4 + 3] = sprite.getV1();
-        }
-        AvaritiaShaders.cosmicUVs.set(AvaritiaShaders.COSMIC_UVS);
-
-        // 构建并渲染着色器层四边形
-        VertexConsumer cons = buffers.getBuffer(targetRenderType);
-        List<TextureAtlasSprite> atlasSprite = new ArrayList<>();
-        for (ResourceLocation res : maskSprite) {
-            atlasSprite.add(Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(res));
-        }
-        LinkedList<BakedQuad> quads = new LinkedList<>();
-        for (TextureAtlasSprite sprite : atlasSprite) {
-            List<BlockElement> unbaked = ITEM_MODEL_GENERATOR.processFrames(atlasSprite.indexOf(sprite), "layer" + atlasSprite.indexOf(sprite), sprite.contents());
-            for (BlockElement element : unbaked) {
-                for (Map.Entry<Direction, BlockElementFace> entry : element.faces.entrySet()) {
-                    quads.add(FACE_BAKERY.bakeQuad(element.from, element.to, entry.getValue(), sprite, entry.getKey(), new PerspectiveModelState(ImmutableMap.of()), element.rotation, element.shade, PotionEnchantMod.rl("dynamic")));
-                }
+        // GUI 模式下放大 scale 让星星更明显
+        if (isGUIMode) {
+            if (AvaritiaShaders.cosmicExternalScale != null) {
+                AvaritiaShaders.cosmicExternalScale.set(100.0F);
+            }
+            if (AvaritiaShaders.cosmicYaw != null) {
+                AvaritiaShaders.cosmicYaw.set(0.0F);
+            }
+            if (AvaritiaShaders.cosmicPitch != null) {
+                AvaritiaShaders.cosmicPitch.set(0.0F);
             }
         }
 
-        mc.getItemRenderer().renderQuadList(pStack, cons, quads, stack, packedLight, packedOverlay);
+        try {
+            VertexConsumer buffersBuffer = buffers.getBuffer(renderType);
 
-        if (!lateRender && buffers instanceof MultiBufferSource.BufferSource bs) {
-            bs.endBatch(targetRenderType);
+            // 3D 方块型模型
+            if (model.isGui3d() && isBlockContext(transformType)) {
+                List<BakedQuad> blockLayer = new ArrayList<>();
+                RandomSource random = RandomSource.create();
+                for (Direction direction : Direction.values()) {
+                    blockLayer.addAll(model.getQuads(null, direction, random));
+                }
+
+                List<TextureAtlasSprite> maskSprites = new ArrayList<>();
+                for (ResourceLocation res : maskSprite) {
+                    maskSprites.add(mc.getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(res));
+                }
+
+                List<BakedQuad> overlayQuads = new ArrayList<>();
+                for (BakedQuad base : blockLayer) {
+                    for (TextureAtlasSprite sprite : maskSprites) {
+                        overlayQuads.add(textureQuadBestEffort(base, sprite));
+                    }
+                }
+                mc.getItemRenderer().renderQuadList(pStack, buffersBuffer, overlayQuads, stack, packedLight, packedOverlay);
+            } else {
+                // 平面/精灵层模型（书、药水瓶）
+                List<TextureAtlasSprite> atlasSprite = new ArrayList<>();
+                for (ResourceLocation res : maskSprite) {
+                    atlasSprite.add(mc.getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(res));
+                }
+
+                LinkedList<BakedQuad> quads = new LinkedList<>();
+                for (int i = 0; i < atlasSprite.size(); i++) {
+                    TextureAtlasSprite sprite = atlasSprite.get(i);
+                    List<BlockElement> unbaked = ITEM_MODEL_GENERATOR.processFrames(i, "layer" + i, sprite.contents());
+                    for (BlockElement element : unbaked) {
+                        for (Map.Entry<Direction, BlockElementFace> entry : element.faces.entrySet()) {
+                            quads.add(FACE_BAKERY.bakeQuad(
+                                    element.from, element.to, entry.getValue(),
+                                    sprite, entry.getKey(),
+                                    new PerspectiveModelState(ImmutableMap.of()),
+                                    element.rotation, element.shade,
+                                    PotionEnchantMod.rl("dynamic")));
+                        }
+                    }
+                }
+                mc.getItemRenderer().renderQuadList(pStack, buffersBuffer, quads, stack, packedLight, packedOverlay);
+            }
+        } finally {
+            if (!lateRender && buffers instanceof MultiBufferSource.BufferSource source) {
+                source.endBatch(renderType);
+            }
         }
     }
 
-    private boolean isShaderLayerReady() {
+    private static boolean supportsLateRenderType(RenderType renderType) {
+        return renderType == AvaritiaShaders.COSMIC_RENDER_TYPE;
+    }
+
+    private static boolean isShaderLayerReady(RenderType renderType) {
         return AvaritiaShaders.cosmicShader != null
-                && AvaritiaShaders.cosmicTime != null
-                && AvaritiaShaders.cosmicYaw != null
-                && AvaritiaShaders.cosmicPitch != null
-                && AvaritiaShaders.cosmicExternalScale != null
-                && AvaritiaShaders.cosmicOpacity != null
-                && AvaritiaShaders.cosmicUVs != null;
+            && AvaritiaShaders.cosmicTime != null
+            && AvaritiaShaders.cosmicYaw != null
+            && AvaritiaShaders.cosmicPitch != null
+            && AvaritiaShaders.cosmicExternalScale != null
+            && AvaritiaShaders.cosmicOpacity != null
+            && AvaritiaShaders.cosmicUVs != null;
+    }
+
+    private static RenderType lateRenderType(RenderType renderType, ItemDisplayContext context) {
+        if (isFirstPersonHandContext(context)) {
+            return AvaritiaShaders.COSMIC_HAND_AFTER_LEVEL_RENDER_TYPE;
+        }
+        return AvaritiaShaders.COSMIC_ITEM_AFTER_LEVEL_RENDER_TYPE;
     }
 
     private static boolean isFirstPersonHandContext(ItemDisplayContext context) {
-        return context == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || context == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND;
+        return context == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || context == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND || context == ItemDisplayContext.GUI;
     }
 
-    @Override
-    public boolean isCustomRenderer() {
-        return true;
+    private static BakedQuad textureQuadBestEffort(BakedQuad base, TextureAtlasSprite sprite) {
+        try {
+            int[] vert = base.getVertices().clone();
+            return new BakedQuad(vert, base.getTintIndex(), base.getDirection(), sprite, base.isShade());
+        } catch (Throwable throwable) {
+            PotionEnchantMod.LOGGER.warn("CosmicBakeModel: unable to texture quad (falling back to base quad)", throwable);
+            return base;
+        }
     }
 
     @Override
@@ -213,6 +264,11 @@ public final class CosmicBakeModel implements BakedModel {
     @Override
     public @NotNull ItemOverrides getOverrides() {
         return this.overrideList;
+    }
+
+    @Override
+    public boolean isCustomRenderer() {
+        return true;
     }
 
     @Override

@@ -34,8 +34,14 @@ public final class CosmicItemLateRenderQueue {
         renderMatchingEntries(true, true);
     }
 
+    public static void renderAfterLevel() {
+        renderAfterHand();
+    }
+
     private static void renderMatchingEntries(boolean includeFirstPersonHand, boolean clearSkippedEntries) {
-        if (ENTRIES.isEmpty()) return;
+        if (ENTRIES.isEmpty()) {
+            return;
+        }
 
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) {
@@ -53,7 +59,9 @@ public final class CosmicItemLateRenderQueue {
             while (iterator.hasNext()) {
                 Entry entry = iterator.next();
                 if (isFirstPersonHandContext(entry.context()) && !includeFirstPersonHand) {
-                    if (clearSkippedEntries) iterator.remove();
+                    if (clearSkippedEntries) {
+                        iterator.remove();
+                    }
                     continue;
                 }
 
@@ -66,8 +74,7 @@ public final class CosmicItemLateRenderQueue {
                 poseStack.last().normal().set(entry.normal());
                 entry.renderer().renderShaderLayer(entry.stack(), entry.context(), poseStack, buffers, entry.packedLight(), entry.packedOverlay(), entry.model(), entry.renderType(), true);
 
-                // 结束延迟渲染类型批次
-                buffers.endBatch(AvaritiaShaders.COSMIC_AFTER_LEVEL_RENDER_TYPE);
+                buffers.endBatch(AvaritiaShaders.COSMIC_ITEM_AFTER_LEVEL_RENDER_TYPE);
                 buffers.endBatch(AvaritiaShaders.COSMIC_HAND_AFTER_LEVEL_RENDER_TYPE);
                 iterator.remove();
             }
@@ -76,12 +83,14 @@ public final class CosmicItemLateRenderQueue {
             modelViewStack.popPose();
             RenderSystem.applyModelViewMatrix();
             LateShaderLayerState.finishMainTargetPass();
-            if (clearSkippedEntries) ENTRIES.clear();
+            if (clearSkippedEntries) {
+                ENTRIES.clear();
+            }
         }
     }
 
     private static boolean isFirstPersonHandContext(ItemDisplayContext context) {
-        return context == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || context == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND;
+        return context == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || context == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND || context == ItemDisplayContext.GUI;
     }
 
     private record Entry(CosmicBakeModel renderer, ItemStack stack, ItemDisplayContext context, Matrix4f pose, Matrix3f normal, Matrix4f modelView, Matrix4f projection, int packedLight, int packedOverlay, BakedModel model, RenderType renderType) {}

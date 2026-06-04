@@ -141,6 +141,16 @@ public abstract class CCUniform extends Uniform implements ICCUniform {
         public void setMat3x4(float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13, float m20, float m21, float m22, float m23) {
             glUniformF(true, m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23);
         }
+        @Override
+        public void setMatrix2x2Array(float[] values, int count) {
+            if (type != UniformType.MAT2) {
+                throw new IllegalStateException("Uniform '" + getName() + "' is not of type MAT2.");
+            }
+            if (values.length != count * 4) {
+                throw new IllegalArgumentException("Invalid size for mat2 array. Expected " + (count * 4) + " floats, got " + values.length + ".");
+            }
+            glUniformF(false, values);
+        }
 
         @Override
         public void setMat4x2(float m00, float m01, float m10, float m11, float m20, float m21, float m30, float m31) {

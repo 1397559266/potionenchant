@@ -25,6 +25,16 @@ public final class ItemShaderModCompat {
         }
     }
 
+    public static boolean shouldDeferItemShaderLayer(ItemDisplayContext context) {
+        if (!isOculusShaderPackActive()) {
+            return false;
+        }
+        return context != ItemDisplayContext.GUI;
+    }
+
+    /**
+     * 保留向后兼容
+     */
     public static boolean shouldDeferCosmicItemRendering() {
         return isOculusShaderPackActive();
     }

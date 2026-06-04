@@ -50,6 +50,10 @@ public interface ICCUniform {
 
     void glUniformD(boolean transpose, double... values);
 
+    default void setMatrix2x2Array(float[] values, int count) {
+        throw new UnsupportedOperationException("Not implemented.");
+    }
+
     private static float[] toArrayF(Matrix3f matrix) {
         return new float[]{matrix.m00, matrix.m01, matrix.m02, matrix.m10, matrix.m11, matrix.m12, matrix.m20, matrix.m21, matrix.m22,};
     }

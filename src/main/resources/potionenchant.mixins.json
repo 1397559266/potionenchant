@@ -31,7 +31,6 @@
   ],
   "client": [
     "ItemRendererMixin",
-    "GameRendererMixin",
     "PlayerRendererMixin",
     "PotionEnchantTooltipMixin",
     "PotionHudMixin",
@@ -41,7 +40,8 @@
     "XSwordTooltipFontMixin",
     "accessor.FontAccessor",
     "accessor.ShaderInstanceAccessor",
-    "accessor.UniformAccessor"
+    "accessor.UniformAccessor",
+    "CosmicAfterLevelMixin"
   ],
   "injectors": {
     "defaultRequire": 1
