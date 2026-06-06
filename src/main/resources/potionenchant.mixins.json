@@ -41,7 +41,8 @@
     "accessor.FontAccessor",
     "accessor.ShaderInstanceAccessor",
     "accessor.UniformAccessor",
-    "CosmicAfterLevelMixin"
+    "CosmicAfterLevelMixin",
+    "XSeriesItemRenderMixin"
   ],
   "injectors": {
     "defaultRequire": 1

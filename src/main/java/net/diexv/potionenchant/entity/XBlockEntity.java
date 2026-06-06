@@ -41,6 +41,7 @@ public class XBlockEntity extends Monster implements PowerableMob {
     private float swellAmount;
     private float oSwellAmount;
     private int bombTickCounter = 0;
+    private int lightningCooldown = 0;
 
     private static final double DAMAGE_RADIUS = 5.0;
     private static final double BOMB_SCAN_RADIUS = 50.0;
@@ -151,7 +152,7 @@ public class XBlockEntity extends Monster implements PowerableMob {
 
             // 每4tick扫描怪物并发射追踪Bomb
             bombTickCounter++;
-            if (bombTickCounter >= 4) {
+            if (bombTickCounter >= 40) {
                 bombTickCounter = 0;
                 fireBombAtNearestMonster();
             }
@@ -190,9 +191,9 @@ public class XBlockEntity extends Monster implements PowerableMob {
         bomb.setFiredByXBlock(true);
         bomb.setAttacking(true);
         bomb.setTarget(nearest);
-        bomb.setNoGravity(false);
-        bomb.noPhysics = false;
-        bomb.setDeltaMovement(new Vec3(0, -0.5, 0)); // 初始轻微下落速度
+        bomb.setNoGravity(true);
+        bomb.noPhysics = true;
+        // 不设初始速度，让 trackAndAttack() 从第一帧就开始追踪
         level().addFreshEntity(bomb);
     }
 
@@ -206,9 +207,13 @@ public class XBlockEntity extends Monster implements PowerableMob {
 
         LivingEntity blockOwner = this.getOwner();
 
+        lightningCooldown--;
+
         for (LivingEntity entity : entities) {
             if (!isHostileMob(entity)) continue;
-            spawnVisualLightning(entity.position());
+            if (lightningCooldown <= 0) {
+                spawnVisualLightning(entity.position());
+            }
             DamageSource damageSource = new DamageSource(
                 entity.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE)
                     .getHolderOrThrow(net.minecraft.world.damagesource.DamageTypes.FELL_OUT_OF_WORLD));
@@ -225,6 +230,9 @@ public class XBlockEntity extends Monster implements PowerableMob {
                 entity.hurt(damageSource, 1.0f * damageMultiplier);
             }
             entity.invulnerableTime = 0;
+        }
+        if (lightningCooldown <= 0 && !entities.isEmpty()) {
+            lightningCooldown = 20; // 每20 tick（1秒）最多生成一次闪电
         }
     }
 

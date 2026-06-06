@@ -1,10 +1,6 @@
 {
-  "loader": "potionenchant:cosmic",
   "parent": "item/generated",
   "textures": {
     "layer0": "potionenchant:item/armor/armorx_head"
-  },
-  "cosmic": {
-    "mask": "potionenchant:item/mask_x_helmet"
   }
 }

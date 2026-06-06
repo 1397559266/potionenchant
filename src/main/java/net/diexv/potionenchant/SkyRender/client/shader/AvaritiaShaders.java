@@ -85,6 +85,8 @@ public final class AvaritiaShaders {
                     .setLightmapState(RenderStateShardAccess.LIGHT_MAP)
                     .setTransparencyState(RenderStateShardAccess.TRANSLUCENT_TRANSPARENCY)
                     .setTextureState(RenderStateShardAccess.BLOCK_SHEET_MIPPED)
+                    .setCullState(RenderStateShardAccess.NO_CULL)
+                    .setWriteMaskState(RenderStateShardAccess.COLOR_WRITE)
                     .createCompositeState(true));
 
     // 延迟渲染类型（光影兼容，非手部物品在世界中显示）
@@ -127,6 +129,8 @@ public final class AvaritiaShaders {
                     .setCullState(RenderStateShardAccess.NO_CULL)
                     .setDepthTestState(RenderStateShardAccess.LEQUAL_DEPTH_TEST)
                     .setTextureState(RenderStateShardAccess.BLOCK_SHEET_MIPPED)
+                    .setCullState(RenderStateShardAccess.NO_CULL)
+                    .setWriteMaskState(RenderStateShardAccess.COLOR_WRITE)
                     .createCompositeState(true));
 
     @SuppressWarnings("removal")

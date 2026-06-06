@@ -1,6 +1,10 @@
 {
+  "loader": "potionenchant:cosmic",
   "parent": "item/handheld",
   "textures": {
     "layer0": "potionenchant:item/tool/axex"
+  },
+  "cosmic": {
+    "mask": "potionenchant:item/mask_x_axe"
   }
 }

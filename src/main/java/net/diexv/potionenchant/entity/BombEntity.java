@@ -25,6 +25,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.network.PlayMessages;
+import net.diexv.potionenchant.entity.RainbowLightningBolt;
 import net.diexv.potionenchant.event.ArmorXFeatureHandler;
 import net.diexv.potionenchant.util.XSwordTargetTracker;
 import net.diexv.potionenchant.mixin.accessor.LivingEntityAccessor;
@@ -185,6 +186,7 @@ public class BombEntity extends AbstractArrow implements PowerableMob {
             e -> !(e instanceof BombEntity) &&
                  !(e instanceof Player) &&
                  !(e instanceof XBlockEntity) &&
+                 !(e instanceof RainbowLightningBolt) &&
                  !(e instanceof net.minecraft.world.entity.item.ItemEntity) && !(e instanceof ExperienceOrb) &&
                  (owner == null || e != owner));
 
@@ -224,7 +226,10 @@ public class BombEntity extends AbstractArrow implements PowerableMob {
             if (owner != null) playerSpeed = owner.getDeltaMovement().length();
             this.setDeltaMovement(direction.scale(2.0 + playerSpeed));
         } else if (firedByXBlock) {
-            // XBlock发射的无目标Bomb：保持运动方向，飞行10格后扫描
+            // XBlock发射的无目标Bomb：立即扫描附近怪物
+            if (!level().isClientSide) {
+                scanAndAttackMonsters();
+            }
         } else {
             // 玩家发射但目标丢失：销毁
             this.discard();

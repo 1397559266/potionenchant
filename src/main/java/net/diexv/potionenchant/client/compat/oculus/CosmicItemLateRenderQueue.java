@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import net.diexv.potionenchant.SkyRender.client.model.CosmicBakeModel;
+import net.diexv.potionenchant.client.renderer.hyperlink.DeferredParticleQueue;
 import net.diexv.potionenchant.SkyRender.client.shader.AvaritiaShaders;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -50,6 +51,7 @@ public final class CosmicItemLateRenderQueue {
         }
 
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
+            DeferredParticleQueue.renderAll(buffers);
         Matrix4f previousProjection = new Matrix4f(RenderSystem.getProjectionMatrix());
         PoseStack modelViewStack = RenderSystem.getModelViewStack();
         modelViewStack.pushPose();
