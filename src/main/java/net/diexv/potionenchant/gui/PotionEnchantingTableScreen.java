@@ -280,6 +280,17 @@ public class PotionEnchantingTableScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
+        // 分类筛选按钮点击（使用原始屏幕坐标，categoryBar 渲染在 zoom 之前）
+        if (categoryBar.mouseClicked(mx, my)) {
+            if (targetItem.isEmpty()) {
+                regenerateOptions();
+            } else {
+                // 已选中物品时切换分类，保留物品但重新生成选项
+                selectedSlot = -1;
+                regenerateOptions();
+            }
+            return true;
+        }
         if (mx >= width - 32) {
             if (zoom.editBox.isMouseOver(mx, my)) { setFocused(zoom.editBox); return zoom.editBox.mouseClicked(mx, my, btn); }
             if (my >= 50 && my <= height - 20) { zoom.dragging = true; zoom.updateFromMouse(my, height); return true; }
@@ -434,3 +445,4 @@ public class PotionEnchantingTableScreen extends Screen {
         public BonusEffect(MobEffect e, int l) { effect = e; level = l; }
     }
 }
+

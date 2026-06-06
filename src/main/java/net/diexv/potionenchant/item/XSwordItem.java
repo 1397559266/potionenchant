@@ -2,9 +2,10 @@ package net.diexv.potionenchant.item;
 
 import net.diexv.potionenchant.util.DiexvClientItemExtensions;
 import net.diexv.potionenchant.util.XSwordTargetTracker;
+import net.diexv.potionenchant.util.font.DiexvFont;
 import net.diexv.potionenchant.util.font.DiexvFont3;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -275,7 +276,7 @@ public class XSwordItem extends SwordItem {
                 if (player != null && isSupermode(player.getUUID())) {
                     return DiexvFont3.getFont();
                 }
-                return Minecraft.getInstance().font;
+                return DiexvFont.getFont();
             }
         });
     }

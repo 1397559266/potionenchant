@@ -2,7 +2,8 @@ package net.diexv.potionenchant.event;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.math.Axis;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.diexv.potionenchant.item.ModItems;
 import net.minecraft.client.Minecraft;
@@ -12,7 +13,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.RenderGuiEvent;
+import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -36,9 +37,7 @@ public class DiexvEvents {
 	
 	// 万能药水附魔瓶环绕粒子
 	private static final List<OrbitParticle> ORBIT_PARTICLES = new ArrayList<>();
-	@SuppressWarnings("removal")
-	private static final ResourceLocation UNIVERSAL_BOTTLE_TEXTURE = new ResourceLocation(PotionEnchantMod.MODID, "textures/item/cosmic_23.png");
-	// 存储所有药水瓶的ItemStack
+// 存储所有药水瓶的ItemStack
 	private static final List<ItemStack> POTION_ITEMS = new ArrayList<>();
 	// 当前使用的药水瓶索引（用于循环）
 	private static int currentPotionIndex = 0;
@@ -49,10 +48,8 @@ public class DiexvEvents {
 	// 最大粒子数
 	private static final int MAX_PARTICLES = 50;
 	
-	// 中心瓶子旋转角度
-	private static float centerBottleAngle = 0f;
-	private static float centerBottlePrevAngle = 0f;
 	
+
 	// Tooltip显示状态追踪
 	private static boolean isMysteriousTooltipShowing = false;
 	private static boolean isUniversalTooltipShowing = false;
@@ -91,7 +88,7 @@ public class DiexvEvents {
 	}
 
 	@SubscribeEvent
-	public static void onRenderGuiPost(RenderGuiEvent.Post event) {
+	public static void onScreenRenderPost(ScreenEvent.Render.Post event) {
 		// 始终渲染粒子效果（包括tooltip显示时的淡入和关闭后的淡出）
 		Minecraft mc = Minecraft.getInstance();
 		
@@ -99,9 +96,12 @@ public class DiexvEvents {
 			GuiGraphics graphics = event.getGuiGraphics();
 			float partialTicks = mc.getFrameTime();
 			
-			// 使用极高的Z轴确保在所有GUI元素之上（包括物品栏阴影和tooltip）
+			// 先 flush 已有批次，确保屏幕内容已提交到 GPU
+			graphics.flush();
+			// 禁用深度测试，让粒子无视 z-level 直接画在最顶层
+			com.mojang.blaze3d.systems.RenderSystem.disableDepthTest();
 			graphics.pose().pushPose();
-			graphics.pose().translate(0, 0, 9999); // Z=9999确保绝对最顶层
+			graphics.pose().translate(0, 0, 0);
 			
 			if (mysteriousTooltipAlpha > 0.01f) {
 				for (GuiParticle particle : MYSTERIOUS_PARTICLES) {
@@ -113,7 +113,9 @@ public class DiexvEvents {
 				renderUniversalBottleAnimation(mc, graphics, partialTicks, universalTooltipAlpha);
 			}
 			
+			com.mojang.blaze3d.systems.RenderSystem.enableDepthTest();
 			graphics.pose().popPose();
+			graphics.flush();
 		}
 	}
 
@@ -158,12 +160,7 @@ public class DiexvEvents {
 			// 更新万能药水附魔瓶环绕粒子
 			updateOrbitParticles(mc, winW, winH);
 			
-			// 更新中心瓶子旋转角度
-			centerBottlePrevAngle = centerBottleAngle;
-			centerBottleAngle += 2.0f; // 每tick旋转2度
-			if (centerBottleAngle >= 360f) {
-				centerBottleAngle -= 360f;
-			}
+			
 		}
 	}
 	
@@ -403,41 +400,6 @@ public class DiexvEvents {
 			particle.draw(mc, graphics, centerX, centerY, partialTicks, globalAlpha);
 		}
 		
-		// 2. 渲染中心水平旋转的万能药水附魔瓶
-		poseStack.pushPose();
-		
-		// 移动到屏幕中心
-		poseStack.translate(centerX, centerY, 0);
-		
-		// 插值旋转角度
-		float renderAngle = centerBottlePrevAngle + (centerBottleAngle - centerBottlePrevAngle) * partialTicks;
-		
-		// 水平旋转（绕Y轴）
-		poseStack.mulPose(Axis.YP.rotationDegrees(renderAngle));
-		
-		// 缩放
-		float scale = 3.0f;
-		poseStack.scale(scale, scale, 1.0F);
-		
-		// 绘制万能药水附魔瓶 - 应用透明度
-		int[] imgSize = OrbitParticle.RES_SIZE_CACHE.computeIfAbsent(UNIVERSAL_BOTTLE_TEXTURE, (r) -> DiexvEventCore.getPngDimensions(r));
-		int imgWidth = imgSize[0];
-		int imgHeight = imgSize[1];
-		
-		// 居中绘制
-		poseStack.translate(-16f, -16f, 0);
-		
-		// 应用全局透明度
-		com.mojang.blaze3d.systems.RenderSystem.enableBlend();
-		com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
-		com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, globalAlpha);
-		
-		graphics.blit(UNIVERSAL_BOTTLE_TEXTURE, 0, 0, 0, 0, 32, 32, imgWidth, imgHeight);
-		
-		// 恢复颜色
-		com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-		com.mojang.blaze3d.systems.RenderSystem.disableBlend();
-		
-		poseStack.popPose();
+
 	}
 }

@@ -214,6 +214,22 @@ public class XSeriesItemRenderer extends BlockEntityWithoutLevelRenderer {
             }
         }
 
+        public Particle(ItemStack stack, ResourceLocation tex) {
+            this.stack = stack;
+            this.made = Util.getMillis();
+            this.age = RANDOM.nextInt(500, 1000);
+            this.particleDelay = RANDOM.nextLong(0, 10000000);
+            this.tintColor = generateBluePinkColor(RANDOM);
+            double angle = Math.toRadians(RANDOM.nextInt(360));
+            this.x = Math.cos(angle) * 0.4;
+            this.y = Math.sin(angle) * 0.4;
+            this.xRot = RANDOM.nextFloat(-180, 180);
+            this.yRot = RANDOM.nextFloat(-180, 180);
+            this.zRot = RANDOM.nextFloat(-180, 180);
+            this.texture = tex;
+        }
+
+
         public boolean render(ItemStack stack, ItemDisplayContext context,
                               PoseStack poseStack, MultiBufferSource bufferSource,
                               int light, int overlay) {
@@ -265,3 +281,4 @@ public class XSeriesItemRenderer extends BlockEntityWithoutLevelRenderer {
         return rand.nextInt(0xFFFFFF);
     }
 }
+

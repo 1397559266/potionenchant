@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.ForgeHooksClient;
 import org.spongepowered.asm.mixin.Mixin;
@@ -55,12 +56,8 @@ public abstract class ItemRendererMixin {
                 renderer.renderItem(stack, context, mStack, buffers, packedLight, packedOverlay);
 
                 // X 系列粒子特效
-                if (isXSeries(stack)) {
-                    for (int count = 0; count < 2; count++) {
-                        if (RANDOM.nextInt(200) == 0) {
-                            xSeriesParticles.add(new XSeriesItemRenderer.Particle(stack));
-                        }
-                    }
+                if (shouldSpawnParticles(stack)) {
+                    spawnItemParticles(stack);
 
                     if (cosmicDeferred) {
                         // Oculus 模式下：粒子入延迟队列，与星空一起渲染
@@ -106,6 +103,41 @@ public abstract class ItemRendererMixin {
     @Inject(method = "render", at = @At("RETURN"))
     public void onRenderItemReturn(ItemStack stack, ItemDisplayContext context, boolean leftHand, PoseStack mStack, MultiBufferSource buffers, int packedLight, int packedOverlay, BakedModel modelIn, CallbackInfo ci) {
         ItemRenderCompatibilityContext.endItemRender();
+    }
+
+    @Unique
+    private static ResourceLocation getParticleTextureForItem(ItemStack stack) {
+        if (stack.isEmpty()) return null;
+        var item = stack.getItem();
+        if (item == ModItems.UNIVERSAL_POTION_BOTTLE.get())
+            return new ResourceLocation("potionenchant", "textures/item/universal_potion_bottle.png");
+        if (item == ModItems.UNIVERSAL_ENCHANTMENT_BOOK.get())
+            return new ResourceLocation("potionenchant", "textures/item/universal_enchantment_book.png");
+        if (item == ModItems.MYSTERIOUS_EMPTY_BOTTLE.get())
+            return new ResourceLocation("potionenchant", "textures/item/mysterious_empty_bottle.png");
+        if (item == ModItems.ULTIMATE_POTION_AMULET.get())
+            return new ResourceLocation("potionenchant", "textures/item/ultimate_potion_amulet.png");
+        return null;
+    }
+
+    @Unique
+    private static boolean shouldSpawnParticles(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        return isXSeries(stack) || getParticleTextureForItem(stack) != null;
+    }
+
+    @Unique
+    private void spawnItemParticles(ItemStack stack) {
+        for (int count = 0; count < 2; count++) {
+            if (RANDOM.nextInt(200) == 0) {
+                ResourceLocation tex = getParticleTextureForItem(stack);
+                if (tex != null) {
+                    xSeriesParticles.add(new XSeriesItemRenderer.Particle(stack, tex));
+                } else {
+                    xSeriesParticles.add(new XSeriesItemRenderer.Particle(stack));
+                }
+            }
+        }
     }
 
     @Unique

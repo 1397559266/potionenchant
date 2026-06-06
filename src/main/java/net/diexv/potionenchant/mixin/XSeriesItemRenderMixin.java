@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -53,7 +54,7 @@ public abstract class XSeriesItemRenderMixin {
                              PoseStack poseStack, MultiBufferSource buffer,
                              int combinedLight, int combinedOverlay, BakedModel model,
                              CallbackInfo ci) {
-        if (!isXSeries(stack)) return;
+        if (!shouldSpawnParticles(stack)) return;
 
         long millis = Util.getMillis();
         double cycle = millis % 20000;
@@ -101,14 +102,10 @@ public abstract class XSeriesItemRenderMixin {
                               PoseStack poseStack, MultiBufferSource buffer,
                               int combinedLight, int combinedOverlay, BakedModel model,
                               CallbackInfo ci) {
-        if (!isXSeries(stack)) return;
+        if (!shouldSpawnParticles(stack)) return;
 
         // 生成粒子
-        for (int count = 0; count < 2; count++) {
-            if (RANDOM.nextInt(200) == 0) {
-                xSeriesParticles.add(new XSeriesItemRenderer.Particle(stack));
-            }
-        }
+        spawnItemParticles(stack);
 
         // 渲染粒子（保持在物品上方）
         PolygonRenderer.with(poseStack, () -> {
@@ -119,6 +116,41 @@ public abstract class XSeriesItemRenderMixin {
             }
             xSeriesParticles.removeIf(p -> p.render(stack, context, poseStack, buffer, combinedLight, combinedOverlay));
         });
+    }
+
+    @Unique
+    private static ResourceLocation getParticleTextureForItem(ItemStack stack) {
+        if (stack.isEmpty()) return null;
+        var item = stack.getItem();
+        if (item == ModItems.UNIVERSAL_POTION_BOTTLE.get())
+            return new ResourceLocation("potionenchant", "textures/item/universal_potion_bottle.png");
+        if (item == ModItems.UNIVERSAL_ENCHANTMENT_BOOK.get())
+            return new ResourceLocation("potionenchant", "textures/item/universal_enchantment_book.png");
+        if (item == ModItems.MYSTERIOUS_EMPTY_BOTTLE.get())
+            return new ResourceLocation("potionenchant", "textures/item/mysterious_empty_bottle.png");
+        if (item == ModItems.ULTIMATE_POTION_AMULET.get())
+            return new ResourceLocation("potionenchant", "textures/item/ultimate_potion_amulet.png");
+        return null;
+    }
+
+    @Unique
+    private static boolean shouldSpawnParticles(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        return isXSeries(stack) || getParticleTextureForItem(stack) != null;
+    }
+
+    @Unique
+    private void spawnItemParticles(ItemStack stack) {
+        for (int count = 0; count < 2; count++) {
+            if (RANDOM.nextInt(200) == 0) {
+                ResourceLocation tex = getParticleTextureForItem(stack);
+                if (tex != null) {
+                    xSeriesParticles.add(new XSeriesItemRenderer.Particle(stack, tex));
+                } else {
+                    xSeriesParticles.add(new XSeriesItemRenderer.Particle(stack));
+                }
+            }
+        }
     }
 
     @Unique

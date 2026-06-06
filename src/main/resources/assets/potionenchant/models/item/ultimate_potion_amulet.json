@@ -1,6 +1,10 @@
 {
+  "loader": "potionenchant:cosmic",
   "parent": "item/generated",
   "textures": {
     "layer0": "potionenchant:item/ultimate_potion_amulet"
+  },
+  "cosmic": {
+    "mask": "potionenchant:item/mask_ultimate_potion_amulet"
   }
 }

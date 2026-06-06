@@ -48,7 +48,7 @@ public abstract class TooltipColorMixin {
         }
 
         // 药水物品: 白色边框
-        if (isPotionItem(stack)) {
+        if (isPotionItem(stack) || isXSeriesItem(stack)) {
             cir.setReturnValue(WHITE_COLOR);
         }
     }
@@ -67,7 +67,7 @@ public abstract class TooltipColorMixin {
             }
         }
 
-        if (isPotionItem(stack)) {
+        if (isPotionItem(stack) || isXSeriesItem(stack)) {
             cir.setReturnValue(WHITE_COLOR);
         }
     }
@@ -88,7 +88,7 @@ public abstract class TooltipColorMixin {
             }
         }
 
-        if (isPotionItem(stack)) {
+        if (isPotionItem(stack) || isXSeriesItem(stack)) {
             cir.setReturnValue(TRANSPARENT_COLOR);
         }
     }
@@ -107,7 +107,7 @@ public abstract class TooltipColorMixin {
             }
         }
 
-        if (isPotionItem(stack)) {
+        if (isPotionItem(stack) || isXSeriesItem(stack)) {
             cir.setReturnValue(TRANSPARENT_COLOR);
         }
     }
@@ -118,7 +118,22 @@ public abstract class TooltipColorMixin {
     private static boolean isPotionItem(ItemStack stack) {
         return stack.getItem() == ModItems.ULTIMATE_POTION_AMULET.get() ||
                stack.getItem() == ModItems.MYSTERIOUS_EMPTY_BOTTLE.get() ||
-               stack.getItem() == ModItems.UNIVERSAL_POTION_BOTTLE.get();
+               stack.getItem() == ModItems.UNIVERSAL_POTION_BOTTLE.get() ||
+               stack.getItem() == ModItems.UNIVERSAL_ENCHANTMENT_BOOK.get();
+    }
+
+    @Unique
+    private static boolean isXSeriesItem(ItemStack stack) {
+        var item = stack.getItem();
+        return item == ModItems.X_SWORD.get() ||
+               item == ModItems.X_PICKAXE.get() ||
+               item == ModItems.X_AXE.get() ||
+               item == ModItems.X_SHOVEL.get() ||
+               item == ModItems.X_HOE.get() ||
+               item == ModItems.X_HELMET.get() ||
+               item == ModItems.X_CHESTPLATE.get() ||
+               item == ModItems.X_LEGGINGS.get() ||
+               item == ModItems.X_BOOTS.get();
     }
 
     @Unique
