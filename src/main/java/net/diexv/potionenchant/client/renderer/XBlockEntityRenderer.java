@@ -12,7 +12,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 
 /**
- * XBlock 实体渲染器 — 使用 Hyperlink 风格的红色半透明立方体
+ * XBlock 实体渲染器 — 使用 Hyperlink 风格的蓝色半透明立方体
  */
 public class XBlockEntityRenderer extends EntityRenderer<XBlockEntity> {
 
@@ -35,21 +35,21 @@ public class XBlockEntityRenderer extends EntityRenderer<XBlockEntity> {
 
             AABB aabb = new AABB(-1, -1, -1, 1, 1, 1);
 
-            // 红色半透明填充立方体
+            // 蓝色半透明填充立方体
             PolygonRenderer.cubeBox(
                     poseStack.last().pose(),
                     buffer.getBuffer(PolygonRenderer.RenderTypes.LIGHTNING_NO_CULL),
                     aabb,
-                    0x60FF4444,
+                    0x604444FF,
                     face -> true);
 
-            // 亮红色线框
+            // 亮蓝色线框
             PolygonRenderer.thickLineBoxBox(
                     poseStack.last().pose(),
                     buffer.getBuffer(PolygonRenderer.RenderTypes.LIGHTNING_NO_CULL),
                     aabb.inflate(0.05f),
                     0.03f,
-                    0xAAFF8888);
+                    0xAA8888FF);
 
             PolygonRenderer.endBatch(PolygonRenderer.RenderTypes.LIGHTNING_NO_CULL);
         });

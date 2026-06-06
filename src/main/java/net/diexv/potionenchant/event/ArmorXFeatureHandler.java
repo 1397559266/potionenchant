@@ -622,6 +622,11 @@ public class ArmorXFeatureHandler {
         }
         
         // 检查是否是Monster接口实现
+        // XBlock 是玩家友方单位，不锁定为目标
+        if (entity instanceof net.diexv.potionenchant.entity.XBlockEntity) {
+            return false;
+        }
+        
         if (entity instanceof net.minecraft.world.entity.monster.Monster) {
             return true;
         }
@@ -865,3 +870,4 @@ public class ArmorXFeatureHandler {
     }
 
 }
+

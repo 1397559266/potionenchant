@@ -68,12 +68,12 @@ public class XArmorPowerLayer extends RenderLayer<AbstractClientPlayer, Humanoid
         PolygonRenderer.with(poseStack, () -> {
             poseStack.translate(0, -0.5, 0);
             
-            // 半透明填充立方体（红色半透明）
+            // 半透明填充立方体（蓝色半透明）
             PolygonRenderer.cubeBox(
                     poseStack.last().pose(),
                     buffer.getBuffer(PolygonRenderer.RenderTypes.HIGHLIGHT),
                     playerBox,
-                    (int)(0x30 * pulse) << 24 | 0xFF4444,
+                    (int)(0x30 * pulse) << 24 | 0x4444FF,
                     dir -> true);
 
             // 厚边框（青色）
@@ -82,7 +82,7 @@ public class XArmorPowerLayer extends RenderLayer<AbstractClientPlayer, Humanoid
                     buffer.getBuffer(PolygonRenderer.RenderTypes.HIGHLIGHT),
                     playerBox.inflate(0.1f),
                     0.04f,
-                    (int)(0x80 * pulse) << 24 | 0x44FFFF);
+                    (int)(0x80 * pulse) << 24 | 0x8888FF);
         });
 
         PolygonRenderer.endBatch(PolygonRenderer.RenderTypes.LIGHTNING_NO_CULL);
@@ -101,3 +101,4 @@ public class XArmorPowerLayer extends RenderLayer<AbstractClientPlayer, Humanoid
                !boots.isEmpty() && boots.getItem() == ModItems.X_BOOTS.get();
     }
 }
+

@@ -28,7 +28,6 @@ import net.diexv.potionenchant.util.XSwordTargetTracker;
 import net.diexv.potionenchant.mixin.accessor.LivingEntityAccessor;
 import net.diexv.potionenchant.event.ArmorXFeatureHandler;
 
-import java.util.Comparator;
 import java.util.List;
 
 public class XBlockEntity extends Monster implements PowerableMob {
@@ -40,11 +39,9 @@ public class XBlockEntity extends Monster implements PowerableMob {
     private int oldSwelling;
     private float swellAmount;
     private float oSwellAmount;
-    private int bombTickCounter = 0;
     private int lightningCooldown = 0;
 
     private static final double DAMAGE_RADIUS = 5.0;
-    private static final double BOMB_SCAN_RADIUS = 50.0;
 
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes()
@@ -150,52 +147,12 @@ public class XBlockEntity extends Monster implements PowerableMob {
         if (!level().isClientSide) {
             dealDamageToNearbyMobs();
 
-            // 每4tick扫描怪物并发射追踪Bomb
-            bombTickCounter++;
-            if (bombTickCounter >= 40) {
-                bombTickCounter = 0;
-                fireBombAtNearestMonster();
-            }
         }
 
         updateSwelling();
     }
 
     // 扫描50格内最近的怪物，在其上方10格生成追踪Bomb
-    private void fireBombAtNearestMonster() {
-        LivingEntity owner = this.getOwner();
-        if (owner == null) return;
-        var bombType = ModEntities.BOMB.get();
-        if (bombType == null) return;
-
-        Vec3 center = this.position();
-        AABB scanArea = new AABB(
-            center.x - BOMB_SCAN_RADIUS, center.y - BOMB_SCAN_RADIUS, center.z - BOMB_SCAN_RADIUS,
-            center.x + BOMB_SCAN_RADIUS, center.y + BOMB_SCAN_RADIUS, center.z + BOMB_SCAN_RADIUS);
-        List<LivingEntity> monsters = level().getEntitiesOfClass(LivingEntity.class, scanArea,
-            e -> e instanceof Monster && e.isAlive()
-                 && !(e instanceof XBlockEntity) && e != owner
-                 && e.distanceToSqr(this) <= BOMB_SCAN_RADIUS * BOMB_SCAN_RADIUS);
-
-        if (monsters.isEmpty()) return;
-
-        // 找最近的怪物
-        LivingEntity nearest = monsters.stream()
-            .min(Comparator.comparingDouble(e -> e.distanceToSqr(this)))
-            .orElse(null);
-        if (nearest == null) return;
-
-        // 在怪物上方10格生成Bomb
-        BombEntity bomb = new BombEntity(bombType, nearest.getX(), nearest.getY() + 10.0, nearest.getZ(), level());
-        bomb.setOwner(owner);
-        bomb.setFiredByXBlock(true);
-        bomb.setAttacking(true);
-        bomb.setTarget(nearest);
-        bomb.setNoGravity(true);
-        bomb.noPhysics = true;
-        // 不设初始速度，让 trackAndAttack() 从第一帧就开始追踪
-        level().addFreshEntity(bomb);
-    }
 
     private void dealDamageToNearbyMobs() {
         Vec3 center = this.position();
@@ -299,3 +256,4 @@ public class XBlockEntity extends Monster implements PowerableMob {
         else { this.entityData.set(DATA_TARGET_ID, 0); }
     }
 }
+
