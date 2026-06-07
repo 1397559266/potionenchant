@@ -8,6 +8,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.language.I18n;
 
 public class CategoryBar {
+    private boolean visible = true;
     private final String[] categories;
     private final String prefix;
     private String currentFilter;
@@ -39,6 +40,9 @@ public class CategoryBar {
             btnPositions[i][3] = btnH;
         }
     }
+
+    public void setVisible(boolean v) { this.visible = v; }
+    public boolean isVisible() { return visible; }
 
     public String getFilter() { return currentFilter; }
     public void setFilter(String f) { currentFilter = f; scrollOffset = 0; }

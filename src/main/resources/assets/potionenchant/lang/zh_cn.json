@@ -1,10 +1,7 @@
 {
   "block.potionenchant.potion_enchanting_table": "药水附魔台",
-
   "container.potionenchant.potion_enchanting": "药水附魔",
-
   "itemGroup.potionenchant": "药水附魔",
-
   "item.potionenchant.mysterious_empty_bottle": "神秘的空瓶",
   "item.potionenchant.mysterious_empty_bottle.tooltip": "§7合成配方: 8颗钻石围绕玻璃瓶",
   "item.potionenchant.mysterious_empty_bottle.tooltip2": "§7右键使用获得随机药水",
@@ -27,7 +24,6 @@
   "item.potionenchant.x_sword.normal": "普通模式",
   "item.potionenchant.x_sword.supermode": "Super模式",
   "item.potionenchant.x_sword.supermode_active": "Super模式已激活",
-
   "item.minecraft.enchanted_book": "附魔书",
   "item.minecraft.lingering_potion.effect.agility": "滞留型敏捷药水",
   "item.minecraft.lingering_potion.effect.armor_break": "滞留型破甲药水",
@@ -233,7 +229,6 @@
   "item.minecraft.tipped_arrow.effect.strong_vulnerability": "易伤之箭",
   "item.minecraft.tipped_arrow.effect.void_power": "虚空之力之箭",
   "item.minecraft.tipped_arrow.effect.vulnerability": "易伤之箭",
-
   "effect.potionenchant.agility": "敏捷",
   "effect.potionenchant.agility.description": "实体冲刺时速度提高，攻击速度提高；冲刺速度每级提高30%%，攻击速度每级提高50%%",
   "effect.potionenchant.armor_break": "破甲",
@@ -256,8 +251,7 @@
   "item.minecraft.splash_potion.effect.long_grudge": "喷溅型恩怨药水",
   "item.minecraft.lingering_potion.effect.long_grudge": "滞留型恩怨药水",
   "item.minecraft.tipped_arrow.effect.long_grudge": "恩怨之箭",
-
-"effect.potionenchant.magic_resistance": "魔法抗性",
+  "effect.potionenchant.magic_resistance": "魔法抗性",
   "effect.potionenchant.magic_resistance.description": "降低受到的魔法伤害，每级降低10%%，最高90%%",
   "effect.potionenchant.mending": "修补",
   "effect.potionenchant.mending.description": "修补实体物品栏内物品的耐久，每级每秒修补1*药水等级%%的耐久",
@@ -279,7 +273,6 @@
   "effect.potionenchant.void_power.description": "使实体能额外造成虚空伤害，每级增加10%%当前总伤害的额外虚空伤害",
   "effect.potionenchant.vulnerability": "易伤",
   "effect.potionenchant.vulnerability.description": "使实体受到的伤害提高，每级提高50%%",
-
   "enchantment.potionenchant.advanced_mending": "高级经验修补",
   "enchantment.potionenchant.advanced_mending.desc": "吸取经验修复物品耐久度，效率是普通经验修补的两倍",
   "enchantment.potionenchant.advanced_power": "高级力量",
@@ -318,7 +311,6 @@
   "enchantment.potionenchant.tracking_arrow.desc": "射出的箭矢会自动追踪目标",
   "enchantment.potionenchant.wither_aspect": "凋零附加",
   "enchantment.potionenchant.wither_aspect.desc": "使敌人获得凋零效果",
-
   "gui.potionenchant.already_enchanted": "无法附魔",
   "gui.potionenchant.applied": "§a已成功应用药水效果: %s",
   "gui.potionenchant.armor_features": "护甲功能",
@@ -369,7 +361,7 @@
   "gui.potionenchant.no_target": "请从右侧背包选择目标物品",
   "gui.potionenchant.not_enough_bottles": "§c瓶子不足！需要 %d 个，但只有 %d 个",
   "gui.potionenchant.player_level": "玩家等级: %s",
-  "gui.potionenchant.power": "炼药设备: %s/3",
+  "gui.potionenchant.power": "功率: %d",
   "gui.potionenchant.refresh": "刷新列表",
   "gui.potionenchant.refresh_cost": "3 级经验",
   "gui.potionenchant.removed": "已移除",
@@ -387,7 +379,7 @@
   "gui.potionenchant.total_xp_cost": "总计经验消耗: %s",
   "gui.potionenchant.universal_enchantment_book": "选择附魔",
   "gui.potionenchant.universal_potion_bottle": "选择药水效果",
-  "gui.potionenchant.unknown": "?",
+  "gui.potionenchant.unknown": "???",
   "gui.potionenchant.upgrade.bottles_available": "可用药水瓶: %d",
   "gui.potionenchant.upgrade.level_info": "等级: %d  增伤: %d%%",
   "gui.potionenchant.upgrade.preview": "→ 等级: %d  增伤: %d%%",
@@ -397,14 +389,10 @@
   "gui.potionenchant.xp": "经验",
   "gui.potionenchant.xp_cost": "%s 级经验",
   "gui.potionenchant.zoom": "缩放",
-
   "command.potionenchant.armorx.not_full_set": "§c你必须穿着全套X护甲才能使用此命令！",
   "command.potionenchant.armorx.open_gui": "§a已打开X护甲控制面板",
-
   "key.potionenchant.armorx_control": "X护甲控制",
-
   "category.potionenchant.armorx": "药水附魔 - X护甲",
-
   "config.potionenchant.allow_enchant_level_beyond_cap": "允许普通附魔突破原版等级上限",
   "config.potionenchant.allow_enchant_level_beyond_cap.tooltip": "启用后，通过万能附魔书应用的附魔等级无上限（可突破255级）。需要重启游戏。",
   "config.potionenchant.allow_potion_level_beyond_255": "允许药水附魔突破255级上限",
@@ -418,6 +406,10 @@
   "config.potionenchant.custom_potion_hud": "自定义药水HUD",
   "config.potionenchant.custom_potion_hud.tooltip": "启用自定义药水效果HUD（文字显示替代图标），默认关闭",
   "config.potionenchant.discoverable_in_enchanting_table": "附魔可通过附魔台获取",
+  "config.potionenchant.enchant_book_chest_loot": "附魔书可通过宝箱获取",
+  "config.potionenchant.enchant_book_chest_loot.tooltip": "启用后，本模组的附魔书可以通过宝箱战利品获取。默认开启",
+  "config.potionenchant.enchant_book_villager_trades": "附魔书可通过村民交易获取",
+  "config.potionenchant.enchant_book_villager_trades.tooltip": "启用后，本模组的附魔书可以通过村民交易获取。默认开启",
   "config.potionenchant.discoverable_in_enchanting_table.tooltip": "启用后，本模组的附魔可以通过原版附魔台获取。默认关闭",
   "config.potionenchant.enable_all_potion_description": "显示所有模组药水描述",
   "config.potionenchant.enable_all_potion_description.tooltip": "尝试显示所有模组药水的描述，需要语言文件键：effect.xxx.xxx.description",
@@ -456,7 +448,6 @@
   "config.potionenchant.title": "药水附魔配置",
   "config.potionenchant.ultimate_potion_amulet_loot_chance": "终极药水护符战利品生成概率",
   "config.potionenchant.ultimate_potion_amulet_loot_chance.tooltip": "终极药水护符在战利品表中的生成概率（0-100%%），0表示不生成，100表示满足条件时必定生成。支持所有模组的宝箱战利品表",
-
   "tooltip.potionenchant.damage_storage.stored": "已储存伤害:",
   "tooltip.potionenchant.duration": "持续时间",
   "tooltip.potionenchant.level": "等级",
@@ -464,12 +455,9 @@
   "tooltip.potionenchant.scroll_hint": "§7Shift + 滚轮",
   "tooltip.potionenchant.separator": "§7─────────────",
   "tooltip.potionenchant.ultimate_potion_amulet": "一个强大的护符，可以容纳无限的药水附魔",
-
   "tooltip.plentyofenchant.damage_storage.stored": "已储存伤害:",
-
   "tooltip.potion.duration": "持续时间",
   "tooltip.potion.level": "等级",
-
   "message.potionenchant.damage_storage.released": "释放了 %s 储存伤害!",
   "message.potionenchant.damage_storage.stored": "伤害储存:",
   "message.potionenchant.enchant_book.applied": "§a成功应用 %s 等级 %d！",
@@ -480,9 +468,19 @@
   "message.potionenchant.enchant_book.removed": "§e已移除附魔: %s",
   "message.potionenchant.reforge_final": "§6%s§r 触发了最后一次重铸效果！重铸附魔已耗尽",
   "message.potionenchant.reforge_triggered": "§6%s§r 触发了重铸效果！剩余重铸等级：%d",
-
   "message.plentyofenchant.damage_storage.released": "释放了 %s 储存伤害!",
   "message.plentyofenchant.damage_storage.stored": "伤害储存:",
   "message.plentyofenchant.reforge_final": "§6%s§r 触发了最后一次重铸效果！重铸附魔已耗尽",
-  "message.plentyofenchant.reforge_triggered": "§6%s§r 触发了重铸效果！剩余重铸等级：%d"
+  "message.plentyofenchant.reforge_triggered": "§6%s§r 触发了重铸效果！剩余重铸等级：%d",
+  "block.potionenchant.ultimate_potion_table": "终极药水附魔台",
+  "block.potionenchant.ultimate_enchant_table": "终极附魔台",
+  "gui.potionenchant.not_enough_xp": "经验值不足！",
+  "gui.potionenchant.not_enough_xp_table": "经验值不足！需要 %s 点，当前 %s 点",
+  "container.potionenchant.ultimate_enchant_table": "终极附魔台",
+  "gui.potionenchant.select_item": "选择一个物品",
+  "gui.potionenchant.current_xp": "当前经验值: %s",
+  "gui.potionenchant.cost_xp": "消耗: %s 经验值",
+  "gui.potionenchant.mode_potion": "药水",
+  "gui.potionenchant.mode_enchant": "附魔",
+  "gui.potionenchant.level": "等级"
 }

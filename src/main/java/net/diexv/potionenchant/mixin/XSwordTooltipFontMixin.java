@@ -2,7 +2,7 @@ package net.diexv.potionenchant.mixin;
 
 import net.diexv.potionenchant.item.ModItems;
 import net.diexv.potionenchant.item.XSwordItem;
-import net.diexv.potionenchant.util.font.DiexvFont3;
+import net.diexv.potionenchant.client.font.DiexvFont3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;

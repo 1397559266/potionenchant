@@ -44,6 +44,9 @@ public class ModCreativeModeTabs {
                         // 添加药水附魔台
                         output.accept(ModItems.POTION_ENCHANTING_TABLE.get());
 
+                        // 添加终极附魔台
+                        output.accept(ModItems.ULTIMATE_ENCHANT_TABLE.get());
+
                         // 添加X套装护甲
                         output.accept(ModItems.X_HELMET.get());
                         output.accept(ModItems.X_CHESTPLATE.get());

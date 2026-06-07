@@ -136,6 +136,7 @@ public class PotionEnchantMod {
         EnchantBookPacketHandler.register();
         ArmorXPacketHandler.register();
         net.diexv.potionenchant.network.PotionEnchantTableNetwork.register();
+        net.diexv.potionenchant.network.UltimateTableNetwork.register();
         // 注册事件处理器（服务端和客户端通用）
         // 注册移植附魔的事件处理器
         MinecraftForge.EVENT_BUS.register(new net.diexv.potionenchant.handlers.EnchantmentEventHandler());
@@ -173,6 +174,7 @@ public class PotionEnchantMod {
     private void clientSetup(net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent event) {
         // 注册药水附魔台方块实体渲染器
         net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(net.diexv.potionenchant.blockentity.ModBlockEntities.POTION_ENCHANTING_TABLE.get(), net.diexv.potionenchant.render.PotionEnchantingTableRenderer::new);
+        net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(net.diexv.potionenchant.blockentity.ModBlockEntities.ULTIMATE_ENCHANT_TABLE.get(), net.diexv.potionenchant.render.UltimateEnchantTableRenderer::new);
 
         event.enqueueWork(() -> {
             ItemProperties.register(

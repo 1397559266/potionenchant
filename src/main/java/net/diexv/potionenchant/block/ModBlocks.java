@@ -20,4 +20,11 @@ public class ModBlocks {
             .strength(5.0F, 1200.0F)
             .requiresCorrectToolForDrops()
             .noOcclusion()));
+
+    public static final RegistryObject<Block> ULTIMATE_ENCHANT_TABLE = BLOCKS.register("ultimate_enchant_table",
+        () -> new UltimateEnchantTableBlock(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.COLOR_BLUE)
+            .strength(5.0F, 1200.0F)
+            .requiresCorrectToolForDrops()
+            .noOcclusion()));
 }

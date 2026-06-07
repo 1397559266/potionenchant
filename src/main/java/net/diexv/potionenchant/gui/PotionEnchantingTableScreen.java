@@ -1,6 +1,7 @@
 package net.diexv.potionenchant.gui;
 
 import net.diexv.potionenchant.config.PotionEnchantConfig;
+import net.diexv.potionenchant.data.BonusEffect;
 import net.diexv.potionenchant.data.PotionEnchantData;
 import net.diexv.potionenchant.network.PotionEnchantTableNetwork;
 import net.diexv.potionenchant.util.PotionEnchantManager;
@@ -389,10 +390,11 @@ public class PotionEnchantingTableScreen extends Screen {
     }
 
     @Override public void onClose() {
-        if (Minecraft.getInstance().player != null) Minecraft.getInstance().player.closeContainer();
         zoom.saveToConfig();
+        if (Minecraft.getInstance().player != null) Minecraft.getInstance().player.closeContainer();
         super.onClose();
     }
+    @Override public void removed() { zoom.saveToConfig(); super.removed(); }
     @Override public boolean mouseScrolled(double mx, double my, double delta) {
         if (mx >= width - 32) { zoom.scroll(delta); return true; }
         double zmx = zoom.mx(mx, width);
@@ -440,9 +442,5 @@ public class PotionEnchantingTableScreen extends Screen {
         return switch (n) { case 1 -> "I"; case 2 -> "II"; case 3 -> "III"; case 4 -> "IV"; case 5 -> "V"; default -> String.valueOf(n); };
     }
 
-    public static class BonusEffect {
-        public final MobEffect effect; public final int level;
-        public BonusEffect(MobEffect e, int l) { effect = e; level = l; }
-    }
 }
 

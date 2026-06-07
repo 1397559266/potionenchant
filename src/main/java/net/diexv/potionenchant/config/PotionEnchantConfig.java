@@ -54,11 +54,14 @@ public class PotionEnchantConfig {
         public final ForgeConfigSpec.IntValue ultimatePotionAmuletLootChance;
         
         public final ForgeConfigSpec.IntValue maxPotionEnchantLevel;
+        public final ForgeConfigSpec.IntValue ultimateTableXpCostPerLevel;
         
         public final ForgeConfigSpec.BooleanValue allowPotionLevelBeyond255;
     public final ForgeConfigSpec.BooleanValue allowEnchantLevelBeyondCap;
         public final ForgeConfigSpec.IntValue enchantBookXpCost;
         public final ForgeConfigSpec.BooleanValue discoverableInEnchantingTable;
+        public final ForgeConfigSpec.BooleanValue enchantBookChestLoot;
+        public final ForgeConfigSpec.BooleanValue enchantBookVillagerTrades;
 
         public CommonConfig(ForgeConfigSpec.Builder builder) {
             builder.comment("Potion Enchant Configuration")
@@ -121,6 +124,12 @@ public class PotionEnchantConfig {
                             "Default: 10")
                     .defineInRange("max_potion_enchant_level", 10, 1, 255);
             
+            ultimateTableXpCostPerLevel = builder
+                    .comment("XP points cost per level for the Ultimate Potion Enchanting Table",
+                            "终极药水附魔台每级消耗的经验值点数",
+                            "Default: 1000")
+                    .defineInRange("ultimate_table_xp_cost_per_level", 1000, 1, 99999999);
+            
             allowPotionLevelBeyond255 = builder
                     .comment("Allow potion enchantment levels to exceed vanilla limit of 255",
                             "允许药水附魔等级突破原版255级上限",
@@ -152,6 +161,20 @@ public class PotionEnchantConfig {
                             "本模组的附魔是否能通过原版附魔台获取",
                             "Default: false (关闭)")
                     .define("discoverable_in_enchanting_table", false);
+
+            enchantBookChestLoot = builder
+                    .comment("",
+                            "Whether mod enchantment books can appear in chest loot",
+                            "本模组的附魔书是否能通过箱子获取",
+                            "Default: true (开启)")
+                    .define("enchant_book_chest_loot", true);
+
+            enchantBookVillagerTrades = builder
+                    .comment("",
+                            "Whether mod enchantment books can be obtained via villager trading",
+                            "本模组的附魔书是否能通过村民交易获取",
+                            "Default: true (开启)")
+                    .define("enchant_book_villager_trades", true);
 
             builder.pop();
 
@@ -306,6 +329,7 @@ public class PotionEnchantConfig {
         // 例如：清除缓存、重新计算黑名单等
     }
 }
+
 
 
 

@@ -1,9 +1,9 @@
 package net.diexv.potionenchant.item;
 
-import net.diexv.potionenchant.util.DiexvClientItemExtensions;
+import net.diexv.potionenchant.client.DiexvClientItemExtensions;
 import net.diexv.potionenchant.util.XSwordTargetTracker;
-import net.diexv.potionenchant.util.font.DiexvFont;
-import net.diexv.potionenchant.util.font.DiexvFont3;
+import net.diexv.potionenchant.client.font.DiexvFont;
+import net.diexv.potionenchant.client.font.DiexvFont3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -82,10 +82,15 @@ public class XSwordItem extends SwordItem {
         return false;
     }
 
+    @OnlyIn(Dist.CLIENT)
+    private boolean isLocalPlayerInSupermode() {
+        Player player = Minecraft.getInstance().player;
+        return player != null && isSupermode(player.getUUID());
+    }
+
     @Override
     public @NotNull Component getName(@NotNull ItemStack stack) {
-        Player player = Minecraft.getInstance().player;
-        if (player != null && isSupermode(player.getUUID())) {
+        if (FMLEnvironment.dist == Dist.CLIENT && isLocalPlayerInSupermode()) {
             return Component.literal("搂4搂");
         }
         return Component.translatable("item.potionenchant.x_sword");
@@ -95,9 +100,7 @@ public class XSwordItem extends SwordItem {
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level,
                                 @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
-        Player player = Minecraft.getInstance().player;
-        if (player == null) return;
-        boolean isSuper = isSupermode(player.getUUID());
+        boolean isSuper = FMLEnvironment.dist == Dist.CLIENT && isLocalPlayerInSupermode();
         if (isSuper) {
             // Replace attack damage/speed values with ???
             String dmgKey = "attribute.name.generic.attack_damage";
@@ -120,29 +123,11 @@ public class XSwordItem extends SwordItem {
     }
 
     @Override
-    public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        if (attacker instanceof Player p && isSupermode(p.getUUID())) {
-            target.hurt(p.damageSources().playerAttack(p), Float.MAX_VALUE);
-            return true;
-        }
-        return super.hurtEnemy(stack, target, attacker);
-    }
-
-    @Override
-    public boolean onLeftClickEntity(ItemStack stack, Player player, Entity entity) {
-        if (isSupermode(player.getUUID()) && entity instanceof LivingEntity target) {
-            target.hurt(player.damageSources().playerAttack(player), Float.MAX_VALUE);
-            return true;
-        }
-        return super.onLeftClickEntity(stack, player, entity);
-    }
-
-    @Override
-    public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
-        if (level.isClientSide) return;
+    @SuppressWarnings("removal")
+    public void inventoryTick(@NotNull ItemStack stack, @NotNull Level level, @NotNull Entity entity, int slotId, boolean isSelected) {
+        super.inventoryTick(stack, level, entity, slotId, isSelected);
         if (!(entity instanceof Player player)) return;
-        if (!selected) return;
-
+        if (level.isClientSide) return;
         UUID uuid = player.getUUID();
         boolean isUsing = player.isUsingItem() && player.getUseItem().getItem() instanceof XSwordItem;
 
@@ -268,6 +253,7 @@ public class XSwordItem extends SwordItem {
     }
 
     @Override
+    @OnlyIn(Dist.CLIENT)
     public void initializeClient(Consumer<net.minecraftforge.client.extensions.common.IClientItemExtensions> consumer) {
         consumer.accept(new DiexvClientItemExtensions() {
             @Override

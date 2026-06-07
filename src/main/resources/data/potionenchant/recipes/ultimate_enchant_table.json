@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "UUU",
+    "DBD",
+    "OPO"
+  ],
+  "key": {
+    "U": {
+      "item": "potionenchant:universal_potion_bottle"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "B": {
+      "item": "potionenchant:universal_enchantment_book"
+    },
+    "O": {
+      "item": "minecraft:obsidian"
+    },
+    "P": {
+      "item": "potionenchant:potion_enchanting_table"
+    }
+  },
+  "result": {
+    "item": "potionenchant:ultimate_enchant_table"
+  }
+}

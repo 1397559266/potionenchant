@@ -32,12 +32,12 @@ import net.diexv.potionenchant.gui.CategoryBar;
  */
 public class UniversalPotionBottleScreen extends Screen {
     
-    private final ItemStack targetItem;
-    private final ItemStack bottleItem;
+    protected final ItemStack targetItem;
+    protected final ItemStack bottleItem;
     
     private EditBox searchBox;
     private final GuiZoom zoom = new GuiZoom("universal_potion_bottle");
-    private Button confirmButton;
+    protected Button confirmButton;
     private Button cancelButton;
     
     // 等级输入编辑框（用于直接输入等级）
@@ -49,7 +49,7 @@ public class UniversalPotionBottleScreen extends Screen {
     private MobEffectInfo selectedEffect;
     
     // 批量附魔：记录每个效果的调整等级（相对于已有等级的增量）
-    private java.util.Map<MobEffect, Integer> levelAdjustments = new java.util.HashMap<>();
+    protected java.util.Map<MobEffect, Integer> levelAdjustments = new java.util.HashMap<>();
     
     private int scrollOffset = 0;
     private final int MAX_VISIBLE = 10;
@@ -173,7 +173,7 @@ public class UniversalPotionBottleScreen extends Screen {
      * 计算总共需要的瓶子数量
      * 只计算升级的情况（最终等级 > 当前等级）
      */
-    private int getTotalRequiredBottles() {
+    protected int getTotalRequiredBottles() {
         int total = 0;
         for (var entry : levelAdjustments.entrySet()) {
             MobEffect effect = entry.getKey();
@@ -191,7 +191,7 @@ public class UniversalPotionBottleScreen extends Screen {
     /**
      * 获取玩家背包内所有万能药水附魔瓶的总数
      */
-    private int getTotalBottleCount() {
+    protected int getTotalBottleCount() {
         if (minecraft == null || minecraft.player == null) return 0;
         int total = 0;
         for (int i = 0; i < minecraft.player.getInventory().getContainerSize(); i++) {
@@ -206,7 +206,7 @@ public class UniversalPotionBottleScreen extends Screen {
     /**
      * 检查是否有足够的瓶子
      */
-    private boolean hasEnoughBottles() {
+    protected boolean hasEnoughBottles() {
         if (minecraft == null || minecraft.player == null) return false;
         if (minecraft.player.isCreative()) return true; // 创造模式不需要消耗
         
@@ -260,12 +260,12 @@ public class UniversalPotionBottleScreen extends Screen {
         updateConfirmButton();
     }
     
-    private void updateConfirmButton() {
+    protected void updateConfirmButton() {
         // 有调整且瓶子足够才能确认
         confirmButton.active = !levelAdjustments.isEmpty() && hasEnoughBottles();
     }
     
-    private void onConfirm() {
+    protected void onConfirm() {
         if (levelAdjustments.isEmpty() || minecraft == null || minecraft.player == null) {
             return;
         }
@@ -326,7 +326,7 @@ public class UniversalPotionBottleScreen extends Screen {
      * 获取目标物品上已有的药水附魔等级
      * @return 已有的等级（amplifier + 1），如果没有则返回 0
      */
-    private int getExistingEnchantmentLevel(net.minecraft.world.effect.MobEffect effect) {
+    protected int getExistingEnchantmentLevel(net.minecraft.world.effect.MobEffect effect) {
         var enchantments = PotionEnchantManager.getPotionEnchantments(targetItem);
         for (var enchant : enchantments) {
             if (enchant.getEffect() == effect) {
@@ -1232,6 +1232,7 @@ public class UniversalPotionBottleScreen extends Screen {
         zoom.saveToConfig();
         super.onClose();
     }
+    @Override public void removed() { zoom.saveToConfig(); super.removed(); }
     
     private static class MobEffectInfo {
         final MobEffect effect;

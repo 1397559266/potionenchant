@@ -1,10 +1,7 @@
 {
   "block.potionenchant.potion_enchanting_table": "Potion Enchanting Table",
-
   "container.potionenchant.potion_enchanting": "Potion Enchanting",
-
   "itemGroup.potionenchant": "Plenty Of Enchant",
-
   "item.potionenchant.mysterious_empty_bottle": "Mysterious Empty Bottle",
   "item.potionenchant.mysterious_empty_bottle.tooltip": "§7Crafting: 8 diamonds surrounding a glass bottle",
   "item.potionenchant.mysterious_empty_bottle.tooltip2": "§7Right-click to get a random potion",
@@ -27,7 +24,6 @@
   "item.potionenchant.x_sword.normal": "Normal Mode",
   "item.potionenchant.x_sword.supermode": "X Sword (Super)",
   "item.potionenchant.x_sword.supermode_active": "Supermode Active",
-
   "item.minecraft.enchanted_book": "Enchanted Book",
   "item.minecraft.lingering_potion.effect.agility": "Lingering Potion of Agility",
   "item.minecraft.lingering_potion.effect.armor_break": "Lingering Potion of Armor Break",
@@ -233,7 +229,6 @@
   "item.minecraft.tipped_arrow.effect.strong_vulnerability": "Arrow of Vulnerability",
   "item.minecraft.tipped_arrow.effect.void_power": "Arrow of Void Power",
   "item.minecraft.tipped_arrow.effect.vulnerability": "Arrow of Vulnerability",
-
   "effect.potionenchant.agility": "Agility",
   "effect.potionenchant.agility.description": "During physical sprinting, the speed increases and the attack speed increases; Sprint speed increases by 30%% per level, attack speed increases by 50%% per level",
   "effect.potionenchant.armor_break": "Armor Break",
@@ -278,7 +273,6 @@
   "effect.potionenchant.void_power.description": "Enable entities to deal additional void damage, increasing the current total damage by 10%% for each level",
   "effect.potionenchant.vulnerability": "Vulnerability",
   "effect.potionenchant.vulnerability.description": "Increases the damage suffered by entities by 50%% per level",
-
   "enchantment.potionenchant.advanced_mending": "Advanced Mending",
   "enchantment.potionenchant.advanced_mending.desc": "Absorbs experience to repair item durability with twice the efficiency of normal mending",
   "enchantment.potionenchant.advanced_power": "Advanced Power",
@@ -317,7 +311,6 @@
   "enchantment.potionenchant.tracking_arrow.desc": "Arrows automatically track targets",
   "enchantment.potionenchant.wither_aspect": "Wither Aspect",
   "enchantment.potionenchant.wither_aspect.desc": "Inflicts wither effect on enemies",
-
   "gui.potionenchant.already_enchanted": "Cannot Enchant",
   "gui.potionenchant.applied": "§aSuccessfully applied potion effect: %s",
   "gui.potionenchant.armor_features": "Armor Features",
@@ -368,7 +361,7 @@
   "gui.potionenchant.no_target": "Select target item from inventory",
   "gui.potionenchant.not_enough_bottles": "§cNot enough bottles! Need %d, but have %d",
   "gui.potionenchant.player_level": "Player Level: %s",
-  "gui.potionenchant.power": "Brewing Devices: %s/3",
+  "gui.potionenchant.power": "Power: %d",
   "gui.potionenchant.refresh": "Refresh",
   "gui.potionenchant.refresh_cost": "3 Levels",
   "gui.potionenchant.removed": "Removed",
@@ -386,7 +379,7 @@
   "gui.potionenchant.total_xp_cost": "Total XP: %s",
   "gui.potionenchant.universal_enchantment_book": "Select Enchantment",
   "gui.potionenchant.universal_potion_bottle": "Select Potion Effect",
-  "gui.potionenchant.unknown": "?",
+  "gui.potionenchant.unknown": "???",
   "gui.potionenchant.upgrade.bottles_available": "Bottles Available: %d",
   "gui.potionenchant.upgrade.level_info": "Level: %d  Damage: %d%%",
   "gui.potionenchant.upgrade.preview": "-> Level: %d  Damage: %d%%",
@@ -396,14 +389,10 @@
   "gui.potionenchant.xp": "XP",
   "gui.potionenchant.xp_cost": "%s Levels",
   "gui.potionenchant.zoom": "Zoom",
-
   "command.potionenchant.armorx.not_full_set": "§cYou must wear a full set of X armor to use this command!",
   "command.potionenchant.armorx.open_gui": "§aOpened X Armor Control Panel",
-
   "key.potionenchant.armorx_control": "X Armor Control",
-
   "category.potionenchant.armorx": "Potion Enchant - X Armor",
-
   "config.potionenchant.allow_enchant_level_beyond_cap": "Allow Enchant Level Beyond Cap",
   "config.potionenchant.allow_enchant_level_beyond_cap.tooltip": "When enabled, enchantments applied via Universal Enchantment Book have no level cap (can exceed 255). Requires game restart.",
   "config.potionenchant.allow_potion_level_beyond_255": "Allow Potion Levels Beyond 255",
@@ -417,6 +406,10 @@
   "config.potionenchant.custom_potion_hud": "Custom Potion HUD",
   "config.potionenchant.custom_potion_hud.tooltip": "Enable custom potion effect HUD (text-based instead of icons), default off",
   "config.potionenchant.discoverable_in_enchanting_table": "Enchantments Discoverable in Enchanting Table",
+  "config.potionenchant.enchant_book_chest_loot": "Enchantment Books Obtainable from Chest Loot",
+  "config.potionenchant.enchant_book_chest_loot.tooltip": "When enabled, this mod's enchantment books can be found in chest loot. Default: on",
+  "config.potionenchant.enchant_book_villager_trades": "Enchantment Books Obtainable from Villager Trading",
+  "config.potionenchant.enchant_book_villager_trades.tooltip": "When enabled, this mod's enchantment books can be obtained via villager trading. Default: on",
   "config.potionenchant.discoverable_in_enchanting_table.tooltip": "When enabled, this mod's enchantments can be obtained via the vanilla enchanting table. Default: off",
   "config.potionenchant.enable_all_potion_description": "Show All Mod Potion Descriptions",
   "config.potionenchant.enable_all_potion_description.tooltip": "Try to show descriptions for all potions from any mod, requires language file key: effect.xxx.xxx.description",
@@ -455,7 +448,6 @@
   "config.potionenchant.title": "Potion Enchant Configuration",
   "config.potionenchant.ultimate_potion_amulet_loot_chance": "Ultimate Potion Amulet Loot Generation Chance",
   "config.potionenchant.ultimate_potion_amulet_loot_chance.tooltip": "Chance for Ultimate Potion Amulet to generate in loot tables (0-100%%), 0 means never generate, 100 means always generate when conditions are met. Supports chest loot tables from all mods",
-
   "tooltip.potionenchant.damage_storage.stored": "Stored Damage:",
   "tooltip.potionenchant.duration": "Duration",
   "tooltip.potionenchant.level": "Level",
@@ -463,12 +455,9 @@
   "tooltip.potionenchant.scroll_hint": "§7Shift + Scroll",
   "tooltip.potionenchant.separator": "§7─────────────",
   "tooltip.potionenchant.ultimate_potion_amulet": "A powerful amulet that can hold unlimited potion enchantments",
-
   "tooltip.plentyofenchant.damage_storage.stored": "Stored Damage:",
-
   "tooltip.potion.duration": "Duration",
   "tooltip.potion.level": "Level",
-
   "message.potionenchant.damage_storage.released": "Released %s stored damage!",
   "message.potionenchant.damage_storage.stored": "Damage Storage:",
   "message.potionenchant.enchant_book.applied": "Applied %s level %d!",
@@ -479,9 +468,19 @@
   "message.potionenchant.enchant_book.removed": "§eRemoved enchantment: %s",
   "message.potionenchant.reforge_final": "§6%s§r triggered the final reforge! Reforge enchantment is depleted",
   "message.potionenchant.reforge_triggered": "§6%s§r triggered Reforge! Remaining reforge levels: %d",
-
   "message.plentyofenchant.damage_storage.released": "Released %s stored damage!",
   "message.plentyofenchant.damage_storage.stored": "Damage Storage:",
   "message.plentyofenchant.reforge_final": "§6%s§r triggered the final reforge! Reforge enchantment is depleted",
-  "message.plentyofenchant.reforge_triggered": "§6%s§r triggered Reforge! Remaining reforge levels: %d"
+  "message.plentyofenchant.reforge_triggered": "§6%s§r triggered Reforge! Remaining reforge levels: %d",
+  "block.potionenchant.ultimate_potion_table": "Ultimate Potion Enchanting Table",
+  "block.potionenchant.ultimate_enchant_table": "Ultimate Enchanting Table",
+  "gui.potionenchant.not_enough_xp": "Not enough XP!",
+  "gui.potionenchant.not_enough_xp_table": "Not enough XP! Need %s, you have %s",
+  "container.potionenchant.ultimate_enchant_table": "Ultimate Enchanting Table",
+  "gui.potionenchant.select_item": "Select an item",
+  "gui.potionenchant.current_xp": "Current XP: %s",
+  "gui.potionenchant.cost_xp": "Cost: %s XP",
+  "gui.potionenchant.mode_potion": "Potions",
+  "gui.potionenchant.mode_enchant": "Enchants",
+  "gui.potionenchant.level": "Level"
 }

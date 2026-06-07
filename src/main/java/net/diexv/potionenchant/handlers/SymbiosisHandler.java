@@ -43,10 +43,15 @@ public class SymbiosisHandler {
 
         try {
             Entity attacker = event.getSource().getEntity();
-            if (attacker instanceof LivingEntity && attacker != victim) {
+            if (attacker instanceof LivingEntity livingAttacker && attacker != victim) {
                 // 清除无敌帧，确保反射伤害必定命中
-                ((LivingEntity) attacker).invulnerableTime = 0;
-                ((LivingEntity) attacker).hurt(event.getSource(), event.getAmount());
+                livingAttacker.invulnerableTime = 0;
+                // 反射伤害归因给恩怨效果持有者（受害者），而非攻击者自己打自己
+                if (victim instanceof net.minecraft.world.entity.player.Player p) {
+                    livingAttacker.hurt(p.damageSources().playerAttack(p), event.getAmount());
+                } else {
+                    livingAttacker.hurt(victim.damageSources().mobAttack(victim), event.getAmount());
+                }
             }
         } finally {
             processing.get().remove(victimUUID);

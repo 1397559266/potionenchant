@@ -151,8 +151,17 @@ public class UniversalBottlePacketHandler {
                         }
                     }
                     
-                    // 消耗瓶子：从玩家背包所有格子中扣除
+                    // 消耗经验值（终极药水附魔台）或瓶子（普通药水附魔瓶）
                     if (!player.isCreative()) {
+                        int xpCost = data.getInt("XpCost");
+                        if (xpCost > 0) {
+                            int totalXp = getTotalXp(player);
+                            if (totalXp < xpCost) {
+                                player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("gui.potionenchant.not_enough_xp"));
+                                return;
+                            }
+                            removeXpPoints(player, xpCost);
+                        } else {
                         int bottlesToConsume = data.getInt("BottlesConsumed");
                         if (bottlesToConsume > 0) {
                             for (int i = 0; i < player.getInventory().getContainerSize() && bottlesToConsume > 0; i++) {
@@ -165,6 +174,7 @@ public class UniversalBottlePacketHandler {
                                 }
                             }
                         }
+                        }
                     }
                     
                     // 发送消息给玩家
@@ -173,9 +183,52 @@ public class UniversalBottlePacketHandler {
                     player.sendSystemMessage(net.minecraft.network.chat.Component.translatable(
                         "gui.potionenchant.batch_applied", appliedCount, consumed
                     ));
+                    if (data.getInt("XpCost") > 0) {
+                        player.playSound(net.minecraft.sounds.SoundEvents.ENCHANTMENT_TABLE_USE, 1.0f, player.level().random.nextFloat() * 0.1f + 0.9f);
+                    }
                 }
             });
             context.setPacketHandled(true);
+        }
+        
+        private static int getTotalXp(net.minecraft.server.level.ServerPlayer player) {
+            int level = player.experienceLevel;
+            int total = 0;
+            for (int i = 0; i < level; i++) {
+                total += getXpNeededForNextLevel(i);
+            }
+            total += (int)(player.experienceProgress * getXpNeededForNextLevel(level));
+            return total;
+        }
+        
+        private static int getXpNeededForNextLevel(int level) {
+            if (level >= 30) return 112 + (level - 30) * 9;
+            if (level >= 15) return 37 + (level - 15) * 5;
+            return 7 + level * 2;
+        }
+        
+        private static void removeXpPoints(net.minecraft.server.level.ServerPlayer player, int points) {
+            int total = getTotalXp(player) - points;
+            if (total <= 0) {
+                player.experienceLevel = 0;
+                player.experienceProgress = 0;
+                player.totalExperience = Math.max(0, player.totalExperience - points);
+                return;
+            }
+            int newLevel = 0;
+            int xpRemaining = total;
+            while (true) {
+                int needed = getXpNeededForNextLevel(newLevel);
+                if (xpRemaining >= needed) {
+                    xpRemaining -= needed;
+                    newLevel++;
+                } else {
+                    break;
+                }
+            }
+            player.experienceLevel = newLevel;
+            player.experienceProgress = (float)xpRemaining / (float)getXpNeededForNextLevel(newLevel);
+            player.totalExperience = Math.max(0, player.totalExperience - points);
         }
         
         /**

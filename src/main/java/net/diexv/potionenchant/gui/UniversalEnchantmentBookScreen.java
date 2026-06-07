@@ -563,6 +563,8 @@ public class UniversalEnchantmentBookScreen extends Screen {
         zoom.saveToConfig();
         super.onClose();
     }
+    @Override
+    public void removed() { zoom.saveToConfig(); super.removed(); }
 
     private List<String> wrapTextByWidth(String text, int maxWidth) {
         List<String> lines = new ArrayList<>();

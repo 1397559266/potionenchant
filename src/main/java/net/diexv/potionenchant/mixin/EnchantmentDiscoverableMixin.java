@@ -20,11 +20,11 @@ public class EnchantmentDiscoverableMixin {
         ResourceLocation id = ForgeRegistries.ENCHANTMENTS.getKey(self);
         if (id == null || !PotionEnchantMod.MODID.equals(id.getNamespace())) return;
 
-        if (PotionEnchantConfig.COMMON.discoverableInEnchantingTable.get()) {
-            cir.setReturnValue(true);
-        } else {
-            cir.setReturnValue(false);
-        }
+        // isDiscoverable is used by both enchanting table display and chest loot (EnchantRandomlyFunction)
+        // Return true if either source is enabled
+        boolean chestLoot = PotionEnchantConfig.COMMON.enchantBookChestLoot.get();
+        boolean enchantTable = PotionEnchantConfig.COMMON.discoverableInEnchantingTable.get();
+        cir.setReturnValue(chestLoot || enchantTable);
     }
 
     @Inject(method = "isTreasureOnly", at = @At("RETURN"), cancellable = true)
@@ -33,7 +33,32 @@ public class EnchantmentDiscoverableMixin {
         ResourceLocation id = ForgeRegistries.ENCHANTMENTS.getKey(self);
         if (id == null || !PotionEnchantMod.MODID.equals(id.getNamespace())) return;
 
-        if (PotionEnchantConfig.COMMON.discoverableInEnchantingTable.get()) {
+        // isTreasureOnly is used by EnchantRandomlyFunction as: isDiscoverable() && !isTreasureOnly()
+        // When chest loot is disabled but enchanting table is enabled, isDiscoverable() returns true,
+        // so we must set isTreasureOnly() to true to block chest loot.
+        boolean chestLoot = PotionEnchantConfig.COMMON.enchantBookChestLoot.get();
+        boolean enchantTable = PotionEnchantConfig.COMMON.discoverableInEnchantingTable.get();
+        if (!chestLoot && enchantTable) {
+            cir.setReturnValue(true);
+        } else if (!chestLoot && !enchantTable) {
+            // isDiscoverable already returns false, so treasure-only doesn't affect chest loot.
+            // But still mark as treasure to prevent accidental generation.
+            cir.setReturnValue(true);
+        } else if (chestLoot && !enchantTable) {
+            // isDiscoverable returns true (due to chestLoot), treasure-only should be false
+            cir.setReturnValue(false);
+        }
+        // else (both true): let default behavior, don't force change
+    }
+
+    @Inject(method = "isTradeable", at = @At("RETURN"), cancellable = true)
+    private void onIsTradeable(CallbackInfoReturnable<Boolean> cir) {
+        Enchantment self = (Enchantment)(Object)this;
+        ResourceLocation id = ForgeRegistries.ENCHANTMENTS.getKey(self);
+        if (id == null || !PotionEnchantMod.MODID.equals(id.getNamespace())) return;
+
+        // isTradeable controls whether villagers can offer enchanted books with this enchantment
+        if (!PotionEnchantConfig.COMMON.enchantBookVillagerTrades.get()) {
             cir.setReturnValue(false);
         }
     }

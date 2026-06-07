@@ -1,4 +1,4 @@
-package net.diexv.potionenchant.util.font;
+package net.diexv.potionenchant.client.font;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;

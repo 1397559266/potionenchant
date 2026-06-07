@@ -337,8 +337,19 @@ public class ArmorXFeatureHandler {
             bomb.discard();
         }
         
-        // 生成5个新的环绕Bomb
-        for (int i = 0; i < 5; i++) {
+        // 计算正在攻击的Bomb数量，只补充到最多5个
+        java.util.List<BombEntity> attackingBombs =
+            player.level().getEntitiesOfClass(
+                BombEntity.class,
+                player.getBoundingBox().inflate(10),
+                bomb -> bomb.isAttacking()
+            );
+        int attackingCount = attackingBombs.size();
+        int toSpawn = 5 - attackingCount;
+        if (toSpawn < 0) toSpawn = 0;
+        
+        // 生成新的环绕Bomb（只补充到5个总数）
+        for (int i = 0; i < toSpawn; i++) {
             int orbitIndex = i;
             
             BombEntity bomb = new BombEntity(
@@ -349,7 +360,7 @@ public class ArmorXFeatureHandler {
             );
             
             // 设置初始位置（玩家上方3.5格，半径3格）
-            double angle = (orbitIndex / 5.0) * Math.PI * 2;
+            double angle = (orbitIndex / (double)toSpawn) * Math.PI * 2;
             bomb.setPos(
                 player.getX() + Math.cos(angle) * 3.0,
                 player.getY() + 3.5,

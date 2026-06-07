@@ -1,7 +1,7 @@
 package net.diexv.potionenchant.item;
 
 import net.diexv.potionenchant.PotionEnchantMod;
-import net.diexv.potionenchant.util.font.DiexvFont;
+import net.diexv.potionenchant.client.font.DiexvFont;
 import net.minecraft.client.gui.Font;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;

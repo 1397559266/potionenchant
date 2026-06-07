@@ -20,6 +20,13 @@ public class ModBlockEntities {
                 getBlock("potion_enchanting_table")
             ).build(null));
 
+    public static final RegistryObject<BlockEntityType<UltimateEnchantTableBlockEntity>> ULTIMATE_ENCHANT_TABLE =
+        BLOCK_ENTITIES.register("ultimate_enchant_table",
+            () -> BlockEntityType.Builder.of(
+                UltimateEnchantTableBlockEntity::new,
+                getBlock("ultimate_enchant_table")
+            ).build(null));
+
     @SuppressWarnings("removal")
     private static Block getBlock(String name) {
         return ForgeRegistries.BLOCKS.getValue(

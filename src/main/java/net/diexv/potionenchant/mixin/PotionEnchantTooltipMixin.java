@@ -3,7 +3,7 @@ package net.diexv.potionenchant.mixin;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.diexv.potionenchant.config.PotionEnchantConfig;
 import net.diexv.potionenchant.data.PotionEnchantData;
-import net.diexv.potionenchant.util.font.DiexvFont;
+import net.diexv.potionenchant.client.font.DiexvFont;
 import net.diexv.potionenchant.util.TooltipScrollState;
 import net.diexv.potionenchant.util.PotionEnchantManager;
 import net.minecraft.client.Minecraft;

@@ -1,4 +1,4 @@
-package net.diexv.potionenchant.util;
+package net.diexv.potionenchant.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;

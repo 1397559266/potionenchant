@@ -1,6 +1,6 @@
 package net.diexv.potionenchant.item;
 
-import net.diexv.potionenchant.util.font.DiexvFont;
+import net.diexv.potionenchant.client.font.DiexvFont;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;

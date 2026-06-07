@@ -3,7 +3,7 @@ package net.diexv.potionenchant.network;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.diexv.potionenchant.config.PotionEnchantConfig;
 import net.diexv.potionenchant.data.PotionEnchantData;
-import net.diexv.potionenchant.gui.PotionEnchantingTableScreen;
+import net.diexv.potionenchant.data.BonusEffect;
 import net.diexv.potionenchant.util.PotionEnchantManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -33,10 +33,10 @@ public class PotionEnchantTableNetwork {
     public static class ApplyEffectPacket {
         BlockPos pos; ItemStack target; MobEffect effect; int level;
         int cost;
-        List<PotionEnchantingTableScreen.BonusEffect> bonuses;
+        List<BonusEffect> bonuses;
 
         public ApplyEffectPacket(BlockPos p, ItemStack t, MobEffect e, int l, int cost,
-                                  List<PotionEnchantingTableScreen.BonusEffect> b) {
+                                  List<BonusEffect> b) {
             pos = p; target = t; effect = e; level = l; this.cost = cost; bonuses = b;
         }
 
@@ -56,9 +56,9 @@ public class PotionEnchantTableNetwork {
             int lvl = b.readInt();
             int cost = b.readInt();
             int count = b.readInt();
-            List<PotionEnchantingTableScreen.BonusEffect> bonuses = new ArrayList<>();
+            List<BonusEffect> bonuses = new ArrayList<>();
             for (int i = 0; i < count; i++)
-                bonuses.add(new PotionEnchantingTableScreen.BonusEffect(MobEffect.byId(b.readInt()), b.readInt()));
+                bonuses.add(new BonusEffect(MobEffect.byId(b.readInt()), b.readInt()));
             return new ApplyEffectPacket(pos, target, eff, lvl, cost, bonuses);
         }
 

@@ -3,7 +3,6 @@ package net.diexv.potionenchant.handlers;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.diexv.potionenchant.data.PotionEnchantData;
 import net.diexv.potionenchant.util.PotionEnchantManager;
-import net.diexv.potionenchant.util.TaczIntegration;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -28,7 +27,7 @@ public class ToolEffectHandler {
             ItemStack weapon = attacker.getMainHandItem();
             
             // 检查是否是TACZ武器
-            if (TaczIntegration.isTaczWeapon(weapon)) {
+            if (isTaczWeaponSafe(weapon)) {
                 // TACZ枪械/重武器伤害处理
                 if (PotionEnchantManager.hasPotionEnchantments(weapon)) {
                     List<PotionEnchantData> weaponEnchants = PotionEnchantManager.getPotionEnchantments(weapon);
@@ -77,7 +76,7 @@ public class ToolEffectHandler {
             }
         }
         // 处理TACZ子弹造成的伤害（TACZ可能使用自定义的实体类型）
-        else if (TaczIntegration.isTaczLoaded()) {
+        else if (isTaczLoadedSafe()) {
             try {
                 // 尝试检测TACZ子弹实体
                 var sourceEntity = event.getSource().getDirectEntity();
@@ -97,7 +96,7 @@ public class ToolEffectHandler {
                             }
                             
                             // 检查TACZ武器是否有药水附魔
-                            if (TaczIntegration.isTaczWeapon(weapon) && 
+                            if (isTaczWeaponSafe(weapon) && 
                                 PotionEnchantManager.hasPotionEnchantments(weapon)) {
                                 List<PotionEnchantData> weaponEnchants = 
                                     PotionEnchantManager.getPotionEnchantments(weapon);
@@ -117,6 +116,27 @@ public class ToolEffectHandler {
                 // 忽略TACZ集成错误，不影响原版功能
                 LOGGER.debug("[TACZ Integration] Error in projectile detection: {}", e.getMessage());
             }
+        }
+    }
+
+    // Safe wrapper for TaczIntegration (optional dependency)
+    private static boolean isTaczWeaponSafe(ItemStack weapon) {
+        try {
+            Class<?> cls = Class.forName("net.diexv.potionenchant.util.TaczIntegration");
+            java.lang.reflect.Method m = cls.getMethod("isTaczWeapon", ItemStack.class);
+            return (Boolean) m.invoke(null, weapon);
+        } catch (Throwable e) {
+            return false;
+        }
+    }
+
+    private static boolean isTaczLoadedSafe() {
+        try {
+            Class<?> cls = Class.forName("net.diexv.potionenchant.util.TaczIntegration");
+            java.lang.reflect.Method m = cls.getMethod("isTaczLoaded");
+            return (Boolean) m.invoke(null);
+        } catch (Throwable e) {
+            return false;
         }
     }
 }

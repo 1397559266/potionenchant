@@ -1,6 +1,6 @@
 package net.diexv.potionenchant.item;
 
-import net.diexv.potionenchant.util.font.DiexvFont;
+import net.diexv.potionenchant.client.font.DiexvFont;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
@@ -167,6 +167,9 @@ public class ModItems {
     // 药水附魔台
     public static final RegistryObject<Item> POTION_ENCHANTING_TABLE = ITEMS.register("potion_enchanting_table",
         () -> new BlockItem(net.diexv.potionenchant.block.ModBlocks.POTION_ENCHANTING_TABLE.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> ULTIMATE_ENCHANT_TABLE = ITEMS.register("ultimate_enchant_table",
+        () -> new BlockItem(net.diexv.potionenchant.block.ModBlocks.ULTIMATE_ENCHANT_TABLE.get(), new Item.Properties()));
     public static final RegistryObject<Item> UNIVERSAL_ENCHANTMENT_BOOK =
         ITEMS.register("universal_enchantment_book",
             () -> new UniversalEnchantmentBook(new Item.Properties().rarity(Rarity.EPIC)));

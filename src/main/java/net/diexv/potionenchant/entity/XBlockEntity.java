@@ -39,7 +39,6 @@ public class XBlockEntity extends Monster implements PowerableMob {
     private int oldSwelling;
     private float swellAmount;
     private float oSwellAmount;
-    private int lightningCooldown = 0;
 
     private static final double DAMAGE_RADIUS = 5.0;
 
@@ -124,8 +123,9 @@ public class XBlockEntity extends Monster implements PowerableMob {
     @Override
     public void tick() {
         super.tick();
-
-        // 所有者不存在或不在线 → 清除
+        if (this.getOwner() == null) {
+            this.discard(); return;
+        }
         LivingEntity owner = this.getOwner();
         if (owner == null || !owner.isAlive()) {
             this.discard(); return;
@@ -146,13 +146,10 @@ public class XBlockEntity extends Monster implements PowerableMob {
 
         if (!level().isClientSide) {
             dealDamageToNearbyMobs();
-
         }
 
         updateSwelling();
     }
-
-    // 扫描50格内最近的怪物，在其上方10格生成追踪Bomb
 
     private void dealDamageToNearbyMobs() {
         Vec3 center = this.position();
@@ -164,16 +161,16 @@ public class XBlockEntity extends Monster implements PowerableMob {
 
         LivingEntity blockOwner = this.getOwner();
 
-        lightningCooldown--;
-
         for (LivingEntity entity : entities) {
             if (!isHostileMob(entity)) continue;
-            if (lightningCooldown <= 0) {
-                spawnVisualLightning(entity.position());
+            DamageSource damageSource;
+            if (blockOwner instanceof net.minecraft.world.entity.player.Player p) {
+                damageSource = p.damageSources().playerAttack(p);
+            } else if (blockOwner != null) {
+                damageSource = blockOwner.damageSources().mobAttack(blockOwner);
+            } else {
+                damageSource = entity.damageSources().magic();
             }
-            DamageSource damageSource = new DamageSource(
-                entity.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE)
-                    .getHolderOrThrow(net.minecraft.world.damagesource.DamageTypes.FELL_OUT_OF_WORLD));
             float damageMultiplier = 1.0f;
             if (blockOwner instanceof Player player2) {
                 damageMultiplier = net.diexv.potionenchant.event.ArmorXFeatureHandler.getRangedDamageMultiplier(player2);
@@ -188,25 +185,10 @@ public class XBlockEntity extends Monster implements PowerableMob {
             }
             entity.invulnerableTime = 0;
         }
-        if (lightningCooldown <= 0 && !entities.isEmpty()) {
-            lightningCooldown = 20; // 每20 tick（1秒）最多生成一次闪电
-        }
     }
 
     private boolean isHostileMob(LivingEntity entity) {
         return entity.getType().getCategory() == MobCategory.MONSTER || entity instanceof Monster;
-    }
-
-    private void spawnVisualLightning(Vec3 position) {
-        if (level() instanceof ServerLevel serverLevel) {
-            RainbowLightningBolt bolt = ModEntities.RAINBOW_LIGHTNING.get().create(serverLevel);
-            if (bolt != null) {
-                bolt.moveTo(position);
-                bolt.setVisualOnly(true);
-                bolt.setCause(null);
-                serverLevel.addFreshEntity(bolt);
-            }
-        }
     }
 
     private void updateSwelling() {
@@ -256,4 +238,3 @@ public class XBlockEntity extends Monster implements PowerableMob {
         else { this.entityData.set(DATA_TARGET_ID, 0); }
     }
 }
-

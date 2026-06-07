@@ -1055,6 +1055,7 @@ public class ArmorXControlScreen extends Screen {
         zoom.saveToConfig();
         super.onClose();
     }
+    @Override public void removed() { zoom.saveToConfig(); super.removed(); }
 
     private static class MobEffectInfo {
         final MobEffect effect;

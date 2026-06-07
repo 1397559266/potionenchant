@@ -25,7 +25,6 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.network.PlayMessages;
-import net.diexv.potionenchant.entity.RainbowLightningBolt;
 import net.diexv.potionenchant.event.ArmorXFeatureHandler;
 import net.diexv.potionenchant.util.XSwordTargetTracker;
 import net.diexv.potionenchant.mixin.accessor.LivingEntityAccessor;
@@ -136,7 +135,6 @@ public class BombEntity extends AbstractArrow implements PowerableMob {
 
             if (!entities.isEmpty()) {
                 affectEntitiesInRadius(this.position(), 5.0);
-                spawnVisualLightning(this.position());
                 this.discard(); return;
             }
         }
@@ -166,7 +164,6 @@ public class BombEntity extends AbstractArrow implements PowerableMob {
                 return;
             }
             affectEntitiesInRadius(entityHitResult.getLocation(), 5.0);
-            spawnVisualLightning(entityHitResult.getLocation());
             this.discard();
         }
     }
@@ -186,17 +183,20 @@ public class BombEntity extends AbstractArrow implements PowerableMob {
             e -> !(e instanceof BombEntity) &&
                  !(e instanceof Player) &&
                  !(e instanceof XBlockEntity) &&
-                 !(e instanceof RainbowLightningBolt) &&
                  !(e instanceof net.minecraft.world.entity.item.ItemEntity) && !(e instanceof ExperienceOrb) &&
                  (owner == null || e != owner));
 
         for (Entity entity : entities) {
             if (!entity.isAlive()) continue;
-            spawnVisualLightning(entity.position());
             if (!(entity instanceof LivingEntity livingEntity)) continue;
-                DamageSource damageSource = new DamageSource(
-                    entity.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE)
-                        .getHolderOrThrow(net.minecraft.world.damagesource.DamageTypes.FELL_OUT_OF_WORLD));
+                DamageSource damageSource;
+                if (owner instanceof net.minecraft.world.entity.player.Player p) {
+                    damageSource = p.damageSources().playerAttack(p);
+                } else if (owner != null) {
+                    damageSource = owner.damageSources().mobAttack(owner);
+                } else {
+                    damageSource = entity.damageSources().magic();
+                }
                 float damageMultiplier = 1.0f;
                 if (owner instanceof Player player2) {
                     damageMultiplier = net.diexv.potionenchant.event.ArmorXFeatureHandler.getRangedDamageMultiplier(player2);
@@ -258,18 +258,6 @@ public class BombEntity extends AbstractArrow implements PowerableMob {
             this.setDeltaMovement(dir.scale(2.0 + playerSpeed));
         } else {
             this.discard();
-        }
-    }
-
-    private void spawnVisualLightning(Vec3 position) {
-        if (level() instanceof ServerLevel serverLevel) {
-            RainbowLightningBolt lightningBolt = ModEntities.RAINBOW_LIGHTNING.get().create(serverLevel);
-            if (lightningBolt != null) {
-                lightningBolt.moveTo(position);
-                lightningBolt.setVisualOnly(true);
-                lightningBolt.setCause(null);
-                serverLevel.addFreshEntity(lightningBolt);
-            }
         }
     }
 
@@ -345,13 +333,3 @@ public class BombEntity extends AbstractArrow implements PowerableMob {
         this.setAttacking(true);
     }
 }
-
-
-
-
-
-
-
-
-
-
