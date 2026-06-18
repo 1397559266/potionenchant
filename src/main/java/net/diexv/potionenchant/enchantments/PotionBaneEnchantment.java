@@ -11,6 +11,7 @@ import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.effect.MobEffectInstance;
 
 import java.util.Collection;
+import net.diexv.potionenchant.config.values.EnchantmentConfigValues;
 
 public class PotionBaneEnchantment extends Enchantment {
 

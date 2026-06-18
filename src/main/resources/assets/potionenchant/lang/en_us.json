@@ -556,5 +556,11 @@
   "config.potionenchant.enchantment.damage_storage.max_storage_multiplier": "Damage Storage - Max Multiplier",
   "config.potionenchant.enchantment.damage_storage.max_storage_multiplier.tooltip": "Max storage multiplier (x max health), Default: 10.0",
   "config.potionenchant.enchantment.damage_storage.decay_seconds": "Damage Storage - Decay Seconds",
-  "config.potionenchant.enchantment.damage_storage.decay_seconds.tooltip": "Storage decay time in seconds (resets to 0 after exceeding), Default: 60"
+  "config.potionenchant.enchantment.damage_storage.decay_seconds.tooltip": "Storage decay time in seconds (resets to 0 after exceeding), Default: 60",
+  "config.potionenchant.ultimate_table_xp_cost_per_level": "Ultimate Table XP Cost Per Level (Points)",
+  "config.potionenchant.ultimate_table_xp_cost_per_level.tooltip": "Experience point cost per enchantment level for the Ultimate Enchanting Table. Default: 1000",
+  "config.potionenchant.max_potion_enchant_level_per_item": "Max Potion Enchant Level Per Item",
+  "config.potionenchant.max_potion_enchant_level_per_item.tooltip": "Maximum cumulative potion enchantment level per piece of equipment (1-255). Default: 5",
+  "config.potionenchant.allow_curio_potion_enchant": "Allow Curios Potion Enchant",
+  "config.potionenchant.allow_curio_potion_enchant.tooltip": "Whether to allow potion enchantments on Curios (accessories) items. Disabling will stop curio potion enchant effects from applying. Default: true"
 }

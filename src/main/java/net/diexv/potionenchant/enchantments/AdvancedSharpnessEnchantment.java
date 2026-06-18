@@ -8,6 +8,7 @@ import net.minecraft.world.item.enchantment.DamageEnchantment;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.AxeItem;
+import net.diexv.potionenchant.config.values.EnchantmentConfigValues;
 
 public class AdvancedSharpnessEnchantment extends Enchantment {
 

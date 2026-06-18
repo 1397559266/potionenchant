@@ -63,7 +63,7 @@ public class ClothConfigScreen {
                 .setSaveConsumer(PotionEnchantConfig.COMMON.ultimatePotionAmuletLootChance::set).build());
         general.addEntry(eb.startIntField(Component.translatable("config.potionenchant.max_potion_enchant_level"),
                 PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get())
-                .setDefaultValue(10).setMin(1).setMax(255)
+                .setDefaultValue(100).setMin(1).setMax(1000)
                 .setTooltip(Component.translatable("config.potionenchant.max_potion_enchant_level.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.COMMON.maxPotionEnchantLevel::set).build());
         general.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.allow_potion_level_beyond_255"),
@@ -78,7 +78,7 @@ public class ClothConfigScreen {
                 .setSaveConsumer(PotionEnchantConfig.COMMON.allowEnchantLevelBeyondCap::set).build());
         general.addEntry(eb.startIntField(Component.translatable("config.potionenchant.enchant_book_xp_cost"),
                 PotionEnchantConfig.COMMON.enchantBookXpCost.get())
-                .setDefaultValue(30).setMin(1).setMax(999)
+                .setDefaultValue(1000).setMin(1).setMax(99999999)
                 .setTooltip(Component.translatable("config.potionenchant.enchant_book_xp_cost.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.COMMON.enchantBookXpCost::set).build());
         general.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.discoverable_in_enchanting_table"),
@@ -98,7 +98,7 @@ public class ClothConfigScreen {
                 .setSaveConsumer(PotionEnchantConfig.COMMON.enchantBookVillagerTrades::set).build());
         general.addEntry(eb.startIntField(Component.translatable("config.potionenchant.ultimate_table_xp_cost_per_level"),
                 PotionEnchantConfig.COMMON.ultimateTableXpCostPerLevel.get())
-                .setDefaultValue(5).setMin(1).setMax(999)
+                .setDefaultValue(1000).setMin(1).setMax(99999999)
                 .setTooltip(Component.translatable("config.potionenchant.ultimate_table_xp_cost_per_level.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.COMMON.ultimateTableXpCostPerLevel::set).build());
     }

@@ -11,6 +11,7 @@ import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.diexv.potionenchant.config.values.EnchantmentConfigValues;
 
 public class WitherAspectEnchantment extends Enchantment {
 

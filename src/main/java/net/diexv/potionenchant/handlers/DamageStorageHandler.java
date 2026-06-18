@@ -25,13 +25,16 @@ public class DamageStorageHandler {
     private static final Map<UUID, PlayerDamageStorageData> playerDataMap = new HashMap<>();
 
     // 玩家伤害储存数据结构
+    // 从配置中获取最大储存倍率
+    private static float getMaxStorageMultiplier() {
+        return (float)(double)EnchantmentConfigValues.CONFIG.damageStorageMaxMultiplier.get();
+    }
+
     public static class PlayerDamageStorageData {
         public float storedDamage = 0.0f;
         public long lastDamageTime = 0;
         public int maxStorageLevel = 0;
-        public static float getMaxStorageMultiplier() {
-        return (float)(double)EnchantmentConfigValues.CONFIG.damageStorageMaxMultiplier.get();
-    } // 最大储存量为玩家最大生命值的10倍
+        public static final float MAX_STORAGE_MULTIPLIER = 10.0f; // 最大储存量为玩家最大生命值的10倍
         public long lastActionBarTime = 0; // 最后显示动作栏的时间
         public static final long ACTION_BAR_COOLDOWN = 500; // 动作栏冷却时间0.5秒
     }

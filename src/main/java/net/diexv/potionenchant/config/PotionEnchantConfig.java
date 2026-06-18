@@ -54,8 +54,10 @@ public class PotionEnchantConfig {
         public final ForgeConfigSpec.IntValue ultimatePotionAmuletLootChance;
         
         public final ForgeConfigSpec.IntValue maxPotionEnchantLevel;
+        public final ForgeConfigSpec.IntValue maxPotionEnchantLevelPerItem;
         public final ForgeConfigSpec.IntValue ultimateTableXpCostPerLevel;
         
+        public final ForgeConfigSpec.BooleanValue allowCurioPotionEnchant;
         public final ForgeConfigSpec.BooleanValue allowPotionLevelBeyond255;
     public final ForgeConfigSpec.BooleanValue allowEnchantLevelBeyondCap;
         public final ForgeConfigSpec.IntValue enchantBookXpCost;
@@ -95,7 +97,7 @@ public class PotionEnchantConfig {
                             "每件盔甲最多能附魔的药水效果数量。",
                             "仅在limit_armor_enchants为true时生效。",
                             "Default: 2")
-                    .defineInRange("max_armor_enchants", 2, 1, 99999);
+                    .defineInRange("max_armor_enchants", 2, 1, Integer.MAX_VALUE);
 
             // 全局限制配置项
             limitAllEnchants = builder
@@ -107,7 +109,7 @@ public class PotionEnchantConfig {
             maxAllEnchants = builder
                     .comment("Maximum number of potion effects that can be enchanted on all items",
                             "所有物品可附魔的最大药水效果数量")
-                    .defineInRange("max_all_enchants", 3, 1, 99999);
+                    .defineInRange("max_all_enchants", 3, 1, Integer.MAX_VALUE);
             
             
             ultimatePotionAmuletLootChance = builder
@@ -121,8 +123,15 @@ public class PotionEnchantConfig {
             maxPotionEnchantLevel = builder
                     .comment("Maximum level for potion enchantments on equipped items",
                             "装备的药水附魔等级上限",
-                            "Default: 10")
-                    .defineInRange("max_potion_enchant_level", 10, 1, 255);
+                            "Default: 100")
+                    .defineInRange("max_potion_enchant_level", 100, 1, Integer.MAX_VALUE);
+
+            maxPotionEnchantLevelPerItem = builder
+                    .comment("Maximum potion enchant level per piece of equipment",
+                            "每件装备的药水附魔等级上限（等级叠加不能超过此值）",
+                            "Default: 5")
+                    .defineInRange("max_potion_enchant_level_per_item", 5, 1, Integer.MAX_VALUE);
+            
             
             ultimateTableXpCostPerLevel = builder
                     .comment("XP points cost per level for the Ultimate Potion Enchanting Table",
@@ -130,6 +139,12 @@ public class PotionEnchantConfig {
                             "Default: 1000")
                     .defineInRange("ultimate_table_xp_cost_per_level", 1000, 1, 99999999);
             
+            allowCurioPotionEnchant = builder
+                    .comment("Allow potion enchantments on Curios accessories items",
+                            "是否允许饰品进行药水附魔",
+                            "Default: true (允许)")
+                    .define("allow_curio_potion_enchant", true);
+
             allowPotionLevelBeyond255 = builder
                     .comment("Allow potion enchantment levels to exceed vanilla limit of 255",
                             "允许药水附魔等级突破原版255级上限",
@@ -202,7 +217,7 @@ public class PotionEnchantConfig {
             maxVisibleEffects = builder
                     .comment("Maximum number of visible potion effects at once (scroll to see more)",
                             "同时显示的最大药水效果数量（滚动查看更多）",
-                            "Default: 10")
+                            "Default: 100")
                     .defineInRange("max_visible_effects", 10, 3, 50);
             
             showScrollHint = builder
@@ -254,7 +269,7 @@ public class PotionEnchantConfig {
             potionEnchantTooltipMaxPerColumn = builder
                     .comment("Maximum number of potion enchantments per column in tooltip (vertical auto-wrap)",
                             "Tooltip中药水附魔每列的最大数量（竖向自动换列）",
-                            "Default: 10")
+                            "Default: 100")
                     .defineInRange("potion_enchant_tooltip_max_per_column", 10, 1, 50);
             
             builder.pop();

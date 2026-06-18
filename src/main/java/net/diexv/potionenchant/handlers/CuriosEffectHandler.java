@@ -1,5 +1,6 @@
 package net.diexv.potionenchant.handlers;
 
+import net.diexv.potionenchant.config.PotionEnchantConfig;
 import net.diexv.potionenchant.data.PotionEnchantData;
 import net.diexv.potionenchant.effect.RevivalEffect;
 import net.diexv.potionenchant.mixin.accessor.MobEffectInstanceAccessor;
@@ -34,6 +35,9 @@ public class CuriosEffectHandler {
     @SubscribeEvent
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
+
+        // 检查是否允许饰品进行药水附魔
+        if (!PotionEnchantConfig.COMMON.allowCurioPotionEnchant.get()) return;
 
         Player player = event.player;
         if (player.level().isClientSide) return;

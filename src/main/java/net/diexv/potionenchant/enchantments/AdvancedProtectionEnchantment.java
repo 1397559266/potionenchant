@@ -7,6 +7,7 @@ import net.minecraft.world.item.enchantment.ProtectionEnchantment;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.damagesource.DamageSource;
+import net.diexv.potionenchant.config.values.EnchantmentConfigValues;
 
 public class AdvancedProtectionEnchantment extends Enchantment {
 

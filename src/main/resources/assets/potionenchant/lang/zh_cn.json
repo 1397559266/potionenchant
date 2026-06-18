@@ -556,5 +556,11 @@
   "config.potionenchant.enchantment.damage_storage.max_storage_multiplier": "伤害储存-最大倍率",
   "config.potionenchant.enchantment.damage_storage.max_storage_multiplier.tooltip": "最大储存量倍率（最大生命值的倍数），默认值: 10.0",
   "config.potionenchant.enchantment.damage_storage.decay_seconds": "伤害储存-衰减时间",
-  "config.potionenchant.enchantment.damage_storage.decay_seconds.tooltip": "储存伤害衰减时间（秒，超过后重置为0），默认值: 60"
+  "config.potionenchant.enchantment.damage_storage.decay_seconds.tooltip": "储存伤害衰减时间（秒，超过后重置为0），默认值: 60",
+  "config.potionenchant.ultimate_table_xp_cost_per_level": "终极附魔台每级经验消耗",
+  "config.potionenchant.ultimate_table_xp_cost_per_level.tooltip": "终极附魔台每级消耗的经验值（非等级）。默认：1000",
+  "config.potionenchant.max_potion_enchant_level_per_item": "每件装备药水附魔等级上限",
+  "config.potionenchant.max_potion_enchant_level_per_item.tooltip": "每件装备上药水附魔等级叠加不能超过此值（1-255），默认：5",
+  "config.potionenchant.allow_curio_potion_enchant": "允许饰品药水附魔",
+  "config.potionenchant.allow_curio_potion_enchant.tooltip": "是否允许饰品（Curios）进行药水附魔，关闭后饰品上的药水附魔效果将不生效。默认：允许"
 }
