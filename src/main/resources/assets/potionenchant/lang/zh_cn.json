@@ -434,7 +434,7 @@
   "config.potionenchant.max_armor_enchants": "盔甲最大附魔数量",
   "config.potionenchant.max_armor_enchants.tooltip": "每件盔甲最多能附魔的药水效果数量。仅在限制盔甲附魔数量为true时生效。",
   "config.potionenchant.max_potion_enchant_level": "装备的药水附魔等级上限",
-  "config.potionenchant.max_potion_enchant_level.tooltip": "装备上药水附魔的最大等级限制，默认10级，可自定义调整",
+  "config.potionenchant.max_potion_enchant_level.tooltip": "装备上药水附魔的最大等级上限，默认100级，可自定义调整",
   "config.potionenchant.max_visible_effects": "最大可见效果数量",
   "config.potionenchant.max_visible_effects.tooltip": "同时显示的最大药水效果数量，超出部分通过鼠标滚轮滚动查看",
   "config.potionenchant.potion_enchant_tooltip_max_per_column": "Tooltip每列最大附魔数量",
@@ -562,5 +562,6 @@
   "config.potionenchant.max_potion_enchant_level_per_item": "每件装备药水附魔等级上限",
   "config.potionenchant.max_potion_enchant_level_per_item.tooltip": "每件装备上药水附魔等级叠加不能超过此值（1-255），默认：5",
   "config.potionenchant.allow_curio_potion_enchant": "允许饰品药水附魔",
-  "config.potionenchant.allow_curio_potion_enchant.tooltip": "是否允许饰品（Curios）进行药水附魔，关闭后饰品上的药水附魔效果将不生效。默认：允许"
+  "config.potionenchant.allow_curio_potion_enchant.tooltip": "是否允许饰品（Curios）进行药水附魔，关闭后饰品上的药水附魔效果将不生效。默认：允许",
+  "config.potionenchant.category.potion_enchant": "药水附魔设置"
 }

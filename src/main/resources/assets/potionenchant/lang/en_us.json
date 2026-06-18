@@ -434,7 +434,7 @@
   "config.potionenchant.max_armor_enchants": "Max Armor Enchantments",
   "config.potionenchant.max_armor_enchants.tooltip": "Maximum number of potion enchantments allowed on each armor piece. Only effective if limit_armor_enchants is true.",
   "config.potionenchant.max_potion_enchant_level": "Maximum Potion Enchantment Level on Equipped Items",
-  "config.potionenchant.max_potion_enchant_level.tooltip": "Maximum level limit for potion enchantments on equipped items, default 10, customizable",
+  "config.potionenchant.max_potion_enchant_level.tooltip": "Maximum level for potion enchantments on equipped items, default 100, customizable",
   "config.potionenchant.max_visible_effects": "Max Visible Effects",
   "config.potionenchant.max_visible_effects.tooltip": "Maximum number of potion effects visible at once, scroll with mouse wheel to see more",
   "config.potionenchant.potion_enchant_tooltip_max_per_column": "Max Enchants Per Tooltip Column",
@@ -562,5 +562,6 @@
   "config.potionenchant.max_potion_enchant_level_per_item": "Max Potion Enchant Level Per Item",
   "config.potionenchant.max_potion_enchant_level_per_item.tooltip": "Maximum cumulative potion enchantment level per piece of equipment (1-255). Default: 5",
   "config.potionenchant.allow_curio_potion_enchant": "Allow Curios Potion Enchant",
-  "config.potionenchant.allow_curio_potion_enchant.tooltip": "Whether to allow potion enchantments on Curios (accessories) items. Disabling will stop curio potion enchant effects from applying. Default: true"
+  "config.potionenchant.allow_curio_potion_enchant.tooltip": "Whether to allow potion enchantments on Curios (accessories) items. Disabling will stop curio potion enchant effects from applying. Default: true",
+  "config.potionenchant.category.potion_enchant": "Potion Enchant Settings"
 }

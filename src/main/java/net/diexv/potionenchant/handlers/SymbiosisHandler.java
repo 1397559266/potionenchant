@@ -44,13 +44,17 @@ public class SymbiosisHandler {
         try {
             Entity attacker = event.getSource().getEntity();
             if (attacker instanceof LivingEntity livingAttacker && attacker != victim) {
-                // 清除无敌帧，确保反射伤害必定命中
-                livingAttacker.invulnerableTime = 0;
-                // 反射伤害归因给恩怨效果持有者（受害者），而非攻击者自己打自己
+                float damageAmount = event.getAmount();
+                // 先用 hurt() 指定正确的攻击源，用于击杀归属、附魔触发等游戏事件
                 if (victim instanceof net.minecraft.world.entity.player.Player p) {
-                    livingAttacker.hurt(p.damageSources().playerAttack(p), event.getAmount());
+                    livingAttacker.hurt(p.damageSources().playerAttack(p), damageAmount);
                 } else {
-                    livingAttacker.hurt(victim.damageSources().mobAttack(victim), event.getAmount());
+                    livingAttacker.hurt(victim.damageSources().mobAttack(victim), damageAmount);
+                }
+                // 再用 setHealth() 锁定最终血量，绕过无敌帧确保伤害必定生效
+                float newHealth = Math.max(livingAttacker.getHealth() - damageAmount, 0.0f);
+                if (livingAttacker.getHealth() > newHealth) {
+                    livingAttacker.setHealth(newHealth);
                 }
             }
         } finally {
@@ -84,7 +88,8 @@ public class SymbiosisHandler {
         Entity thrower = potion.getOwner();
         if (thrower instanceof LivingEntity && thrower != target) {
             float healAmount = 8.0f;
-            ((LivingEntity) thrower).heal(healAmount);
+            float newHealth = Math.min(((LivingEntity) thrower).getHealth() + healAmount, ((LivingEntity) thrower).getMaxHealth());
+            ((LivingEntity) thrower).setHealth(newHealth);
         }
     }
 }
