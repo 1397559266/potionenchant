@@ -11,6 +11,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.diexv.potionenchant.config.values.EnchantmentConfigValues;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.HashMap;
@@ -28,7 +29,9 @@ public class DamageStorageHandler {
         public float storedDamage = 0.0f;
         public long lastDamageTime = 0;
         public int maxStorageLevel = 0;
-        public static final float MAX_STORAGE_MULTIPLIER = 10.0f; // 最大储存量为玩家最大生命值的10倍
+        public static float getMaxStorageMultiplier() {
+        return (float)(double)EnchantmentConfigValues.CONFIG.damageStorageMaxMultiplier.get();
+    } // 最大储存量为玩家最大生命值的10倍
         public long lastActionBarTime = 0; // 最后显示动作栏的时间
         public static final long ACTION_BAR_COOLDOWN = 500; // 动作栏冷却时间0.5秒
     }
@@ -50,11 +53,11 @@ public class DamageStorageHandler {
 
                 // 计算最大储存量（玩家最大生命值的10倍）
                 int totalLvl = getTotalStorageLevel(player);
-                float maxStorage = player.getMaxHealth() * PlayerDamageStorageData.MAX_STORAGE_MULTIPLIER * Math.max(1, totalLvl);
+                float maxStorage = player.getMaxHealth() * getMaxStorageMultiplier() * Math.max(1, totalLvl);
 
                 // 清理超过5秒的伤害记录（重置储存）
                 long currentTime = System.currentTimeMillis();
-                if (currentTime - data.lastDamageTime > 60000) { // 60秒
+                if (currentTime - data.lastDamageTime > EnchantmentConfigValues.CONFIG.damageStorageDecaySeconds.get() * 1000L) { // 60秒
                     data.storedDamage = 0.0f;
                 }
 
@@ -212,7 +215,7 @@ public class DamageStorageHandler {
         if (data != null) {
             // 检查是否超过60秒，如果是则重置
             long currentTime = System.currentTimeMillis();
-            if (currentTime - data.lastDamageTime > 60000) {
+            if (currentTime - data.lastDamageTime > EnchantmentConfigValues.CONFIG.damageStorageDecaySeconds.get() * 1000L) {
                 data.storedDamage = 0.0f;
             }
             return data.storedDamage;
@@ -222,7 +225,7 @@ public class DamageStorageHandler {
 
     // 新增：获取玩家的最大储存量
     public static float getMaxStorage(Player player) {
-        return player.getMaxHealth() * PlayerDamageStorageData.MAX_STORAGE_MULTIPLIER;
+        return player.getMaxHealth() * DamageStorageHandler.getMaxStorageMultiplier();
     }
 
     // 新增：获取玩家的伤害储存等级

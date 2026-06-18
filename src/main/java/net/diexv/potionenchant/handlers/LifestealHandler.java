@@ -5,6 +5,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.diexv.potionenchant.config.values.EnchantmentConfigValues;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = "potionenchant", bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -28,7 +29,7 @@ public class LifestealHandler {
 
     private static void triggerLifesteal(Player player, float damageDealt, int enchantLevel) {
         // 计算恢复的生命值：敌人损失血量的5% × 附魔等级
-        float healthToRestore = damageDealt * 0.05f * enchantLevel;
+        float healthToRestore = damageDealt * (float)(double)EnchantmentConfigValues.CONFIG.lifestealHealPercentPerLevel.get() * enchantLevel;
 
         if (healthToRestore > 0) {
             // 恢复生命值，但不能超过最大生命值

@@ -7,6 +7,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.MobEffectEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.diexv.potionenchant.config.values.EffectConfigValues;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.Map;
@@ -34,12 +35,12 @@ public class FragilityEffect extends MobEffect {
                 LivingEntity lastAttacker = findEntityByUUID(entity.level(), lastAttackerUUID);
                 if (lastAttacker != null && lastAttacker.isAlive()) {
                     // 使用最后攻击者作为伤害源
-                    entity.hurt(lastAttacker.damageSources().magic(), 0.1f);
+                    entity.hurt(lastAttacker.damageSources().magic(), (float)(double)EffectConfigValues.CONFIG.fragilityDamagePerTick.get());
                     return;
                 }
             }
             // 如果找不到最后攻击者，使用实体自身作为伤害源
-            entity.hurt(entity.damageSources().magic(), 0.1f);
+            entity.hurt(entity.damageSources().magic(), (float)(double)EffectConfigValues.CONFIG.fragilityDamagePerTick.get());
         }
     }
 

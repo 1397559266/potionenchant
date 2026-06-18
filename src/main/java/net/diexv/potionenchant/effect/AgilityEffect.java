@@ -10,6 +10,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.MobEffectEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.diexv.potionenchant.config.values.EffectConfigValues;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.UUID;
@@ -61,7 +62,7 @@ public class AgilityEffect extends MobEffect {
 
     private static void applyAttackSpeedModifier(Player player, int amplifier) {
         // 计算攻击速度加成：每级增加50%
-        double attackSpeedMultiplier = 0.50 * (amplifier + 1);
+        double attackSpeedMultiplier = (double)EffectConfigValues.CONFIG.agilityAttackSpeedPerLevel.get() * (amplifier + 1);
 
         AttributeInstance attackSpeed = player.getAttribute(Attributes.ATTACK_SPEED);
         if (attackSpeed != null) {
@@ -84,7 +85,7 @@ public class AgilityEffect extends MobEffect {
 
             if (player.isSprinting()) {
                 // 计算移动速度加成：原版速度药水的1.5倍
-                double movementSpeedMultiplier = 0.30 * (amplifier + 1); // +30% 每级
+                double movementSpeedMultiplier = (double)EffectConfigValues.CONFIG.agilityMovementSpeedPerLevel.get() * (amplifier + 1); // +30% 每级
 
                 movementSpeed.addTransientModifier(new AttributeModifier(
                         SPRINTING_SPEED_MODIFIER_ID,

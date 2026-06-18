@@ -57,6 +57,6 @@ public class PotionBaneEnchantment extends Enchantment {
 
     // 获取伤害加成（每级提高50%伤害）
     public static float getDamageBonus(int level) {
-        return 1.0f * level;
+        return (float)(double)EnchantmentConfigValues.CONFIG.potionBaneDamageMultiplierPerLevel.get() * level;
     }
 }

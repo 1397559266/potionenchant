@@ -35,7 +35,7 @@ public class BlazeAspectEnchantment extends Enchantment {
     public void doPostAttack(LivingEntity attacker, Entity target, int level) {
         // 使目标着火，持续时间为 4 * level 秒
         if (target instanceof LivingEntity livingTarget) {
-            livingTarget.setSecondsOnFire(4 * level);
+            livingTarget.setSecondsOnFire(EnchantmentConfigValues.CONFIG.blazeAspectFireSecondsPerLevel.get() * level);
         }
         super.doPostAttack(attacker, target, level);
     }

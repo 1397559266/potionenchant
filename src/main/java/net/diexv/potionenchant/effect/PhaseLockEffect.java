@@ -18,6 +18,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.diexv.potionenchant.config.values.EffectConfigValues;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.HashMap;
@@ -168,7 +169,7 @@ public class PhaseLockEffect extends MobEffect {
         if (attacker.level().isClientSide) return;
         
         // 计算相位锁定伤害（基础100%，每级增加25%）
-        float damagePercent = 1.0f + 0.25f * amplifier;
+        float damagePercent = 1.0f + (float)(double)EffectConfigValues.CONFIG.phaseLockDamagePerLevel.get() * amplifier;
         float phaseLockDamage = markedDamageValue * damagePercent;
         
         // 创建无击退的伤害源，使用 attacker 作为伤害来源

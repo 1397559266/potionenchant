@@ -10,6 +10,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.diexv.potionenchant.config.values.EnchantmentConfigValues;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = PotionEnchantMod.MODID)
@@ -25,7 +26,7 @@ public class ManaFocusHandler {
 
                 if (totalManaFocusLevel > 0) {
                     // 每级减少10%魔法伤害
-                    float damageReduction = 0.10f * totalManaFocusLevel;
+                    float damageReduction = (float)(double)EnchantmentConfigValues.CONFIG.manaFocusReductionPerLevel.get() * totalManaFocusLevel;
                     float newDamage = event.getAmount() * (1.0f - damageReduction);
                     event.setAmount(newDamage);
                 }
@@ -39,7 +40,7 @@ public class ManaFocusHandler {
 
             if (totalManaFocusLevel > 0) {
                 // 每级提高25%魔法伤害
-                float damageMultiplier = 1.0f + (0.25f * totalManaFocusLevel);
+                float damageMultiplier = 1.0f + ((float)(double)EnchantmentConfigValues.CONFIG.manaFocusDamageIncreasePerLevel.get() * totalManaFocusLevel);
                 float newDamage = event.getAmount() * damageMultiplier;
                 event.setAmount(newDamage);
 

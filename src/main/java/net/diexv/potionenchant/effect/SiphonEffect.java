@@ -8,6 +8,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.diexv.potionenchant.config.values.EffectConfigValues;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber
@@ -32,7 +33,7 @@ public class SiphonEffect extends MobEffect {
             if (actualDamage <= 0) return;
 
             // Lifesteal: 5% base + 5% per level
-            float lifeStealPercent = 0.05f + (amplifier * 0.05f);
+            float lifeStealPercent = (float)(double)EffectConfigValues.CONFIG.siphonLifestealBase.get() + (amplifier * (float)(double)EffectConfigValues.CONFIG.siphonLifestealPerLevel.get());
             float lifeStealAmount = actualDamage * lifeStealPercent;
 
             // Heal attacker

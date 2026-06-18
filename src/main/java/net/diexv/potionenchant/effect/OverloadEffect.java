@@ -13,6 +13,7 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.level.ExplosionEvent;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.diexv.potionenchant.config.values.EffectConfigValues;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.Random;
@@ -84,7 +85,7 @@ public class OverloadEffect extends MobEffect {
                 entity.removeEffect(EffectRegistry.OVERLOAD.get());
 
                 // 检查是否达到自爆条件（等级>=9，因为等级从0开始）
-                if (newAmplifier >= 9) {
+                if (newAmplifier >= EffectConfigValues.CONFIG.overloadMaxAmplifierBeforeExplosion.get()) {
                     // 触发自爆
                     triggerExplosion(entity);
                 } else {
@@ -153,7 +154,7 @@ public class OverloadEffect extends MobEffect {
         Level level = sourceEntity.level();
         if (level.isClientSide) return;
             
-        double radius = 5.0; // 半径 5 格
+        double radius = (double)EffectConfigValues.CONFIG.overloadAreaDamageRadius.get();
             
         // 计算伤害：每级造成生命上限的 5% 伤害
         float damagePercent = 0.05f * (amplifier + 1);
@@ -213,7 +214,7 @@ public class OverloadEffect extends MobEffect {
 
         if (!level.isClientSide) {
             // 创建爆炸
-            float explosionPower = 4.0f; // 爆炸威力
+            float explosionPower = (float)(double)EffectConfigValues.CONFIG.overloadExplosionPower.get(); // 爆炸威力
 
             // 在实体位置创建爆炸（标记以便过滤物品实体）
             overloadExploding = true;

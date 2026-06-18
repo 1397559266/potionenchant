@@ -10,6 +10,7 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.diexv.potionenchant.config.values.EffectConfigValues;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber
@@ -28,7 +29,7 @@ public class ArmorBreakEffect extends MobEffect {
                 int amplifier = attacker.getEffect(EffectRegistry.ARMOR_BREAK.get()).getAmplifier();
 
                 // 计算无视护甲比例 (基础10% + 每级10%)
-                float armorIgnorePercent = 0.10f + (amplifier * 0.10f);
+                float armorIgnorePercent = (float)(double)EffectConfigValues.CONFIG.armorBreakIgnorePerLevel.get() + (amplifier * (float)(double)EffectConfigValues.CONFIG.armorBreakIgnorePerLevel.get());
 
                 // 计算基础伤害（不考虑护甲）
                 float baseDamage = event.getAmount();
@@ -44,7 +45,7 @@ public class ArmorBreakEffect extends MobEffect {
                 }
 
                 // 扣除目标盔甲耐久 (基础1% + 每级1%)
-                float durabilityDamagePercent = 0.01f + (amplifier * 0.01f);
+                float durabilityDamagePercent = (float)(double)EffectConfigValues.CONFIG.armorBreakDurabilityPerLevel.get() + (amplifier * (float)(double)EffectConfigValues.CONFIG.armorBreakDurabilityPerLevel.get());
                 damageArmorDurability(target, durabilityDamagePercent);
             }
         }

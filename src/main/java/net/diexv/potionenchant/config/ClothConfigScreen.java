@@ -3,9 +3,10 @@ package net.diexv.potionenchant.config;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import net.diexv.potionenchant.config.values.EffectConfigValues;
+import net.diexv.potionenchant.config.values.EnchantmentConfigValues;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-
 import java.util.List;
 
 public class ClothConfigScreen {
@@ -15,220 +16,311 @@ public class ClothConfigScreen {
                 .setParentScreen(parent)
                 .setTitle(Component.translatable("config.potionenchant.title"))
                 .setSavingRunnable(() -> {
-                    // 保存配置时重新加载
                     PotionEnchantConfig.COMMON_SPEC.save();
+                    EffectConfigValues.SPEC.save();
+                    EnchantmentConfigValues.SPEC.save();
                 });
-
-        ConfigCategory general = builder.getOrCreateCategory(Component.translatable("config.potionenchant.category.general"));
-        ConfigEntryBuilder entryBuilder = builder.entryBuilder();
-
-        // 黑名单效果配置
-        general.addEntry(entryBuilder.startStrList((Component) Component.translatable("config.potionenchant.blacklisted_effects"),
-
-(List<String>) PotionEnchantConfig.COMMON.blacklistedEffects.get())
-                .setDefaultValue(java.util.Collections.emptyList())
-                .setTooltip(Component.translatable("config.potionenchant.blacklisted_effects.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.blacklistedEffects::set)
-                .build());
-
-        // 盔甲附魔限制配置
-        general.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.potionenchant.limit_armor_enchants"),
-                        PotionEnchantConfig.COMMON.limitArmorEnchants.get())
-                .setDefaultValue(false)
-                .setTooltip(Component.translatable("config.potionenchant.limit_armor_enchants.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.limitArmorEnchants::set)
-                .build());
-
-        // 盔甲最大附魔数量配置
-        general.addEntry(entryBuilder.startIntField(Component.translatable("config.potionenchant.max_armor_enchants"),
-                        PotionEnchantConfig.COMMON.maxArmorEnchants.get())
-                .setDefaultValue(2)
-                .setTooltip(Component.translatable("config.potionenchant.max_armor_enchants.tooltip"))
-                .setMin(1)
-                .setMax(99999)
-                .setSaveConsumer(PotionEnchantConfig.COMMON.maxArmorEnchants::set)
-                .build());
-
-        // 全局附魔限制配置
-        general.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.potionenchant.limit_all_enchants"),
-                        PotionEnchantConfig.COMMON.limitAllEnchants.get())
-                .setDefaultValue(false)
-                .setTooltip(Component.translatable("config.potionenchant.limit_all_enchants.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.limitAllEnchants::set)
-                .build());
-
-        // 全局最大附魔数量配置
-        general.addEntry(entryBuilder.startIntField(Component.translatable("config.potionenchant.max_all_enchants"),
-                        PotionEnchantConfig.COMMON.maxAllEnchants.get())
-                .setDefaultValue(3)
-                .setTooltip(Component.translatable("config.potionenchant.max_all_enchants.tooltip"))
-                .setMin(1)
-                .setMax(99999)
-                .setSaveConsumer(PotionEnchantConfig.COMMON.maxAllEnchants::set)
-                .build());
-        
-        
-        // 终极药水护符战利品生成概率
-        general.addEntry(entryBuilder.startIntField(Component.translatable("config.potionenchant.ultimate_potion_amulet_loot_chance"),
-                        PotionEnchantConfig.COMMON.ultimatePotionAmuletLootChance.get())
-                .setDefaultValue(1)
-                .setMin(0)
-                .setMax(100)
-                .setTooltip(Component.translatable("config.potionenchant.ultimate_potion_amulet_loot_chance.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.ultimatePotionAmuletLootChance::set)
-                .build());
-        
-        // 装备的药水附魔等级上限
-        general.addEntry(entryBuilder.startIntField(Component.translatable("config.potionenchant.max_potion_enchant_level"),
-                        PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get())
-                .setDefaultValue(10)
-                .setMin(1)
-                .setMax(255)
-                .setTooltip(Component.translatable("config.potionenchant.max_potion_enchant_level.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.maxPotionEnchantLevel::set)
-                .build());
-        
-        // 允许突破255级上限
-        general.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.potionenchant.allow_potion_level_beyond_255"),
-                        PotionEnchantConfig.COMMON.allowPotionLevelBeyond255.get())
-                .setDefaultValue(false)
-                .setTooltip(Component.translatable("config.potionenchant.allow_potion_level_beyond_255.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.allowPotionLevelBeyond255::set)
-                .build());
-        
-        // 创建设置分类
-                ConfigCategory enchant = builder.getOrCreateCategory(Component.translatable("config.potionenchant.category.enchant"));
-
-        // 允许附魔突破原版等级上限
-        enchant.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.potionenchant.allow_enchant_level_beyond_cap"),
-                        PotionEnchantConfig.COMMON.allowEnchantLevelBeyondCap.get())
-                .setDefaultValue(false)
-                .setTooltip(Component.translatable("config.potionenchant.allow_enchant_level_beyond_cap.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.allowEnchantLevelBeyondCap::set)
-                .build());
-
-        // 附魔书每级经验消耗
-        enchant.addEntry(entryBuilder.startIntField(Component.translatable("config.potionenchant.enchant_book_xp_cost"),
-                        PotionEnchantConfig.COMMON.enchantBookXpCost.get())
-                .setDefaultValue(1000)
-                .setMin(1)
-                .setMax(Integer.MAX_VALUE)
-                .setTooltip(Component.translatable("config.potionenchant.enchant_book_xp_cost.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.enchantBookXpCost::set)
-                .build());
-
-        // 附魔是否能通过原版附魔台获取
-        enchant.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.potionenchant.discoverable_in_enchanting_table"),
-                        PotionEnchantConfig.COMMON.discoverableInEnchantingTable.get())
-                .setDefaultValue(false)
-                .setTooltip(Component.translatable("config.potionenchant.discoverable_in_enchanting_table.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.discoverableInEnchantingTable::set)
-                .build());
-
-        ConfigCategory display = builder.getOrCreateCategory(Component.translatable("config.potionenchant.category.display"));
-        
-        // 自定义药水HUD配置
-        display.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.potionenchant.custom_potion_hud"),
-                        PotionEnchantConfig.COMMON.customPotionHud.get())
-                .setDefaultValue(true)
-                .setTooltip(Component.translatable("config.potionenchant.custom_potion_hud.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.customPotionHud::set)
-                .build());
-        
-        // 显示药水等级配置
-        display.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.potionenchant.show_potion_level"),
-                        PotionEnchantConfig.COMMON.showPotionLevel.get())
-                .setDefaultValue(true)
-                .setTooltip(Component.translatable("config.potionenchant.show_potion_level.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.showPotionLevel::set)
-                .build());
-        
-        // 显示文本背景框配置
-        display.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.potionenchant.show_text_background"),
-                        PotionEnchantConfig.COMMON.showTextBackground.get())
-                .setDefaultValue(false)
-                .setTooltip(Component.translatable("config.potionenchant.show_text_background.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.showTextBackground::set)
-                .build());
-        
-        // 最大可见效果数量配置
-        display.addEntry(entryBuilder.startIntField(Component.translatable("config.potionenchant.max_visible_effects"),
-                        PotionEnchantConfig.COMMON.maxVisibleEffects.get())
-                .setDefaultValue(10)
-                .setTooltip(Component.translatable("config.potionenchant.max_visible_effects.tooltip"))
-                .setMin(3)
-                .setMax(50)
-                .setSaveConsumer(PotionEnchantConfig.COMMON.maxVisibleEffects::set)
-                .build());
-        
-        // 显示滚动提示配置
-        display.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.potionenchant.show_scroll_hint"),
-                        PotionEnchantConfig.COMMON.showScrollHint.get())
-                .setDefaultValue(true)
-                .setTooltip(Component.translatable("config.potionenchant.show_scroll_hint.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.showScrollHint::set)
-                .build());
-        
-        // HUD渲染优先级配置
-        display.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.potionenchant.hud_high_priority"),
-                        PotionEnchantConfig.COMMON.hudHighPriority.get())
-                .setDefaultValue(true)
-                .setTooltip(Component.translatable("config.potionenchant.hud_high_priority.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.hudHighPriority::set)
-                .build());
-        
-        // 启用自定义药水Tooltip
-        display.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.potionenchant.enable_custom_potion_tooltip"),
-                        PotionEnchantConfig.COMMON.enableCustomPotionTooltip.get())
-                .setDefaultValue(true)
-                .setTooltip(Component.translatable("config.potionenchant.enable_custom_potion_tooltip.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.enableCustomPotionTooltip::set)
-                .build());
-        
-        // 启用原版药水描述
-        display.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.potionenchant.enable_vanilla_potion_description"),
-                        PotionEnchantConfig.COMMON.enableVanillaPotionDescription.get())
-                .setDefaultValue(false)
-                .setTooltip(Component.translatable("config.potionenchant.enable_vanilla_potion_description.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.enableVanillaPotionDescription::set)
-                .build());
-        
-        // 启用所有模组药水描述
-        display.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.potionenchant.enable_all_potion_description"),
-                        PotionEnchantConfig.COMMON.enableAllPotionDescription.get())
-                .setDefaultValue(false)
-                .setTooltip(Component.translatable("config.potionenchant.enable_all_potion_description.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.enableAllPotionDescription::set)
-                .build());
-        
-        // 启用药水附魔独立Tooltip
-        display.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.potionenchant.enable_potion_enchant_tooltip"),
-                        PotionEnchantConfig.COMMON.enablePotionEnchantTooltip.get())
-                .setDefaultValue(false)
-                .setTooltip(Component.translatable("config.potionenchant.enable_potion_enchant_tooltip.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.enablePotionEnchantTooltip::set)
-                .build());
-        // PotionCore盔甲值渲染
-        display.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.potionenchant.enable_armor_value_render"),
-                        PotionEnchantConfig.COMMON.enableArmorValueRender.get())
-                .setDefaultValue(true)
-                .setTooltip(Component.translatable("config.potionenchant.enable_armor_value_render.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.enableArmorValueRender::set)
-                .build());
-
-
-        
-        // 药水附魔Tooltip每列最大数量
-        display.addEntry(entryBuilder.startIntField(Component.translatable("config.potionenchant.potion_enchant_tooltip_max_per_column"),
-                        PotionEnchantConfig.COMMON.potionEnchantTooltipMaxPerColumn.get())
-                .setDefaultValue(10)
-                .setMin(1)
-                .setMax(50)
-                .setTooltip(Component.translatable("config.potionenchant.potion_enchant_tooltip_max_per_column.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.potionEnchantTooltipMaxPerColumn::set)
-                .build());
-
+        buildGeneralCategory(builder);
+        buildDisplayCategory(builder);
+        buildEffectValuesCategory(builder);
+        buildEnchantmentValuesCategory(builder);
         return builder.build();
     }
-}
 
+
+    private static void buildGeneralCategory(ConfigBuilder builder) {
+        ConfigCategory general = builder.getOrCreateCategory(Component.translatable("config.potionenchant.category.general"));
+        ConfigEntryBuilder eb = builder.entryBuilder();
+        general.addEntry(eb.startStrList(Component.translatable("config.potionenchant.blacklisted_effects"),
+                (List<String>) PotionEnchantConfig.COMMON.blacklistedEffects.get())
+                .setDefaultValue(java.util.Collections.emptyList())
+                .setTooltip(Component.translatable("config.potionenchant.blacklisted_effects.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.blacklistedEffects::set).build());
+        general.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.limit_armor_enchants"),
+                PotionEnchantConfig.COMMON.limitArmorEnchants.get())
+                .setDefaultValue(false)
+                .setTooltip(Component.translatable("config.potionenchant.limit_armor_enchants.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.limitArmorEnchants::set).build());
+        general.addEntry(eb.startIntField(Component.translatable("config.potionenchant.max_armor_enchants"),
+                PotionEnchantConfig.COMMON.maxArmorEnchants.get())
+                .setDefaultValue(2).setMin(1).setMax(99999)
+                .setTooltip(Component.translatable("config.potionenchant.max_armor_enchants.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.maxArmorEnchants::set).build());
+        general.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.limit_all_enchants"),
+                PotionEnchantConfig.COMMON.limitAllEnchants.get())
+                .setDefaultValue(false)
+                .setTooltip(Component.translatable("config.potionenchant.limit_all_enchants.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.limitAllEnchants::set).build());
+        general.addEntry(eb.startIntField(Component.translatable("config.potionenchant.max_all_enchants"),
+                PotionEnchantConfig.COMMON.maxAllEnchants.get())
+                .setDefaultValue(3).setMin(1).setMax(99999)
+                .setTooltip(Component.translatable("config.potionenchant.max_all_enchants.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.maxAllEnchants::set).build());
+        general.addEntry(eb.startIntField(Component.translatable("config.potionenchant.ultimate_potion_amulet_loot_chance"),
+                PotionEnchantConfig.COMMON.ultimatePotionAmuletLootChance.get())
+                .setDefaultValue(1).setMin(0).setMax(100)
+                .setTooltip(Component.translatable("config.potionenchant.ultimate_potion_amulet_loot_chance.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.ultimatePotionAmuletLootChance::set).build());
+        general.addEntry(eb.startIntField(Component.translatable("config.potionenchant.max_potion_enchant_level"),
+                PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get())
+                .setDefaultValue(10).setMin(1).setMax(255)
+                .setTooltip(Component.translatable("config.potionenchant.max_potion_enchant_level.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.maxPotionEnchantLevel::set).build());
+        general.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.allow_potion_level_beyond_255"),
+                PotionEnchantConfig.COMMON.allowPotionLevelBeyond255.get())
+                .setDefaultValue(false)
+                .setTooltip(Component.translatable("config.potionenchant.allow_potion_level_beyond_255.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.allowPotionLevelBeyond255::set).build());
+        general.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.allow_enchant_level_beyond_cap"),
+                PotionEnchantConfig.COMMON.allowEnchantLevelBeyondCap.get())
+                .setDefaultValue(false)
+                .setTooltip(Component.translatable("config.potionenchant.allow_enchant_level_beyond_cap.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.allowEnchantLevelBeyondCap::set).build());
+        general.addEntry(eb.startIntField(Component.translatable("config.potionenchant.enchant_book_xp_cost"),
+                PotionEnchantConfig.COMMON.enchantBookXpCost.get())
+                .setDefaultValue(30).setMin(1).setMax(999)
+                .setTooltip(Component.translatable("config.potionenchant.enchant_book_xp_cost.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.enchantBookXpCost::set).build());
+        general.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.discoverable_in_enchanting_table"),
+                PotionEnchantConfig.COMMON.discoverableInEnchantingTable.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.potionenchant.discoverable_in_enchanting_table.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.discoverableInEnchantingTable::set).build());
+        general.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enchant_book_chest_loot"),
+                PotionEnchantConfig.COMMON.enchantBookChestLoot.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.potionenchant.enchant_book_chest_loot.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.enchantBookChestLoot::set).build());
+        general.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enchant_book_villager_trades"),
+                PotionEnchantConfig.COMMON.enchantBookVillagerTrades.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.potionenchant.enchant_book_villager_trades.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.enchantBookVillagerTrades::set).build());
+        general.addEntry(eb.startIntField(Component.translatable("config.potionenchant.ultimate_table_xp_cost_per_level"),
+                PotionEnchantConfig.COMMON.ultimateTableXpCostPerLevel.get())
+                .setDefaultValue(5).setMin(1).setMax(999)
+                .setTooltip(Component.translatable("config.potionenchant.ultimate_table_xp_cost_per_level.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.ultimateTableXpCostPerLevel::set).build());
+    }
+
+    private static void buildDisplayCategory(ConfigBuilder builder) {
+        ConfigCategory display = builder.getOrCreateCategory(Component.translatable("config.potionenchant.category.display"));
+        ConfigEntryBuilder eb = builder.entryBuilder();
+        display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.custom_potion_hud"),
+                PotionEnchantConfig.COMMON.customPotionHud.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.potionenchant.custom_potion_hud.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.customPotionHud::set).build());
+        display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.show_potion_level"),
+                PotionEnchantConfig.COMMON.showPotionLevel.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.potionenchant.show_potion_level.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.showPotionLevel::set).build());
+        display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.show_text_background"),
+                PotionEnchantConfig.COMMON.showTextBackground.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.potionenchant.show_text_background.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.showTextBackground::set).build());
+        display.addEntry(eb.startIntField(Component.translatable("config.potionenchant.max_visible_effects"),
+                PotionEnchantConfig.COMMON.maxVisibleEffects.get())
+                .setDefaultValue(10).setMin(3).setMax(50)
+                .setTooltip(Component.translatable("config.potionenchant.max_visible_effects.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.maxVisibleEffects::set).build());
+        display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.show_scroll_hint"),
+                PotionEnchantConfig.COMMON.showScrollHint.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.potionenchant.show_scroll_hint.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.showScrollHint::set).build());
+        display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.hud_high_priority"),
+                PotionEnchantConfig.COMMON.hudHighPriority.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.potionenchant.hud_high_priority.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.hudHighPriority::set).build());
+        display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enable_custom_potion_tooltip"),
+                PotionEnchantConfig.COMMON.enableCustomPotionTooltip.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.potionenchant.enable_custom_potion_tooltip.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.enableCustomPotionTooltip::set).build());
+        display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enable_vanilla_potion_description"),
+                PotionEnchantConfig.COMMON.enableVanillaPotionDescription.get())
+                .setDefaultValue(false)
+                .setTooltip(Component.translatable("config.potionenchant.enable_vanilla_potion_description.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.enableVanillaPotionDescription::set).build());
+        display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enable_all_potion_description"),
+                PotionEnchantConfig.COMMON.enableAllPotionDescription.get())
+                .setDefaultValue(false)
+                .setTooltip(Component.translatable("config.potionenchant.enable_all_potion_description.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.enableAllPotionDescription::set).build());
+        display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enable_potion_enchant_tooltip"),
+                PotionEnchantConfig.COMMON.enablePotionEnchantTooltip.get())
+                .setDefaultValue(false)
+                .setTooltip(Component.translatable("config.potionenchant.enable_potion_enchant_tooltip.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.enablePotionEnchantTooltip::set).build());
+        display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enable_armor_value_render"),
+                PotionEnchantConfig.COMMON.enableArmorValueRender.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.potionenchant.enable_armor_value_render.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.enableArmorValueRender::set).build());
+        display.addEntry(eb.startIntField(Component.translatable("config.potionenchant.potion_enchant_tooltip_max_per_column"),
+                PotionEnchantConfig.COMMON.potionEnchantTooltipMaxPerColumn.get())
+                .setDefaultValue(10).setMin(1).setMax(50)
+                .setTooltip(Component.translatable("config.potionenchant.potion_enchant_tooltip_max_per_column.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.COMMON.potionEnchantTooltipMaxPerColumn::set).build());
+    }
+
+    private static void buildEffectValuesCategory(ConfigBuilder builder) {
+        ConfigCategory ec = builder.getOrCreateCategory(Component.translatable("config.potionenchant.category.effects"));
+        ConfigEntryBuilder eb = builder.entryBuilder();
+        var cfg = EffectConfigValues.CONFIG;
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.critical_strike.base_chance"), cfg.criticalStrikeBaseChance.get())
+                .setDefaultValue(0.2).setMin(0.0).setMax(1.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.critical_strike.base_chance.tooltip"))
+                .setSaveConsumer(cfg.criticalStrikeBaseChance::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.critical_strike.chance_per_level"), cfg.criticalStrikeChancePerLevel.get())
+                .setDefaultValue(0.1).setMin(0.0).setMax(1.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.critical_strike.chance_per_level.tooltip"))
+                .setSaveConsumer(cfg.criticalStrikeChancePerLevel::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.critical_strike.damage_multiplier"), cfg.criticalStrikeDamageMultiplier.get())
+                .setDefaultValue(1.5).setMin(0.0).setMax(10.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.critical_strike.damage_multiplier.tooltip"))
+                .setSaveConsumer(cfg.criticalStrikeDamageMultiplier::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.void_power.damage_per_level"), cfg.voidPowerDamagePerLevel.get())
+                .setDefaultValue(0.1).setMin(0.0).setMax(10.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.void_power.damage_per_level.tooltip"))
+                .setSaveConsumer(cfg.voidPowerDamagePerLevel::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.armor_break.armor_ignore_per_level"), cfg.armorBreakIgnorePerLevel.get())
+                .setDefaultValue(0.1).setMin(0.0).setMax(1.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.armor_break.armor_ignore_per_level.tooltip"))
+                .setSaveConsumer(cfg.armorBreakIgnorePerLevel::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.armor_break.durability_damage_per_level"), cfg.armorBreakDurabilityPerLevel.get())
+                .setDefaultValue(0.01).setMin(0.0).setMax(1.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.armor_break.durability_damage_per_level.tooltip"))
+                .setSaveConsumer(cfg.armorBreakDurabilityPerLevel::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.vulnerability.damage_per_level"), cfg.vulnerabilityDamagePerLevel.get())
+                .setDefaultValue(0.5).setMin(0.0).setMax(100.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.vulnerability.damage_per_level.tooltip"))
+                .setSaveConsumer(cfg.vulnerabilityDamagePerLevel::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.siphon.lifesteal_base"), cfg.siphonLifestealBase.get())
+                .setDefaultValue(0.05).setMin(0.0).setMax(1.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.siphon.lifesteal_base.tooltip"))
+                .setSaveConsumer(cfg.siphonLifestealBase::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.siphon.lifesteal_per_level"), cfg.siphonLifestealPerLevel.get())
+                .setDefaultValue(0.05).setMin(0.0).setMax(1.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.siphon.lifesteal_per_level.tooltip"))
+                .setSaveConsumer(cfg.siphonLifestealPerLevel::set).build());
+        ec.addEntry(eb.startIntField(Component.translatable("config.potionenchant.effect.mending.repair_per_level"), cfg.mendingRepairPerLevel.get())
+                .setDefaultValue(10).setMin(1).setMax(1000)
+                .setTooltip(Component.translatable("config.potionenchant.effect.mending.repair_per_level.tooltip"))
+                .setSaveConsumer(cfg.mendingRepairPerLevel::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.phase_lock.damage_per_level"), cfg.phaseLockDamagePerLevel.get())
+                .setDefaultValue(0.25).setMin(0.0).setMax(10.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.phase_lock.damage_per_level.tooltip"))
+                .setSaveConsumer(cfg.phaseLockDamagePerLevel::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.firmness.max_damage_base"), cfg.firmnessMaxDamageBase.get())
+                .setDefaultValue(0.9).setMin(0.01).setMax(1.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.firmness.max_damage_base.tooltip"))
+                .setSaveConsumer(cfg.firmnessMaxDamageBase::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.firmness.max_damage_per_level"), cfg.firmnessMaxDamagePerLevel.get())
+                .setDefaultValue(0.1).setMin(0.0).setMax(1.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.firmness.max_damage_per_level.tooltip"))
+                .setSaveConsumer(cfg.firmnessMaxDamagePerLevel::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.firmness.lock_duration_base"), cfg.firmnessLockDurationBase.get())
+                .setDefaultValue(1.0).setMin(0.0).setMax(10.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.firmness.lock_duration_base.tooltip"))
+                .setSaveConsumer(cfg.firmnessLockDurationBase::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.firmness.lock_duration_per_level"), cfg.firmnessLockDurationPerLevel.get())
+                .setDefaultValue(0.5).setMin(0.0).setMax(10.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.firmness.lock_duration_per_level.tooltip"))
+                .setSaveConsumer(cfg.firmnessLockDurationPerLevel::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.fragility.damage_per_tick"), cfg.fragilityDamagePerTick.get())
+                .setDefaultValue(0.1).setMin(0.0).setMax(100.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.fragility.damage_per_tick.tooltip"))
+                .setSaveConsumer(cfg.fragilityDamagePerTick::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.magic_resistance.reduction_per_level"), cfg.magicResistanceReductionPerLevel.get())
+                .setDefaultValue(0.1).setMin(0.0).setMax(1.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.magic_resistance.reduction_per_level.tooltip"))
+                .setSaveConsumer(cfg.magicResistanceReductionPerLevel::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.magic_resistance.max_reduction"), cfg.magicResistanceMaxReduction.get())
+                .setDefaultValue(0.9).setMin(0.0).setMax(1.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.magic_resistance.max_reduction.tooltip"))
+                .setSaveConsumer(cfg.magicResistanceMaxReduction::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.agility.movement_speed_per_level"), cfg.agilityMovementSpeedPerLevel.get())
+                .setDefaultValue(0.3).setMin(0.0).setMax(10.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.agility.movement_speed_per_level.tooltip"))
+                .setSaveConsumer(cfg.agilityMovementSpeedPerLevel::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.agility.attack_speed_per_level"), cfg.agilityAttackSpeedPerLevel.get())
+                .setDefaultValue(0.5).setMin(0.0).setMax(10.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.agility.attack_speed_per_level.tooltip"))
+                .setSaveConsumer(cfg.agilityAttackSpeedPerLevel::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.range_extension.range_per_level"), cfg.rangeExtensionIncreasePerLevel.get())
+                .setDefaultValue(0.5).setMin(0.0).setMax(50.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.range_extension.range_per_level.tooltip"))
+                .setSaveConsumer(cfg.rangeExtensionIncreasePerLevel::set).build());
+        ec.addEntry(eb.startIntField(Component.translatable("config.potionenchant.effect.overload.max_amplifier_before_explosion"), cfg.overloadMaxAmplifierBeforeExplosion.get())
+                .setDefaultValue(9).setMin(1).setMax(100)
+                .setTooltip(Component.translatable("config.potionenchant.effect.overload.max_amplifier_before_explosion.tooltip"))
+                .setSaveConsumer(cfg.overloadMaxAmplifierBeforeExplosion::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.overload.explosion_power"), cfg.overloadExplosionPower.get())
+                .setDefaultValue(4.0).setMin(0.0).setMax(50.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.overload.explosion_power.tooltip"))
+                .setSaveConsumer(cfg.overloadExplosionPower::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.overload.area_damage_radius"), cfg.overloadAreaDamageRadius.get())
+                .setDefaultValue(5.0).setMin(0.0).setMax(100.0)
+                .setTooltip(Component.translatable("config.potionenchant.effect.overload.area_damage_radius.tooltip"))
+                .setSaveConsumer(cfg.overloadAreaDamageRadius::set).build());
+    }
+
+    private static void buildEnchantmentValuesCategory(ConfigBuilder builder) {
+        ConfigCategory ec = builder.getOrCreateCategory(Component.translatable("config.potionenchant.category.enchantments"));
+        ConfigEntryBuilder eb = builder.entryBuilder();
+        var cfg = EnchantmentConfigValues.CONFIG;
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.enchantment.lifesteal.heal_percent_per_level"), cfg.lifestealHealPercentPerLevel.get())
+                .setDefaultValue(0.05).setMin(0.0).setMax(1.0)
+                .setTooltip(Component.translatable("config.potionenchant.enchantment.lifesteal.heal_percent_per_level.tooltip"))
+                .setSaveConsumer(cfg.lifestealHealPercentPerLevel::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.enchantment.advanced_sharpness.base_damage"), cfg.advancedSharpnessBaseDamage.get())
+                .setDefaultValue(2.5).setMin(0.0).setMax(100.0)
+                .setTooltip(Component.translatable("config.potionenchant.enchantment.advanced_sharpness.base_damage.tooltip"))
+                .setSaveConsumer(cfg.advancedSharpnessBaseDamage::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.enchantment.advanced_sharpness.damage_per_level"), cfg.advancedSharpnessDamagePerLevel.get())
+                .setDefaultValue(2.5).setMin(0.0).setMax(100.0)
+                .setTooltip(Component.translatable("config.potionenchant.enchantment.advanced_sharpness.damage_per_level.tooltip"))
+                .setSaveConsumer(cfg.advancedSharpnessDamagePerLevel::set).build());
+        ec.addEntry(eb.startIntField(Component.translatable("config.potionenchant.enchantment.advanced_protection.protection_points_per_level"), cfg.advancedProtectionPointsPerLevel.get())
+                .setDefaultValue(5).setMin(1).setMax(100)
+                .setTooltip(Component.translatable("config.potionenchant.enchantment.advanced_protection.protection_points_per_level.tooltip"))
+                .setSaveConsumer(cfg.advancedProtectionPointsPerLevel::set).build());
+        ec.addEntry(eb.startIntField(Component.translatable("config.potionenchant.enchantment.blaze_aspect.fire_seconds_per_level"), cfg.blazeAspectFireSecondsPerLevel.get())
+                .setDefaultValue(4).setMin(1).setMax(100)
+                .setTooltip(Component.translatable("config.potionenchant.enchantment.blaze_aspect.fire_seconds_per_level.tooltip"))
+                .setSaveConsumer(cfg.blazeAspectFireSecondsPerLevel::set).build());
+        ec.addEntry(eb.startIntField(Component.translatable("config.potionenchant.enchantment.wither_aspect.wither_seconds_per_level"), cfg.witherAspectWitherSecondsPerLevel.get())
+                .setDefaultValue(4).setMin(1).setMax(100)
+                .setTooltip(Component.translatable("config.potionenchant.enchantment.wither_aspect.wither_seconds_per_level.tooltip"))
+                .setSaveConsumer(cfg.witherAspectWitherSecondsPerLevel::set).build());
+        ec.addEntry(eb.startIntField(Component.translatable("config.potionenchant.enchantment.wither_aspect.wither_amplifier"), cfg.witherAspectWitherLevel.get())
+                .setDefaultValue(0).setMin(0).setMax(255)
+                .setTooltip(Component.translatable("config.potionenchant.enchantment.wither_aspect.wither_amplifier.tooltip"))
+                .setSaveConsumer(cfg.witherAspectWitherLevel::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.enchantment.mana_focus.reduction_per_level"), cfg.manaFocusReductionPerLevel.get())
+                .setDefaultValue(0.1).setMin(0.0).setMax(1.0)
+                .setTooltip(Component.translatable("config.potionenchant.enchantment.mana_focus.reduction_per_level.tooltip"))
+                .setSaveConsumer(cfg.manaFocusReductionPerLevel::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.enchantment.mana_focus.damage_increase_per_level"), cfg.manaFocusDamageIncreasePerLevel.get())
+                .setDefaultValue(0.25).setMin(0.0).setMax(10.0)
+                .setTooltip(Component.translatable("config.potionenchant.enchantment.mana_focus.damage_increase_per_level.tooltip"))
+                .setSaveConsumer(cfg.manaFocusDamageIncreasePerLevel::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.enchantment.potion_bane.damage_multiplier_per_level"), cfg.potionBaneDamageMultiplierPerLevel.get())
+                .setDefaultValue(1.0).setMin(0.0).setMax(100.0)
+                .setTooltip(Component.translatable("config.potionenchant.enchantment.potion_bane.damage_multiplier_per_level.tooltip"))
+                .setSaveConsumer(cfg.potionBaneDamageMultiplierPerLevel::set).build());
+        ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.enchantment.damage_storage.max_storage_multiplier"), cfg.damageStorageMaxMultiplier.get())
+                .setDefaultValue(10.0).setMin(1.0).setMax(1000.0)
+                .setTooltip(Component.translatable("config.potionenchant.enchantment.damage_storage.max_storage_multiplier.tooltip"))
+                .setSaveConsumer(cfg.damageStorageMaxMultiplier::set).build());
+        ec.addEntry(eb.startIntField(Component.translatable("config.potionenchant.enchantment.damage_storage.decay_seconds"), cfg.damageStorageDecaySeconds.get())
+                .setDefaultValue(60).setMin(1).setMax(3600)
+                .setTooltip(Component.translatable("config.potionenchant.enchantment.damage_storage.decay_seconds.tooltip"))
+                .setSaveConsumer(cfg.damageStorageDecaySeconds::set).build());
+    }
+}

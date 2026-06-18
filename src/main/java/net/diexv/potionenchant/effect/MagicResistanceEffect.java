@@ -8,6 +8,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.diexv.potionenchant.config.values.EffectConfigValues;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber
@@ -40,7 +41,7 @@ public class MagicResistanceEffect extends MobEffect {
             MobEffectInstance effectInstance = entity.getEffect(EffectRegistry.MAGIC_RESISTANCE.get());
             int amplifier = effectInstance.getAmplifier();
             // 计算减免比例：每级减少10%，最高90%
-            float reduction = Math.min(0.9F, (amplifier + 1) * 0.1F);
+            float reduction = Math.min((float)(double)EffectConfigValues.CONFIG.magicResistanceMaxReduction.get(), (amplifier + 1) * (float)(double)EffectConfigValues.CONFIG.magicResistanceReductionPerLevel.get());
 
             // 应用减免
             float originalDamage = event.getAmount();
@@ -51,6 +52,6 @@ public class MagicResistanceEffect extends MobEffect {
 
     // 计算魔法伤害减免（供外部调用）
     public static float getMagicDamageReduction(int amplifier) {
-        return Math.min(0.9F, (amplifier + 1) * 0.1F);
+        return Math.min((float)(double)EffectConfigValues.CONFIG.magicResistanceMaxReduction.get(), (amplifier + 1) * (float)(double)EffectConfigValues.CONFIG.magicResistanceReductionPerLevel.get());
     }
 }

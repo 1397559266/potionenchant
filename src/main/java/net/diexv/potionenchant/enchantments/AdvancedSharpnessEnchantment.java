@@ -45,6 +45,6 @@ public class AdvancedSharpnessEnchantment extends Enchantment {
     public float getDamageBonus(int level, MobType mobType) {
         // 原版锋利每级增加 0.5 + 0.5 * level 伤害
         // 高级锋利是原版的2倍：每级增加 1.0 + 1.0 * level 伤害
-        return 2.5F + 2.5F * level;
+        return (float)(double)EnchantmentConfigValues.CONFIG.advancedSharpnessBaseDamage.get() + (float)(double)EnchantmentConfigValues.CONFIG.advancedSharpnessDamagePerLevel.get() * level;
     }
 }

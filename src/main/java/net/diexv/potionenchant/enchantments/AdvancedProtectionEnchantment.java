@@ -48,7 +48,7 @@ public class AdvancedProtectionEnchantment extends Enchantment {
     public int getDamageProtection(int level, DamageSource source) {
         // 原版保护每级提供1点保护，高级保护是原版的5倍：每级提供5点保护
         // 原版公式：每点保护减少4%伤害，所以高级保护每级减少8%伤害
-        return level * 5;
+        return level * EnchantmentConfigValues.CONFIG.advancedProtectionPointsPerLevel.get();
     }
 
     @Override

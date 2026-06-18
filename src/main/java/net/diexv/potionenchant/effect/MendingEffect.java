@@ -7,6 +7,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.diexv.potionenchant.config.values.EffectConfigValues;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber
@@ -34,7 +35,7 @@ public class MendingEffect extends MobEffect {
     private void repairPlayerEquipment(Player player, int amplifier) {
         if (player.level().isClientSide) return;
 
-        int repairAmount = (amplifier + 1) * 10; // 每级修复10点耐久
+        int repairAmount = (amplifier + 1) * EffectConfigValues.CONFIG.mendingRepairPerLevel.get(); // 每级修复10点耐久
 
         // 修复主手和副手物品
         repairItem(player.getMainHandItem(), repairAmount);

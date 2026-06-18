@@ -8,6 +8,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.event.entity.living.MobEffectEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.diexv.potionenchant.config.values.EffectConfigValues;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.UUID;
@@ -52,7 +53,7 @@ public class RangeExtensionEffect extends MobEffect {
 
     private static void applyRangeModifiers(Player player, int amplifier) {
         // 计算增加的格数：每级增加0.5格
-        double rangeIncrease = (amplifier + 1) * 0.5;
+        double rangeIncrease = (amplifier + 1) * (double)EffectConfigValues.CONFIG.rangeExtensionIncreasePerLevel.get();
 
         // 应用交互距离修饰符
         AttributeInstance reachDistance = player.getAttribute(ForgeMod.BLOCK_REACH.get());

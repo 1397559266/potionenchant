@@ -9,6 +9,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.diexv.potionenchant.config.values.EffectConfigValues;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber
@@ -40,7 +41,7 @@ public class VoidPowerEffect extends MobEffect {
                 int amplifier = effectInstance.getAmplifier();
 
                 // 计算虚空伤害加成：每级增加10%的额外伤害
-                float voidDamageMultiplier = 0.1f * (amplifier + 1); // 等级0=10%，等级1=20%，以此类推
+                float voidDamageMultiplier = (float)(double)EffectConfigValues.CONFIG.voidPowerDamagePerLevel.get() * (amplifier + 1); // 等级0=10%，等级1=20%，以此类推
 
                 // 获取当前总伤害（已经包含了所有其他加成）
                 float totalDamage = event.getAmount();

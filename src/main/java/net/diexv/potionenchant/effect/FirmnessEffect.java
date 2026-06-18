@@ -12,6 +12,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.diexv.potionenchant.config.values.EffectConfigValues;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.HashMap;
@@ -58,7 +59,7 @@ public class FirmnessEffect extends MobEffect {
             float maxHealth = entity.getMaxHealth();
 
             // Calculate max damage percentage: 90% - 10% per level, minimum 1%
-            float maxDamagePercent = 0.90f - (amplifier * 0.10f);
+            float maxDamagePercent = (float)(double)EffectConfigValues.CONFIG.firmnessMaxDamageBase.get() - (amplifier * (float)(double)EffectConfigValues.CONFIG.firmnessMaxDamagePerLevel.get());
             maxDamagePercent = Math.max(maxDamagePercent, 0.01f);
             float maxDamage = maxHealth * maxDamagePercent;
 
@@ -68,7 +69,7 @@ public class FirmnessEffect extends MobEffect {
 
             // Health lock: record current health as floor for the next few ticks
             if (!entity.level().isClientSide) {
-                float lockDuration = 1.0f + (amplifier * 0.5f);
+                float lockDuration = (float)(double)EffectConfigValues.CONFIG.firmnessLockDurationBase.get() + (amplifier * (float)(double)EffectConfigValues.CONFIG.firmnessLockDurationPerLevel.get());
                 lockDuration = Math.min(lockDuration, 10.0f);
                 int lockTicks = (int) (lockDuration * 20);
                 // Use raw entity data health to avoid getHealth mixin interference

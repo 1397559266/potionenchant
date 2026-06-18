@@ -13,6 +13,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.diexv.potionenchant.config.values.EffectConfigValues;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.Random;
@@ -48,8 +49,8 @@ public class CriticalStrikeEffect extends MobEffect {
                 int amplifier = effectInstance.getAmplifier();
 
                 // 计算暴击概率：基础概率 + 每级10%
-                float baseChance = 0.2f; // 基础20%概率
-                float chancePerLevel = 0.1f; // 每级增加10%
+                float baseChance = (float)(double)EffectConfigValues.CONFIG.criticalStrikeBaseChance.get(); // 基础20%概率
+                float chancePerLevel = (float)(double)EffectConfigValues.CONFIG.criticalStrikeChancePerLevel.get(); // 每级增加10%
                 float criticalChance = baseChance + (amplifier * chancePerLevel);
 
                 // 限制最大概率为100%
@@ -70,7 +71,7 @@ public class CriticalStrikeEffect extends MobEffect {
         float originalDamage = event.getAmount();
 
         // 计算暴击伤害（原版暴击是1.5倍伤害）
-        float criticalDamage = originalDamage * 1.5f;
+        float criticalDamage = originalDamage * (float)(double)EffectConfigValues.CONFIG.criticalStrikeDamageMultiplier.get();
 
         // 设置新的伤害值
         event.setAmount(criticalDamage);

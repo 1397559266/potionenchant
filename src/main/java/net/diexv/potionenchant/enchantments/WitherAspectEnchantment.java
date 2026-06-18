@@ -49,7 +49,7 @@ public class WitherAspectEnchantment extends Enchantment {
         // 使目标获得凋零效果，持续时间为 4 * level 秒
         if (target instanceof LivingEntity livingTarget) {
             // 凋零效果等级为1，持续时间为4 * level秒
-            livingTarget.addEffect(new MobEffectInstance(MobEffects.WITHER, 4 * 20 * level, level - 1));
+            livingTarget.addEffect(new MobEffectInstance(MobEffects.WITHER, EnchantmentConfigValues.CONFIG.witherAspectWitherSecondsPerLevel.get() * 20 * level, EnchantmentConfigValues.CONFIG.witherAspectWitherLevel.get() * level));
         }
         super.doPostAttack(attacker, target, level);
     }
