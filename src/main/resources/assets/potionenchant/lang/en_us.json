@@ -608,5 +608,5 @@
   "config.potionenchant.mouse_trail_fade_delay": "Trail Fade Delay (%)",
   "config.potionenchant.mouse_trail_fade_delay.tooltip": "How long before trail starts fading. 0=fade from start, 100=never fade. Default: 0",
   "config.potionenchant.mouse_trail_click_count": "Click Firework Count",
-  "config.potionenchant.mouse_trail_click_count.tooltip": "Particles spawned on mouse click (set 0 to disable). Range: 0~100. Default: 15"
+  "config.potionenchant.mouse_trail_click_count.tooltip": "Particles spawned on mouse click (set 0 to disable). Range: 0~100. Default: 5"
 }

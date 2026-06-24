@@ -440,7 +440,7 @@ public class PotionEnchantConfig {
                     .comment("Number of firework particles spawned on mouse click.",
                             "鼠标点击时生成的烟花粒子数量。",
                             "Default: 15")
-                    .defineInRange("mouse_trail_click_count", 15, 0, 100);
+                    .defineInRange("mouse_trail_click_count", 5, 0, 100);
 
             builder.pop();
         }
