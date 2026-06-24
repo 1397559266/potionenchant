@@ -174,7 +174,10 @@ public class XSeriesItemRenderer extends BlockEntityWithoutLevelRenderer {
         private static final java.util.List<ResourceLocation> TEXTURES = new java.util.ArrayList<>();
         private static boolean texturesLoaded = false;
 
-        private static void ensureTexturesLoaded() {
+        /** 获取粒子贴图池（供主菜单使用） */
+        public static java.util.List<ResourceLocation> getParticleTextures() { return TEXTURES; }
+
+        public static void ensureTexturesLoaded() {
             if (texturesLoaded) return;
             texturesLoaded = true;
             try {
@@ -191,6 +194,13 @@ public class XSeriesItemRenderer extends BlockEntityWithoutLevelRenderer {
             } catch (Exception e) {
                 // 没有贴图时静默处理
             }
+        }
+
+        /**
+         * 确保粒子贴图已加载（供主菜单等外部调用）
+         */
+        public static void ensureLoaded() {
+            ensureTexturesLoaded();
         }
 
         public Particle(ItemStack stack) {

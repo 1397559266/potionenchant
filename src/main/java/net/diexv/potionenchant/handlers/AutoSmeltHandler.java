@@ -1,5 +1,6 @@
 package net.diexv.potionenchant.handlers;
 
+import net.diexv.potionenchant.EnchantmentRegistry;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
@@ -37,7 +38,7 @@ public class AutoSmeltHandler {
         // 检查玩家是否使用了带有自动冶炼附魔的工具
         ItemStack tool = player.getMainHandItem();
         int autoSmeltLevel = EnchantmentHelper.getItemEnchantmentLevel(
-                PotionEnchantMod.AUTO_SMELT.get(), tool);
+                EnchantmentRegistry.AUTO_SMELT.get(), tool);
 
         if (autoSmeltLevel > 0) {
             Block block = event.getState().getBlock();
@@ -81,3 +82,5 @@ public class AutoSmeltHandler {
         }
     }
 }
+
+

@@ -3,5 +3,13 @@
     "sounds": [
       "potionenchant:sprint"
     ]
+  },
+  "menu_music": {
+    "sounds": [
+      {
+        "name": "potionenchant:menu_music",
+        "stream": true
+      }
+    ]
   }
 }

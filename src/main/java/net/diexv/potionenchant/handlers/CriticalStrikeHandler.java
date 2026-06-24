@@ -1,5 +1,6 @@
 package net.diexv.potionenchant.handlers;
 
+import net.diexv.potionenchant.EnchantmentRegistry;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -22,7 +23,7 @@ public class CriticalStrikeHandler {
         if (event.getSource().getDirectEntity() instanceof Player attacker) {
             ItemStack weapon = attacker.getMainHandItem();
             int criticalStrikeLevel = EnchantmentHelper.getEnchantmentLevel(
-                    PotionEnchantMod.CRITICAL_STRIKE.get(), attacker);
+                    EnchantmentRegistry.CRITICAL_STRIKE.get(), attacker);
 
             // 检查武器是否有致命一击附魔且攻击是暴击
             if (criticalStrikeLevel > 0 && attacker.fallDistance > 0.0F && !attacker.onGround() && !attacker.isSwimming() && !attacker.isPassenger() && !attacker.isSprinting()) {
@@ -38,7 +39,7 @@ public class CriticalStrikeHandler {
         if (playerCriticalTimes.containsKey(player)) {
             long criticalTime = playerCriticalTimes.get(player);
             int criticalStrikeLevel = EnchantmentHelper.getEnchantmentLevel(
-                    PotionEnchantMod.CRITICAL_STRIKE.get(), player);
+                    EnchantmentRegistry.CRITICAL_STRIKE.get(), player);
 
             // 计算持续时间（每级-1+1秒，所以总时间为等级的秒数）
             long duration = (criticalStrikeLevel -1 + 1) * 1000L;
@@ -53,3 +54,5 @@ public class CriticalStrikeHandler {
         return false;
     }
 }
+
+

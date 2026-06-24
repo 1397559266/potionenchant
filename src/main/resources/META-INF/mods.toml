@@ -1,29 +1,30 @@
 modLoader="javafml"
-loaderVersion="${loader_version_range}"
-license="${mod_license}"
+loaderVersion="[47,)"
+license="MIT"
 
 [[mods]]
-modId="${mod_id}"
-version="${mod_version}"
-displayName="${mod_name}"
-authors="${mod_authors}"
-description='''${mod_description}'''
+modId="potionenchant"
+version="1.20.1-forge-1.8.5"
+displayName="Potionenchant"
+logoFile="potion.png"
+authors="Diexv"
+description='''Potionenchant is a mod that adds custom enchantments to Minecraft.'''
 
-[[dependencies.${mod_id}]]
+[[dependencies.potionenchant]]
     modId="forge"
     mandatory=true
-    versionRange="${forge_version_range}"
+    versionRange="[47,)"
     ordering="NONE"
     side="BOTH"
 
-[[dependencies.${mod_id}]]
+[[dependencies.potionenchant]]
     modId="minecraft"
     mandatory=true
-    versionRange="${minecraft_version_range}"
+    versionRange="[1.20.1,1.21)"
     ordering="NONE"
     side="BOTH"
 
-[[dependencies.${mod_id}]]
+[[dependencies.potionenchant]]
     modId="curios"
     mandatory=false
     versionRange="[5.0,)"

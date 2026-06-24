@@ -51,6 +51,29 @@ public class PotionEnchantConfig {
         
         public final ForgeConfigSpec.IntValue potionEnchantTooltipMaxPerColumn;
         
+        public final ForgeConfigSpec.BooleanValue enableCustomMainMenu;
+        public final ForgeConfigSpec.ConfigValue<List<? extends String>> customMainMenuMusic;
+        public final ForgeConfigSpec.BooleanValue enableMenuParallax;
+        public final ForgeConfigSpec.IntValue menuParallaxMaxOffset;
+        public final ForgeConfigSpec.BooleanValue enableMenuVignette;
+        public final ForgeConfigSpec.IntValue menuFogRange;
+        public final ForgeConfigSpec.IntValue particleBaseSize;
+        public final ForgeConfigSpec.IntValue particleSizeSpread;
+        public final ForgeConfigSpec.IntValue particleSpeedH;
+        public final ForgeConfigSpec.IntValue particleSpeedV;
+        public final ForgeConfigSpec.IntValue particleSpeedVSpread;
+        public final ForgeConfigSpec.IntValue particleFadeIn;
+        public final ForgeConfigSpec.IntValue particleFadeOut;
+        public final ForgeConfigSpec.BooleanValue particleGoUp;
+        public final ForgeConfigSpec.IntValue particleMaxCount;
+        public final ForgeConfigSpec.IntValue particleFadeYStart;
+        public final ForgeConfigSpec.IntValue particleSpawnRate;
+        public final ForgeConfigSpec.IntValue mouseTrailSize;
+        public final ForgeConfigSpec.IntValue mouseTrailLifetime;
+        public final ForgeConfigSpec.IntValue mouseTrailSpawnInterval;
+        public final ForgeConfigSpec.IntValue mouseTrailFadeDelay;
+        public final ForgeConfigSpec.IntValue mouseTrailClickCount;
+        
         public final ForgeConfigSpec.IntValue ultimatePotionAmuletLootChance;
         
         public final ForgeConfigSpec.IntValue maxPotionEnchantLevel;
@@ -273,6 +296,153 @@ public class PotionEnchantConfig {
                     .defineInRange("potion_enchant_tooltip_max_per_column", 10, 1, 50);
             
             builder.pop();
+
+            builder.comment("Custom Main Menu Configuration")
+                    .push("custom_main_menu");
+
+            enableCustomMainMenu = builder
+                    .comment("Enable custom main menu with custom title, background and music.",
+                            "启用自定义主菜单界面（自定义标题、背景和音乐）。",
+                            "Default: false (关闭)")
+                    .define("enable_custom_main_menu", false);
+
+            customMainMenuMusic = builder
+                    .comment("List of custom music tracks to play on the main menu.",
+                            "Format: modid:sound_event_name",
+                            "Example: [\"potionenchant:menu_music\"]",
+                            "The first track will be played by default if the list is not empty.",
+                            "在主菜单播放的自定义音乐列表。",
+                            "格式：modid:sound_event_name",
+                            "示例：[\"potionenchant:menu_music\"]",
+                            "如果列表不为空，将播放第一首曲目。")
+                    .defineList("custom_main_menu_music",
+                            Arrays.asList("potionenchant:menu_music"),
+                            obj -> obj instanceof String);
+
+
+            enableMenuParallax = builder
+                    .comment("Enable parallax effect on custom menu background (follows mouse movement).",
+                            "启用自定义菜单背景视差效果（跟随鼠标移动）。",
+                            "Default: true (开启)")
+                    .define("enable_menu_parallax", true);
+
+            menuParallaxMaxOffset = builder
+                    .comment("Maximum pixel offset for menu background parallax effect.",
+                            "Each direction is capped independently at this value.",
+                            "菜单背景视差效果的最大像素偏移量（每个方向独立限制）。",
+                            "Default: 15 pixels")
+                    .defineInRange("menu_parallax_max_offset", 30, 5, 60);
+
+            enableMenuVignette = builder
+                    .comment("Enable edge vignette (darkening) on custom menu background.",
+                            "在自定义菜单背景边缘启用暗角效果。",
+                            "Default: true (开启)")
+                    .define("enable_menu_vignette", true);
+
+            menuFogRange = builder
+                    .comment("Fog range for menu edge blur effect (percentage of screen).",
+                            "菜单边缘模糊范围（屏幕尺寸百分比）。",
+                            "Default: 33 (1/3 of screen each side)")
+                    .defineInRange("menu_fog_range", 33, 0, 100);
+
+            // ====== 粒子设置 ======
+            particleBaseSize = builder
+                    .comment("Base size of menu particles in pixels.",
+                            "粒子基础大小（像素）。",
+                            "Default: 16")
+                    .defineInRange("particle_base_size", 16, 8, 64);
+
+            particleSizeSpread = builder
+                    .comment("Random size addition range (0 = no randomness).",
+                            "粒子大小随机浮动范围（0=固定大小）。",
+                            "Default: 12")
+                    .defineInRange("particle_size_spread", 12, 0, 48);
+
+            particleSpeedH = builder
+                    .comment("Horizontal movement speed (0 = no horizontal movement).",
+                            "水平移动速度（0=不水平移动）。",
+                            "Default: 12")
+                    .defineInRange("particle_speed_h", 12, 0, 100);
+
+            particleSpeedV = builder
+                    .comment("Base vertical speed.",
+                            "垂直基础移动速度。",
+                            "Default: 8")
+                    .defineInRange("particle_speed_v", 8, 1, 100);
+
+            particleSpeedVSpread = builder
+                    .comment("Random vertical speed addition.",
+                            "垂直速度随机浮动。",
+                            "Default: 25")
+                    .defineInRange("particle_speed_v_spread", 25, 0, 100);
+
+            particleFadeIn = builder
+                    .comment("Duration of fade-in effect (ticks).",
+                            "淡入持续时间（刻）。",
+                            "Default: 25")
+                    .defineInRange("particle_fade_in", 25, 1, 100);
+
+            particleFadeOut = builder
+                    .comment("Duration of fade-out effect before death (ticks).",
+                            "淡出持续时间（粒子消失前，刻）。",
+                            "Default: 40")
+                    .defineInRange("particle_fade_out", 40, 1, 100);
+
+            particleGoUp = builder
+                    .comment("Particle movement direction: true = upward, false = downward.",
+                            "粒子运动方向：true=向上，false=向下。",
+                            "Default: true (向上)")
+                    .define("particle_go_up", true);
+
+            particleMaxCount = builder
+                    .comment("Maximum number of menu particles.",
+                            "主菜单粒子最大数量。",
+                            "Default: 25")
+                    .defineInRange("particle_max_count", 25, 5, 100);
+
+            particleFadeYStart = builder
+                    .comment("Screen percentage where particles start fading out (0=bottom, 100=top).",
+                            "粒子淡出起始位置（屏幕百分比，0=底部 100=顶部）。",
+                            "Default: 75")
+                    .defineInRange("particle_fade_y_start", 75, 0, 100);
+
+            particleSpawnRate = builder
+                    .comment("Particle spawn rate per second.",
+                            "每秒生成的粒子数量。",
+                            "Default: 5")
+                    .defineInRange("particle_spawn_rate", 5, 1, 20);
+
+            mouseTrailSize = builder
+                    .comment("Mouse trail particle base size in pixels.",
+                            "鼠标拖尾粒子基础大小（像素）。",
+                            "Default: 16")
+                    .defineInRange("mouse_trail_size", 16, 4, 64);
+
+            mouseTrailLifetime = builder
+                    .comment("Mouse trail particle lifetime in milliseconds.",
+                            "鼠标拖尾粒子存在时间（毫秒）。",
+                            "Default: 800")
+                    .defineInRange("mouse_trail_lifetime", 800, 200, 10000);
+
+            mouseTrailSpawnInterval = builder
+                    .comment("Mouse trail particle spawn interval in milliseconds.",
+                            "鼠标拖尾粒子生成间隔（毫秒，越小越密集）。",
+                            "Default: 30")
+                    .defineInRange("mouse_trail_spawn_interval", 30, 10, 200);
+
+            mouseTrailFadeDelay = builder
+                    .comment("Percentage of lifetime before trail particles start fading (0=fade from start, 100=no fade).",
+                            "拖尾粒子淡出延迟（生命周期百分比，0=立即淡出，100=永不淡出）。",
+                            "Default: 0")
+                    .defineInRange("mouse_trail_fade_delay", 0, 0, 100);
+
+            mouseTrailClickCount = builder
+                    .comment("Number of firework particles spawned on mouse click.",
+                            "鼠标点击时生成的烟花粒子数量。",
+                            "Default: 15")
+                    .defineInRange("mouse_trail_click_count", 15, 0, 100);
+
+            builder.pop();
         }
     }
 
@@ -344,6 +514,7 @@ public class PotionEnchantConfig {
         // 例如：清除缓存、重新计算黑名单等
     }
 }
+
 
 
 

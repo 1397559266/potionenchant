@@ -1,6 +1,7 @@
 // ReforgeMixin.java
 package net.diexv.potionenchant.mixin;
 
+import net.diexv.potionenchant.EnchantmentRegistry;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -23,7 +24,7 @@ public class ReforgeMixin {
             return;
         }
 
-        int reforgeLevel = stack.getEnchantmentLevel(PotionEnchantMod.REFORGE.get());
+        int reforgeLevel = stack.getEnchantmentLevel(EnchantmentRegistry.REFORGE.get());
 
         if (reforgeLevel > 0 && stack.getDamageValue() + amount >= stack.getMaxDamage()) {
             // 触发重铸效果
@@ -39,7 +40,7 @@ public class ReforgeMixin {
         // 保存所有附魔（除了重铸）
         Map<Enchantment, Integer> enchantments = new java.util.HashMap<>();
         for (Map.Entry<Enchantment, Integer> entry : stack.getAllEnchantments().entrySet()) {
-            if (entry.getKey() != PotionEnchantMod.REFORGE.get()) {
+            if (entry.getKey() != EnchantmentRegistry.REFORGE.get()) {
                 enchantments.put(entry.getKey(), entry.getValue());
             }
         }
@@ -74,7 +75,7 @@ public class ReforgeMixin {
 
         // 如果新等级大于0，添加新的重铸附魔等级
         if (newLevel > 0) {
-            stack.enchant(PotionEnchantMod.REFORGE.get(), newLevel);
+            stack.enchant(EnchantmentRegistry.REFORGE.get(), newLevel);
         }
 
         // 播放音效和粒子效果
@@ -110,3 +111,5 @@ public class ReforgeMixin {
         }
     }
 }
+
+

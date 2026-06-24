@@ -1,5 +1,6 @@
 package net.diexv.potionenchant.handlers;
 
+import net.diexv.potionenchant.EnchantmentRegistry;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.player.Player;
@@ -26,7 +27,7 @@ public class AdvancedPowerHandler {
                 // 检查玩家是否使用了带有高级力量附魔的弓或弩
                 ItemStack weapon = player.getMainHandItem();
                 if ((weapon.getItem() instanceof BowItem || weapon.getItem() instanceof CrossbowItem)) {
-                    int advancedPowerLevel = EnchantmentHelper.getItemEnchantmentLevel(PotionEnchantMod.ADVANCED_POWER.get(), weapon);
+                    int advancedPowerLevel = EnchantmentHelper.getItemEnchantmentLevel(EnchantmentRegistry.ADVANCED_POWER.get(), weapon);
 
                     if (advancedPowerLevel > 0) {
                         // 计算伤害加成
@@ -54,3 +55,5 @@ public class AdvancedPowerHandler {
         return 1.0f + (DAMAGE_BONUS_PER_LEVEL * level);
     }
 }
+
+

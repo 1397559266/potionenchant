@@ -1,5 +1,6 @@
 package net.diexv.potionenchant.handlers;
 
+import net.diexv.potionenchant.EnchantmentRegistry;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -41,7 +42,7 @@ public class ElementalAffinityHandler {
                 ItemStack armor = player.getItemBySlot(slot);
                 if (!armor.isEmpty() && armor.getItem() instanceof ArmorItem) {
                     int level = EnchantmentHelper.getItemEnchantmentLevel(
-                            PotionEnchantMod.ELEMENTAL_AFFINITY.get(), armor);
+                            EnchantmentRegistry.ELEMENTAL_AFFINITY.get(), armor);
                     if (level > 0) {
                         return true;
                     }
@@ -100,4 +101,6 @@ public class ElementalAffinityHandler {
         return eyeBlockState.is(Blocks.POWDER_SNOW);
     }
 }
+
+
 

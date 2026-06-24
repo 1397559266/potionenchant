@@ -1,5 +1,6 @@
 package net.diexv.potionenchant.handlers;
 
+import net.diexv.potionenchant.EnchantmentRegistry;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.diexv.potionenchant.enchantments.PotionBaneEnchantment;
 import net.minecraft.world.entity.player.Player;
@@ -21,7 +22,7 @@ public class PotionBaneHandler {
                 // 检查攻击者武器是否有药剂克星附魔
                 ItemStack weapon = attacker.getMainHandItem();
                 int potionBaneLevel = EnchantmentHelper.getItemEnchantmentLevel(
-                        PotionEnchantMod.POTION_BANE.get(), weapon);
+                        EnchantmentRegistry.POTION_BANE.get(), weapon);
 
                 if (potionBaneLevel > 0) {
                     // 计算伤害加成
@@ -33,3 +34,5 @@ public class PotionBaneHandler {
         }
     }
 }
+
+

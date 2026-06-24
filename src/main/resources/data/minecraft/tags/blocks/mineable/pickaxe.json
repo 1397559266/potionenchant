@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "potionenchant:potion_enchanting_table",
+    "potionenchant:ultimate_enchant_table"
+  ]
+}

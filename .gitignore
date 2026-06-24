@@ -17,3 +17,8 @@ PE1.txt
 *.diff
 *.bak
 *~
+
+# 临时脚本
+_temp.py
+*.tmp
+

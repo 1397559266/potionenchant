@@ -1,5 +1,6 @@
 package net.diexv.potionenchant.mixin;
 
+import net.diexv.potionenchant.EnchantmentRegistry;
 import net.diexv.potionenchant.EffectRegistry;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.diexv.potionenchant.handlers.CriticalStrikeHandler;
@@ -30,7 +31,7 @@ public class HurtMixin {
         // 2. 烬灭附魔：目标着火时无视无敌帧
         if (source.getEntity() instanceof Player attacker) {
             ItemStack weapon = attacker.getMainHandItem();
-            int ashLevel = weapon.getEnchantmentLevel(PotionEnchantMod.ASH_EXTINCTION.get());
+            int ashLevel = weapon.getEnchantmentLevel(EnchantmentRegistry.ASH_EXTINCTION.get());
             if (ashLevel > 0 && target.isOnFire()) {
                 target.invulnerableTime = 0;
             }
@@ -44,3 +45,5 @@ public class HurtMixin {
         }
     }
 }
+
+

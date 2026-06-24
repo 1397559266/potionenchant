@@ -42,7 +42,9 @@
     "accessor.ShaderInstanceAccessor",
     "accessor.UniformAccessor",
     "CosmicAfterLevelMixin",
-    "XSeriesItemRenderMixin"
+    "XSeriesItemRenderMixin",
+    "TitleScreenMusicMixin","TitleScreenBackgroundMixin",
+    "LogoRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

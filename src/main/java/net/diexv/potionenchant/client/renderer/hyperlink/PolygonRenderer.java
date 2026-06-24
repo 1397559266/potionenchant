@@ -334,7 +334,7 @@ public class PolygonRenderer {
                         .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
                         .setTextureState(NO_TEXTURE)
                         .setCullState(NO_CULL)
-                        .setWriteMaskState(COLOR_DEPTH_WRITE)
+                        .setWriteMaskState(COLOR_WRITE)
                         .createCompositeState(false));
 
         public static final RenderType LIGHTNING_NO_CULL = create(
@@ -343,7 +343,7 @@ public class PolygonRenderer {
                 VertexFormat.Mode.QUADS, 256, false, true,
                 CompositeState.builder()
                         .setShaderState(RENDERTYPE_LIGHTNING_SHADER)
-                        .setWriteMaskState(COLOR_DEPTH_WRITE)
+                        .setWriteMaskState(COLOR_WRITE)
                         .setTransparencyState(LIGHTNING_TRANSPARENCY)
                         .setOutputState(WEATHER_TARGET)
                         .setCullState(NO_CULL)
@@ -360,7 +360,26 @@ public class PolygonRenderer {
                             .setCullState(NO_CULL)
                             .setLightmapState(LIGHTMAP)
                             .setOverlayState(OVERLAY)
-                            .setWriteMaskState(COLOR_DEPTH_WRITE)
+                            .setWriteMaskState(COLOR_WRITE)
+                            .createCompositeState(true));
+        }
+
+        /**
+         * 标准 alpha 透明渲染（使用 TRANSLUCENT_TRANSPARENCY）
+         * 参考 cosmic 着色器的 GL_SRC_ALPHA / GL_ONE_MINUS_SRC_ALPHA 混合模式
+         * 必须保留 LIGHTMAP/OVERLAY，否则 entity_translucent 着色器采样的纹理单元未绑定会返回黑色
+         */
+        public static RenderType entityTranslucent(ResourceLocation texture) {
+            return create(MODID + ":entity_translucent",
+                    DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, true,
+                    CompositeState.builder()
+                            .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_SHADER)
+                            .setTextureState(new TextureStateShard(texture, false, false))
+                            .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                            .setCullState(NO_CULL)
+                            .setLightmapState(LIGHTMAP)
+                            .setOverlayState(OVERLAY)
+                            .setWriteMaskState(COLOR_WRITE)
                             .createCompositeState(true));
         }
     }

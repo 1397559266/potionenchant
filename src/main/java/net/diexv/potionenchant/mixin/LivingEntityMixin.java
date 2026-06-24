@@ -1,5 +1,6 @@
 package net.diexv.potionenchant.mixin;
 
+import net.diexv.potionenchant.EnchantmentRegistry;
 import net.diexv.potionenchant.EffectRegistry;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.diexv.potionenchant.effect.FirmnessEffect;
@@ -149,7 +150,7 @@ public abstract class LivingEntityMixin {
             ItemStack stack = player.getItemBySlot(slot);
             if (stack.isEmpty() || !(stack.getItem() instanceof ArmorItem)) continue;
             int level = EnchantmentHelper.getItemEnchantmentLevel(
-                PotionEnchantMod.LIFE_LINK.get(), stack);
+                EnchantmentRegistry.LIFE_LINK.get(), stack);
             if (level > 0 && stack.getDamageValue() < stack.getMaxDamage()) {
                 pieces.add(stack);
             }
@@ -179,3 +180,5 @@ public abstract class LivingEntityMixin {
         return remaining;
     }
 }
+
+

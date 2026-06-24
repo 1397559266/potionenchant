@@ -1,5 +1,6 @@
 package net.diexv.potionenchant.mixin;
 
+import net.diexv.potionenchant.EnchantmentRegistry;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -33,7 +34,7 @@ public class PlayerTickMixin {
 
         // Combo: 攻击速度加成
         ItemStack weapon = player.getMainHandItem();
-        int comboLevel = weapon.getEnchantmentLevel(PotionEnchantMod.COMBO.get());
+        int comboLevel = weapon.getEnchantmentLevel(EnchantmentRegistry.COMBO.get());
         if (comboLevel > 0) {
             applyComboAttackSpeed(player, comboLevel);
         } else {
@@ -75,7 +76,7 @@ public class PlayerTickMixin {
     private ItemStack findDamagedAdvancedMendingItem(Player player) {
         for (ItemStack stack : player.getAllSlots()) {
             if (!stack.isEmpty() && stack.isDamaged() &&
-                stack.getEnchantmentLevel(PotionEnchantMod.ADVANCED_MENDING.get()) > 0) {
+                stack.getEnchantmentLevel(EnchantmentRegistry.ADVANCED_MENDING.get()) > 0) {
                 return stack;
             }
         }
@@ -101,3 +102,4 @@ public class PlayerTickMixin {
         }
     }
 }
+

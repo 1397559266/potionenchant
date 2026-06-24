@@ -28,7 +28,6 @@ import org.apache.logging.log4j.Logger;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.diexv.potionenchant.util.helper.ResourceLocationHelper;
 import net.minecraft.resources.ResourceLocation;
-import net.diexv.potionenchant.enchantments.*;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -39,47 +38,7 @@ public class PotionEnchantMod {
     public static final String MODID = "potionenchant";
     public static final Logger LOGGER = LogManager.getLogger();
 
-    public static final DeferredRegister<Enchantment> POE_ENCHANTMENTS =
-            DeferredRegister.create(ForgeRegistries.ENCHANTMENTS, MODID);
 
-    public static final RegistryObject<Enchantment> ELEMENTAL_AFFINITY =
-            POE_ENCHANTMENTS.register("elemental_affinity", ElementalAffinityEnchantment::new);
-    public static final RegistryObject<Enchantment> REFORGE =
-            POE_ENCHANTMENTS.register("reforge", ReforgeEnchantment::new);
-    public static final RegistryObject<Enchantment> LIFESTEAL =
-            POE_ENCHANTMENTS.register("lifesteal", LifestealEnchantment::new);
-    public static final RegistryObject<Enchantment> ADVANCED_MENDING =
-            POE_ENCHANTMENTS.register("advanced_mending", AdvancedMendingEnchantment::new);
-    public static final RegistryObject<Enchantment> ASH_EXTINCTION =
-            POE_ENCHANTMENTS.register("ash_extinction", AshExtinctionEnchantment::new);
-    public static final RegistryObject<Enchantment> COMBO =
-            POE_ENCHANTMENTS.register("combo", ComboEnchantment::new);
-    public static final RegistryObject<Enchantment> TRACKING_ARROW =
-            POE_ENCHANTMENTS.register("tracking_arrow", TrackingArrowEnchantment::new);
-    public static final RegistryObject<Enchantment> BARRAGE =
-            POE_ENCHANTMENTS.register("barrage", BarrageEnchantment::new);
-    public static final RegistryObject<Enchantment> BLAZE_ASPECT =
-            POE_ENCHANTMENTS.register("blaze_aspect", BlazeAspectEnchantment::new);
-    public static final RegistryObject<Enchantment> CRITICAL_STRIKE =
-            POE_ENCHANTMENTS.register("critical_strike", CriticalStrikeEnchantment::new);
-    public static final RegistryObject<Enchantment> LIFE_LINK =
-            POE_ENCHANTMENTS.register("life_link", LifeLinkEnchantment::new);
-    public static final RegistryObject<Enchantment> AUTO_SMELT =
-            POE_ENCHANTMENTS.register("auto_smelt", AutoSmeltEnchantment::new);
-    public static final RegistryObject<Enchantment> WITHER_ASPECT =
-            POE_ENCHANTMENTS.register("wither_aspect", WitherAspectEnchantment::new);
-    public static final RegistryObject<Enchantment> POTION_BANE =
-            POE_ENCHANTMENTS.register("potion_bane", PotionBaneEnchantment::new);
-    public static final RegistryObject<Enchantment> ADVANCED_SHARPNESS =
-            POE_ENCHANTMENTS.register("advanced_sharpness", AdvancedSharpnessEnchantment::new);
-    public static final RegistryObject<Enchantment> ADVANCED_PROTECTION =
-            POE_ENCHANTMENTS.register("advanced_protection", AdvancedProtectionEnchantment::new);
-    public static final RegistryObject<Enchantment> MANA_FOCUS =
-            POE_ENCHANTMENTS.register("mana_focus", ManaFocusEnchantment::new);
-    public static final RegistryObject<Enchantment> DAMAGE_STORAGE =
-            POE_ENCHANTMENTS.register("damage_storage", DamageStorageEnchantment::new);
-    public static final RegistryObject<Enchantment> ADVANCED_POWER =
-            POE_ENCHANTMENTS.register("advanced_power", AdvancedPowerEnchantment::new);
 
     @SuppressWarnings("removal")
     public PotionEnchantMod() {
@@ -96,7 +55,7 @@ public class PotionEnchantMod {
         }
 
         // 注册效果和药水
-        POE_ENCHANTMENTS.register(modEventBus);
+        EnchantmentRegistry.ENCHANTMENTS.register(modEventBus);
         EffectRegistry.EFFECTS.register(modEventBus);
         MendingPotion.POTIONS.register(modEventBus);
         PurificationPotion.POTIONS.register(modEventBus);
@@ -116,6 +75,9 @@ public class PotionEnchantMod {
         FirmnessPotion.POTIONS.register(modEventBus);
         SymbiosisPotion.POTIONS.register(modEventBus);
         MagicResistancePotion.POTIONS.register(modEventBus);
+
+        // 注册音效
+        net.diexv.potionenchant.sound.ModSounds.register(modEventBus);
 
         // 注册方块
         ModBlocks.BLOCKS.register(modEventBus);
@@ -206,4 +168,5 @@ public class PotionEnchantMod {
         return ResourceLocationHelper.fromNamespaceAndPath(MODID, path);
     }
 }
+
 

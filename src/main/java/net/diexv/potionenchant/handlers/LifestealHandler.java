@@ -1,5 +1,6 @@
 package net.diexv.potionenchant.handlers;
 
+import net.diexv.potionenchant.EnchantmentRegistry;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -18,7 +19,7 @@ public class LifestealHandler {
             Player player = (Player) event.getSource().getEntity();
             ItemStack weapon = player.getMainHandItem();
 
-            int lifestealLevel = weapon.getEnchantmentLevel(PotionEnchantMod.LIFESTEAL.get());
+            int lifestealLevel = weapon.getEnchantmentLevel(EnchantmentRegistry.LIFESTEAL.get());
 
             if (lifestealLevel > 0) {
                 // 触发吸血效果
@@ -42,3 +43,5 @@ public class LifestealHandler {
         }
     }
 }
+
+

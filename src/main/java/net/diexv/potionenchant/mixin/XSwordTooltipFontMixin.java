@@ -26,7 +26,7 @@ import java.util.List;
 @Mixin(GuiGraphics.class)
 public class XSwordTooltipFontMixin {
 
-    @Shadow
+    @Shadow(remap = false)
     private ItemStack tooltipStack;
 
     @Inject(

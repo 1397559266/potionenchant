@@ -1,5 +1,6 @@
 package net.diexv.potionenchant.handlers;
 
+import net.diexv.potionenchant.EnchantmentRegistry;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -203,7 +204,7 @@ public class DamageStorageHandler {
                 ItemStack armor = player.getItemBySlot(slot);
                 if (!armor.isEmpty() && armor.getItem() instanceof ArmorItem) {
                     int level = EnchantmentHelper.getItemEnchantmentLevel(
-                            PotionEnchantMod.DAMAGE_STORAGE.get(), armor);
+                            EnchantmentRegistry.DAMAGE_STORAGE.get(), armor);
                     totalLevel += level;
                 }
             }
@@ -236,6 +237,8 @@ public class DamageStorageHandler {
         return getTotalStorageLevel(player);
     }
 }
+
+
 
 
 

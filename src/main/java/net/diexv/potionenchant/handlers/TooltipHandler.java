@@ -1,5 +1,6 @@
 package net.diexv.potionenchant.handlers;
 
+import net.diexv.potionenchant.EnchantmentRegistry;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -20,7 +21,7 @@ public class TooltipHandler {
 
         // 检查物品是否是盔甲并且有伤害储存附魔
         if (player != null && stack.getItem() instanceof net.minecraft.world.item.ArmorItem) {
-            int storageLevel = EnchantmentHelper.getItemEnchantmentLevel(PotionEnchantMod.DAMAGE_STORAGE.get(), stack);
+            int storageLevel = EnchantmentHelper.getItemEnchantmentLevel(EnchantmentRegistry.DAMAGE_STORAGE.get(), stack);
 
             if (storageLevel > 0) {
                 // 获取玩家储存的伤害量
@@ -70,4 +71,6 @@ public class TooltipHandler {
         return bar.toString();
     }
 }
+
+
 

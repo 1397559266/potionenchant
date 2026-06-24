@@ -1,5 +1,6 @@
 package net.diexv.potionenchant.handlers;
 
+import net.diexv.potionenchant.EnchantmentRegistry;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -68,7 +69,7 @@ public class ManaFocusHandler {
                 ItemStack armor = player.getItemBySlot(slot);
                 if (!armor.isEmpty() && armor.getItem() instanceof ArmorItem) {
                     int level = EnchantmentHelper.getItemEnchantmentLevel(
-                            PotionEnchantMod.MANA_FOCUS.get(), armor);
+                            EnchantmentRegistry.MANA_FOCUS.get(), armor);
                     totalLevel += level;
                 }
             }
@@ -77,3 +78,5 @@ public class ManaFocusHandler {
         return totalLevel;
     }
 }
+
+

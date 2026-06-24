@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Specification-Title: potionenchant
+Specification-Vendor: Diexv
+Specification-Version: 1
+Implementation-Title: potionenchant
+Implementation-Version: 1.20.1-forge-1.8.5
+Implementation-Vendor: Diexv
+Implementation-Timestamp: 2026-06-20T19:52:34+0800
+MixinConfigs: potionenchant.mixins.json
+

@@ -1,5 +1,6 @@
 package net.diexv.potionenchant.mixin;
 
+import net.diexv.potionenchant.EnchantmentRegistry;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -37,7 +38,7 @@ public class TrackingArrowMixin {
         if (arrow.getOwner() instanceof LivingEntity owner) {
             // 检查发射者手中的弓或弩是否有追踪附魔
             ItemStack weapon = owner.getMainHandItem();
-            int trackingLevel = weapon.getEnchantmentLevel(PotionEnchantMod.TRACKING_ARROW.get());
+            int trackingLevel = weapon.getEnchantmentLevel(EnchantmentRegistry.TRACKING_ARROW.get());
 
             if (trackingLevel > 0) {
                 hasTracking = true;
@@ -239,3 +240,5 @@ public class TrackingArrowMixin {
         }
     }
 }
+
+

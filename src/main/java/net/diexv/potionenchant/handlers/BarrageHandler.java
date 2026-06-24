@@ -1,5 +1,6 @@
 package net.diexv.potionenchant.handlers;
 
+import net.diexv.potionenchant.EnchantmentRegistry;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -36,7 +37,7 @@ public class BarrageHandler {
 
         // 获取玩家手中的弓
         ItemStack bow = player.getMainHandItem();
-        int barrageLevel = bow.getEnchantmentLevel(PotionEnchantMod.BARRAGE.get());
+        int barrageLevel = bow.getEnchantmentLevel(EnchantmentRegistry.BARRAGE.get());
 
         // 检查弓是否有万箭齐发附魔
         if (barrageLevel > 0) {
@@ -164,7 +165,7 @@ public class BarrageHandler {
         }
 
         // 关键修改：检查弓是否有追踪附魔，如果有则给箭矢添加追踪标记
-        int trackingLevel = bow.getEnchantmentLevel(PotionEnchantMod.TRACKING_ARROW.get());
+        int trackingLevel = bow.getEnchantmentLevel(EnchantmentRegistry.TRACKING_ARROW.get());
         if (trackingLevel > 0) {
             // 为箭矢添加追踪标记，让万箭齐发的箭矢也能传送和追踪
             arrow.getPersistentData().putBoolean("plentyofenchant:has_tracking", true);
@@ -239,3 +240,5 @@ public class BarrageHandler {
         public int fireRate = 1; // 每1tick发射一支箭
     }
 }
+
+

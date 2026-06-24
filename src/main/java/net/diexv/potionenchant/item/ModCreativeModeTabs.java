@@ -1,5 +1,6 @@
 package net.diexv.potionenchant.item;
 
+import net.diexv.potionenchant.EnchantmentRegistry;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.diexv.potionenchant.potion.*;
 import net.minecraft.core.registries.Registries;
@@ -147,25 +148,25 @@ public class ModCreativeModeTabs {
                         // ========================================
                         // PlentyOfEnchant 移植的附魔书（最高等级）
                         // ========================================
-                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(PotionEnchantMod.ELEMENTAL_AFFINITY.get(), PotionEnchantMod.ELEMENTAL_AFFINITY.get().getMaxLevel())));
-                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(PotionEnchantMod.REFORGE.get(), PotionEnchantMod.REFORGE.get().getMaxLevel())));
-                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(PotionEnchantMod.LIFESTEAL.get(), PotionEnchantMod.LIFESTEAL.get().getMaxLevel())));
-                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(PotionEnchantMod.ADVANCED_MENDING.get(), PotionEnchantMod.ADVANCED_MENDING.get().getMaxLevel())));
-                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(PotionEnchantMod.ASH_EXTINCTION.get(), PotionEnchantMod.ASH_EXTINCTION.get().getMaxLevel())));
-                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(PotionEnchantMod.COMBO.get(), PotionEnchantMod.COMBO.get().getMaxLevel())));
-                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(PotionEnchantMod.TRACKING_ARROW.get(), PotionEnchantMod.TRACKING_ARROW.get().getMaxLevel())));
-                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(PotionEnchantMod.BARRAGE.get(), PotionEnchantMod.BARRAGE.get().getMaxLevel())));
-                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(PotionEnchantMod.BLAZE_ASPECT.get(), PotionEnchantMod.BLAZE_ASPECT.get().getMaxLevel())));
-                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(PotionEnchantMod.CRITICAL_STRIKE.get(), PotionEnchantMod.CRITICAL_STRIKE.get().getMaxLevel())));
-                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(PotionEnchantMod.LIFE_LINK.get(), PotionEnchantMod.LIFE_LINK.get().getMaxLevel())));
-                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(PotionEnchantMod.AUTO_SMELT.get(), PotionEnchantMod.AUTO_SMELT.get().getMaxLevel())));
-                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(PotionEnchantMod.WITHER_ASPECT.get(), PotionEnchantMod.WITHER_ASPECT.get().getMaxLevel())));
-                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(PotionEnchantMod.POTION_BANE.get(), PotionEnchantMod.POTION_BANE.get().getMaxLevel())));
-                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(PotionEnchantMod.ADVANCED_SHARPNESS.get(), PotionEnchantMod.ADVANCED_SHARPNESS.get().getMaxLevel())));
-                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(PotionEnchantMod.ADVANCED_PROTECTION.get(), PotionEnchantMod.ADVANCED_PROTECTION.get().getMaxLevel())));
-                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(PotionEnchantMod.MANA_FOCUS.get(), PotionEnchantMod.MANA_FOCUS.get().getMaxLevel())));
-                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(PotionEnchantMod.DAMAGE_STORAGE.get(), PotionEnchantMod.DAMAGE_STORAGE.get().getMaxLevel())));
-                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(PotionEnchantMod.ADVANCED_POWER.get(), PotionEnchantMod.ADVANCED_POWER.get().getMaxLevel())));
+                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(EnchantmentRegistry.ELEMENTAL_AFFINITY.get(), EnchantmentRegistry.ELEMENTAL_AFFINITY.get().getMaxLevel())));
+                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(EnchantmentRegistry.REFORGE.get(), EnchantmentRegistry.REFORGE.get().getMaxLevel())));
+                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(EnchantmentRegistry.LIFESTEAL.get(), EnchantmentRegistry.LIFESTEAL.get().getMaxLevel())));
+                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(EnchantmentRegistry.ADVANCED_MENDING.get(), EnchantmentRegistry.ADVANCED_MENDING.get().getMaxLevel())));
+                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(EnchantmentRegistry.ASH_EXTINCTION.get(), EnchantmentRegistry.ASH_EXTINCTION.get().getMaxLevel())));
+                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(EnchantmentRegistry.COMBO.get(), EnchantmentRegistry.COMBO.get().getMaxLevel())));
+                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(EnchantmentRegistry.TRACKING_ARROW.get(), EnchantmentRegistry.TRACKING_ARROW.get().getMaxLevel())));
+                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(EnchantmentRegistry.BARRAGE.get(), EnchantmentRegistry.BARRAGE.get().getMaxLevel())));
+                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(EnchantmentRegistry.BLAZE_ASPECT.get(), EnchantmentRegistry.BLAZE_ASPECT.get().getMaxLevel())));
+                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(EnchantmentRegistry.CRITICAL_STRIKE.get(), EnchantmentRegistry.CRITICAL_STRIKE.get().getMaxLevel())));
+                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(EnchantmentRegistry.LIFE_LINK.get(), EnchantmentRegistry.LIFE_LINK.get().getMaxLevel())));
+                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(EnchantmentRegistry.AUTO_SMELT.get(), EnchantmentRegistry.AUTO_SMELT.get().getMaxLevel())));
+                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(EnchantmentRegistry.WITHER_ASPECT.get(), EnchantmentRegistry.WITHER_ASPECT.get().getMaxLevel())));
+                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(EnchantmentRegistry.POTION_BANE.get(), EnchantmentRegistry.POTION_BANE.get().getMaxLevel())));
+                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(EnchantmentRegistry.ADVANCED_SHARPNESS.get(), EnchantmentRegistry.ADVANCED_SHARPNESS.get().getMaxLevel())));
+                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(EnchantmentRegistry.ADVANCED_PROTECTION.get(), EnchantmentRegistry.ADVANCED_PROTECTION.get().getMaxLevel())));
+                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(EnchantmentRegistry.MANA_FOCUS.get(), EnchantmentRegistry.MANA_FOCUS.get().getMaxLevel())));
+                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(EnchantmentRegistry.DAMAGE_STORAGE.get(), EnchantmentRegistry.DAMAGE_STORAGE.get().getMaxLevel())));
+                        output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(EnchantmentRegistry.ADVANCED_POWER.get(), EnchantmentRegistry.ADVANCED_POWER.get().getMaxLevel())));
                     })
                     // 设置自定义背景
                     .withBackgroundLocation(BACKGROUND_IMAGE)
@@ -189,4 +190,6 @@ public class ModCreativeModeTabs {
         CREATIVE_MODE_TABS.register(eventBus);
     }
 }
+
+
 
