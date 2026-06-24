@@ -566,7 +566,7 @@ public class ClothConfigScreen {
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.mouse_trail_click_count"),
                 PotionEnchantConfig.COMMON.mouseTrailClickCount.get(), 0, 100)
-                .setDefaultValue(15)
+                .setDefaultValue(5)
 
                 .setTooltip(Component.translatable("config.potionenchant.mouse_trail_click_count.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.COMMON.mouseTrailClickCount::set).build());
