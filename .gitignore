@@ -22,3 +22,9 @@ PE1.txt
 _temp.py
 *.tmp
 
+# 构建日志/临时文件
+build_*.txt
+temp_build.txt
+build_raw.txt
+check_errors.py
+port_*.py
