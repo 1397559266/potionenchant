@@ -47,7 +47,7 @@ public class ClothConfigScreen {
                 .setSaveConsumer(PotionEnchantConfig.COMMON.limitArmorEnchants::set).build());
         general.addEntry(eb.startIntField(Component.translatable("config.potionenchant.max_armor_enchants"),
                 PotionEnchantConfig.COMMON.maxArmorEnchants.get())
-                .setDefaultValue(5).setMin(1).setMax(Integer.MAX_VALUE)
+                .setDefaultValue(2).setMin(1).setMax(Integer.MAX_VALUE)
 
                 .setTooltip(Component.translatable("config.potionenchant.max_armor_enchants.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.COMMON.maxArmorEnchants::set).build());
@@ -78,7 +78,7 @@ public class ClothConfigScreen {
 
         pe.addEntry(eb.startIntField(Component.translatable("config.potionenchant.max_potion_enchant_level_per_item"),
                 PotionEnchantConfig.COMMON.maxPotionEnchantLevelPerItem.get())
-                .setDefaultValue(5).setMin(1).setMax(Integer.MAX_VALUE)
+                .setDefaultValue(2).setMin(1).setMax(Integer.MAX_VALUE)
 
                 .setTooltip(Component.translatable("config.potionenchant.max_potion_enchant_level_per_item.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.COMMON.maxPotionEnchantLevelPerItem::set).build());
@@ -170,7 +170,7 @@ public class ClothConfigScreen {
                 .setSaveConsumer(PotionEnchantConfig.COMMON.showTextBackground::set).build());
         display.addEntry(eb.startIntField(Component.translatable("config.potionenchant.max_visible_effects"),
                 PotionEnchantConfig.COMMON.maxVisibleEffects.get())
-                .setDefaultValue(75).setMin(3).setMax(50)
+                .setDefaultValue(10).setMin(3).setMax(50)
 
                 .setTooltip(Component.translatable("config.potionenchant.max_visible_effects.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.COMMON.maxVisibleEffects::set).build());
@@ -218,7 +218,7 @@ public class ClothConfigScreen {
                 .setSaveConsumer(PotionEnchantConfig.COMMON.enableArmorValueRender::set).build());
         display.addEntry(eb.startIntField(Component.translatable("config.potionenchant.potion_enchant_tooltip_max_per_column"),
                 PotionEnchantConfig.COMMON.potionEnchantTooltipMaxPerColumn.get())
-                .setDefaultValue(75).setMin(1).setMax(50)
+                .setDefaultValue(10).setMin(1).setMax(50)
 
                 .setTooltip(Component.translatable("config.potionenchant.potion_enchant_tooltip_max_per_column.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.COMMON.potionEnchantTooltipMaxPerColumn::set).build());
@@ -274,7 +274,7 @@ public class ClothConfigScreen {
                 .setTooltip(Component.translatable("config.potionenchant.effect.siphon.lifesteal_per_level.tooltip"))
                 .setSaveConsumer(cfg.siphonLifestealPerLevel::set).build());
         ec.addEntry(eb.startIntField(Component.translatable("config.potionenchant.effect.mending.repair_per_level"), cfg.mendingRepairPerLevel.get())
-                .setDefaultValue(75).setMin(1).setMax(1000)
+                .setDefaultValue(10).setMin(1).setMax(1000)
 
                 .setTooltip(Component.translatable("config.potionenchant.effect.mending.repair_per_level.tooltip"))
                 .setSaveConsumer(cfg.mendingRepairPerLevel::set).build());
@@ -370,7 +370,7 @@ public class ClothConfigScreen {
                 .setTooltip(Component.translatable("config.potionenchant.enchantment.advanced_sharpness.damage_per_level.tooltip"))
                 .setSaveConsumer(cfg.advancedSharpnessDamagePerLevel::set).build());
         ec.addEntry(eb.startIntField(Component.translatable("config.potionenchant.enchantment.advanced_protection.protection_points_per_level"), cfg.advancedProtectionPointsPerLevel.get())
-                .setDefaultValue(5).setMin(1).setMax(100)
+                .setDefaultValue(2).setMin(1).setMax(100)
 
                 .setTooltip(Component.translatable("config.potionenchant.enchantment.advanced_protection.protection_points_per_level.tooltip"))
                 .setSaveConsumer(cfg.advancedProtectionPointsPerLevel::set).build());
@@ -443,7 +443,7 @@ public class ClothConfigScreen {
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.menu_parallax_max_offset"),
                 PotionEnchantConfig.COMMON.menuParallaxMaxOffset.get(), 5, 60)
-                .setDefaultValue(30)
+                .setDefaultValue(27)
 
                 .setTooltip(Component.translatable("config.potionenchant.menu_parallax_max_offset.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.COMMON.menuParallaxMaxOffset::set).build());
@@ -457,26 +457,26 @@ public class ClothConfigScreen {
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.menu_fog_range"),
                 PotionEnchantConfig.COMMON.menuFogRange.get(), 0, 100)
-                .setDefaultValue(33)
+                .setDefaultValue(3)
 
                 .setTooltip(Component.translatable("config.potionenchant.menu_fog_range.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.COMMON.menuFogRange::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.particle_base_size"),
                 PotionEnchantConfig.COMMON.particleBaseSize.get(), 8, 64)
-                .setDefaultValue(16)
+                .setDefaultValue(21)
                 .setTooltip(Component.translatable("config.potionenchant.particle_base_size.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.COMMON.particleBaseSize::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.particle_size_spread"),
                 PotionEnchantConfig.COMMON.particleSizeSpread.get(), 0, 48)
-                .setDefaultValue(12)
+                .setDefaultValue(17)
                 .setTooltip(Component.translatable("config.potionenchant.particle_size_spread.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.COMMON.particleSizeSpread::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.particle_speed_h"),
                 PotionEnchantConfig.COMMON.particleSpeedH.get(), 0, 100)
-                .setDefaultValue(12)
+                .setDefaultValue(17)
 
                 .setTooltip(Component.translatable("config.potionenchant.particle_speed_h.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.COMMON.particleSpeedH::set).build());
@@ -525,21 +525,21 @@ public class ClothConfigScreen {
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.particle_fade_y_start"),
                 PotionEnchantConfig.COMMON.particleFadeYStart.get(), 0, 100)
-                .setDefaultValue(75)
+                .setDefaultValue(10)
 
                 .setTooltip(Component.translatable("config.potionenchant.particle_fade_y_start.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.COMMON.particleFadeYStart::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.particle_spawn_rate"),
                 PotionEnchantConfig.COMMON.particleSpawnRate.get(), 1, 20)
-                .setDefaultValue(5)
+                .setDefaultValue(2)
 
                 .setTooltip(Component.translatable("config.potionenchant.particle_spawn_rate.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.COMMON.particleSpawnRate::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.mouse_trail_size"),
                 PotionEnchantConfig.COMMON.mouseTrailSize.get(), 4, 64)
-                .setDefaultValue(16)
+                .setDefaultValue(21)
                 .setTooltip(Component.translatable("config.potionenchant.mouse_trail_size.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.COMMON.mouseTrailSize::set).build());
 

@@ -331,7 +331,7 @@ public class PotionEnchantConfig {
                             "Each direction is capped independently at this value.",
                             "菜单背景视差效果的最大像素偏移量（每个方向独立限制）。",
                             "Default: 15 pixels")
-                    .defineInRange("menu_parallax_max_offset", 30, 5, 60);
+                    .defineInRange("menu_parallax_max_offset", 27, 5, 60);
 
             enableMenuVignette = builder
                     .comment("Enable edge vignette (darkening) on custom menu background.",
@@ -343,20 +343,20 @@ public class PotionEnchantConfig {
                     .comment("Fog range for menu edge blur effect (percentage of screen).",
                             "菜单边缘模糊范围（屏幕尺寸百分比）。",
                             "Default: 33 (1/3 of screen each side)")
-                    .defineInRange("menu_fog_range", 33, 0, 100);
+                    .defineInRange("menu_fog_range", 3, 0, 100);
 
             // ====== 粒子设置 ======
             particleBaseSize = builder
                     .comment("Base size of menu particles in pixels.",
                             "粒子基础大小（像素）。",
                             "Default: 16")
-                    .defineInRange("particle_base_size", 16, 8, 64);
+                    .defineInRange("particle_base_size", 21, 8, 64);
 
             particleSizeSpread = builder
                     .comment("Random size addition range (0 = no randomness).",
                             "粒子大小随机浮动范围（0=固定大小）。",
                             "Default: 12")
-                    .defineInRange("particle_size_spread", 12, 0, 48);
+                    .defineInRange("particle_size_spread", 17, 0, 48);
 
             particleSpeedH = builder
                     .comment("Horizontal movement speed (0 = no horizontal movement).",
@@ -404,19 +404,19 @@ public class PotionEnchantConfig {
                     .comment("Screen percentage where particles start fading out (0=bottom, 100=top).",
                             "粒子淡出起始位置（屏幕百分比，0=底部 100=顶部）。",
                             "Default: 75")
-                    .defineInRange("particle_fade_y_start", 75, 0, 100);
+                    .defineInRange("particle_fade_y_start", 10, 0, 100);
 
             particleSpawnRate = builder
                     .comment("Particle spawn rate per second.",
                             "每秒生成的粒子数量。",
                             "Default: 5")
-                    .defineInRange("particle_spawn_rate", 5, 1, 20);
+                    .defineInRange("particle_spawn_rate", 2, 1, 20);
 
             mouseTrailSize = builder
                     .comment("Mouse trail particle base size in pixels.",
                             "鼠标拖尾粒子基础大小（像素）。",
                             "Default: 16")
-                    .defineInRange("mouse_trail_size", 16, 4, 64);
+                    .defineInRange("mouse_trail_size", 32, 4, 64);
 
             mouseTrailLifetime = builder
                     .comment("Mouse trail particle lifetime in milliseconds.",
