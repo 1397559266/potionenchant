@@ -539,7 +539,7 @@ public class ClothConfigScreen {
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.mouse_trail_size"),
                 PotionEnchantConfig.COMMON.mouseTrailSize.get(), 4, 64)
-                .setDefaultValue(21)
+                .setDefaultValue(32)
                 .setTooltip(Component.translatable("config.potionenchant.mouse_trail_size.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.COMMON.mouseTrailSize::set).build());
 
