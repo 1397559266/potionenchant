@@ -3,6 +3,7 @@ package net.diexv.potionenchant.network;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.diexv.potionenchant.config.PotionEnchantConfig;
 import net.diexv.potionenchant.data.PotionEnchantData;
+import net.minecraft.resources.ResourceLocation;
 import net.diexv.potionenchant.data.BonusEffect;
 import net.diexv.potionenchant.util.PotionEnchantManager;
 import net.minecraft.core.BlockPos;
@@ -72,6 +73,14 @@ public class PotionEnchantTableNetwork {
                     if (sp.experienceLevel < p.cost) return;
                     sp.giveExperienceLevels(-p.cost);
                 }
+
+                // Blacklist check (server-side defense)
+                ResourceLocation effectRL = net.minecraftforge.registries.ForgeRegistries.MOB_EFFECTS.getKey(p.effect);
+                if (effectRL != null && PotionEnchantConfig.isEffectBlacklisted(effectRL)) return;
+                
+                // Level cap check
+                int maxLvl = PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get();
+                if (p.level > maxLvl) return;
 
                 // Check enchant limits
                 List<PotionEnchantData> existing = PotionEnchantManager.getPotionEnchantments(p.target);

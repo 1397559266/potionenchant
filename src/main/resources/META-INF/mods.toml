@@ -4,7 +4,7 @@ license="MIT"
 
 [[mods]]
 modId="potionenchant"
-version="1.20.1-forge-1.8.5"
+version="${mod_version}"
 displayName="Potionenchant"
 logoFile="potion.png"
 authors="Diexv"

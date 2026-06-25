@@ -608,5 +608,6 @@
   "config.potionenchant.mouse_trail_fade_delay": "拖尾淡出延迟（%）",
   "config.potionenchant.mouse_trail_fade_delay.tooltip": "拖尾粒子存在多久后开始淡出。0=立即淡出，100=永不淡出。默认：0",
   "config.potionenchant.mouse_trail_click_count": "点击烟花粒子数量",
-  "config.potionenchant.mouse_trail_click_count.tooltip": "鼠标点击时生成的烟花粒子数（设为0关闭）。范围：0~100。默认：5"
+  "config.potionenchant.mouse_trail_click_count.tooltip": "鼠标点击时生成的烟花粒子数（设为0关闭）。范围：0~100。默认：5",
+  "gui.potionenchant.copied": "已复制: %s"
 }

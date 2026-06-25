@@ -4,6 +4,7 @@ import net.diexv.potionenchant.config.PotionEnchantConfig;
 import net.diexv.potionenchant.data.PotionEnchantData;
 import net.diexv.potionenchant.network.UltimateTableNetwork;
 import net.diexv.potionenchant.util.PotionEnchantManager;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
@@ -34,7 +35,7 @@ public class UltimateEnchantTableScreen extends Screen {
     private List<InvItem> invItems = new ArrayList<>();
     private int invScroll = 0;
     private ItemStack targetItem = ItemStack.EMPTY;
-    private record EffectInfo(MobEffect effect, String name, boolean beneficial, boolean harmful) {}
+    private record EffectInfo(MobEffect effect, String name, boolean beneficial, boolean harmful, String effectId) {}
     private List<EffectInfo> allEffects = new ArrayList<>(), filteredEffects = new ArrayList<>();
     private EffectInfo selectedEffect;
     private Map<MobEffect, Integer> levelAdjustments = new HashMap<>();
@@ -51,6 +52,8 @@ public class UltimateEnchantTableScreen extends Screen {
     private int listX, listY, listW, listH, statsY, statsH, searchY, modeBtnY, categoryY;
     private static final int MAX_VISIBLE = 5;
     private int rightX, rightY, rightW, rightH;
+    private String tooltipText = "";
+    private int tooltipTimer = 0;
 
     public UltimateEnchantTableScreen(BlockPos pos) {
         super(Component.translatable("container.potionenchant.ultimate_enchant_table"));
@@ -157,6 +160,13 @@ public class UltimateEnchantTableScreen extends Screen {
             String info = Component.translatable("gui.potionenchant.current_xp", getTotalXp(player)).getString() + " | " + Component.translatable("gui.potionenchant.cost_xp", totalXpCost).getString();
             g.drawCenteredString(font, info, width / 2, btnY + 24, canAfford ? 0x80FF80 : 0xFF6060);
         }
+        if (tooltipTimer > 0 && !tooltipText.isEmpty()) {
+            int tw = font.width(tooltipText);
+            int tx = (width - tw) / 2, ty2 = height / 2 - 30;
+            g.fill(tx - 4, ty2 - 2, tx + tw + 4, ty2 + 12, 0xCC000000);
+            g.drawString(font, tooltipText, tx, ty2, 0xFFFFAA);
+            tooltipTimer--;
+        }
         zoom.pop(g); zoom.renderPanel(g, font, smx, smy, width, height); zoom.editBox.render(g, smx, smy, pt);
     }
 
@@ -174,8 +184,13 @@ public class UltimateEnchantTableScreen extends Screen {
 
     private void loadAllEffects() {
         allEffects.clear();
+        java.util.Set<ResourceLocation> blacklisted = PotionEnchantConfig.getBlacklistedEffects();
         ForgeRegistries.MOB_EFFECTS.getValues().forEach(e -> {
-            allEffects.add(new EffectInfo(e, e.getDisplayName().getString(), e.isBeneficial(), e.getCategory() != MobEffectCategory.NEUTRAL && !e.isBeneficial()));
+            ResourceLocation id = ForgeRegistries.MOB_EFFECTS.getKey(e);
+            if (id != null && blacklisted.contains(id)) return;
+            String idStr = id != null ? id.toString() : "";
+            allEffects.add(new EffectInfo(e, e.getDisplayName().getString(), e.isBeneficial(),
+                e.getCategory() != MobEffectCategory.NEUTRAL && !e.isBeneficial(), idStr));
         });
         allEffects.sort(Comparator.comparing(a -> a.name)); filteredEffects = new ArrayList<>(allEffects);
     }
@@ -193,7 +208,7 @@ public class UltimateEnchantTableScreen extends Screen {
             g.drawCenteredString(font, "-", minusX + bs / 2, y + 6, 0xFFFFFF);
             // Plus button (left of minus, green)
             int plusX = minusX - bs - 2;
-            boolean canInc = curLv < 255;
+            int maxLevelCfg = PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get(); boolean canInc = curLv < maxLevelCfg;
             boolean ph = mx >= plusX && mx <= plusX + bs && my >= y + 4 && my <= y + 4 + bs;
             g.fill(plusX, y + 4, plusX + bs, y + 4 + bs, canInc ? 0xFF55FF55 : 0xFF666666);
             g.drawCenteredString(font, "+", plusX + bs / 2, y + 6, 0xFFFFFF);
@@ -218,6 +233,10 @@ public class UltimateEnchantTableScreen extends Screen {
             else if (hover) g.fill(listX + 2, y, plusX, y + rowH, 0x30FFFFFF);
             if (sel) g.fill(listX + 2, y, listX + 4, y + rowH, 0xFFFFAA00);
             g.drawString(font, d, listX + 6, y + 6, sel ? 0xFFDD55 : (hover ? 0xFFFF55 : 0xFFFFFF));
+            // 悬停显示效果ID
+            if (hover && !info.effectId.isEmpty()) {
+                g.drawString(font, info.effectId, listX + 6, y + rowH - 3, 0x80808080);
+            }
         }
         if (filteredEffects.size() > MAX_VISIBLE) {
             int th = Math.max(15, listH * MAX_VISIBLE / filteredEffects.size());
@@ -395,7 +414,17 @@ public class UltimateEnchantTableScreen extends Screen {
                         int curLv = levelAdjustments.getOrDefault(info.effect, getExistingEffectLevel(info.effect));
                         int minusX = listX + listW - bs - 6;
                         int plusX = minusX - bs - 2;
-                        if (zmx >= plusX && zmx <= plusX + bs && zmy >= rowY + 4 && zmy <= rowY + 4 + bs && curLv < 255) {
+                        int maxLevelCfg2 = PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get();
+                        // 右键点击复制效果ID
+                        if (btn == 1 && zmx >= listX && zmx < plusX && zmy >= rowY && zmy < rowY + rowH) {
+                            if (!info.effectId.isEmpty()) {
+                                Minecraft.getInstance().keyboardHandler.setClipboard(info.effectId);
+                                tooltipText = "\u00a7a" + Component.translatable("gui.potionenchant.copied", info.effectId).getString();
+                                tooltipTimer = 80;
+                            }
+                            return true;
+                        }
+                        if (zmx >= plusX && zmx <= plusX + bs && zmy >= rowY + 4 && zmy <= rowY + 4 + bs && curLv < maxLevelCfg2) {
                             levelAdjustments.put(info.effect, curLv + 1); return true;
                         }
                         if (zmx >= minusX && zmx <= minusX + bs && zmy >= rowY + 4 && zmy <= rowY + 4 + bs && curLv > 0) {
@@ -410,6 +439,16 @@ public class UltimateEnchantTableScreen extends Screen {
                         int maxLv = info.enchantment.getMaxLevel();
                         int minusX = listX + listW - bs - 6;
                         int plusX = minusX - bs - 2;
+                        // 右键点击复制附魔ID
+                        if (btn == 1 && zmx >= listX && zmx < plusX && zmy >= rowY && zmy < rowY + rowH) {
+                            ResourceLocation eid = ForgeRegistries.ENCHANTMENTS.getKey(info.enchantment);
+                            if (eid != null) {
+                                Minecraft.getInstance().keyboardHandler.setClipboard(eid.toString());
+                                tooltipText = "\u00a7a" + Component.translatable("gui.potionenchant.copied", eid.toString()).getString();
+                                tooltipTimer = 80;
+                            }
+                            return true;
+                        }
                         if (zmx >= plusX && zmx <= plusX + bs && zmy >= rowY + 4 && zmy <= rowY + 4 + bs && curLv < maxLv) {
                             enchantLevelAdjustments.put(info.enchantment, curLv + 1); return true;
                         }
@@ -556,10 +595,20 @@ public class UltimateEnchantTableScreen extends Screen {
         int totalCost = getTotalCost(); if (totalCost <= 0) return;
         if (!player.isCreative() && getTotalXp(player) < totalCost) return;
         if (currentMode == Mode.POTION) {
+            java.util.List<java.util.Map.Entry<MobEffect, Integer>> pending = new java.util.ArrayList<>();
             for (var e : levelAdjustments.entrySet()) {
                 int ex = getExistingEffectLevel(e.getKey()); if (e.getValue() == ex) continue;
-                net.diexv.potionenchant.network.PotionEnchantTableNetwork.CHANNEL.sendToServer(
-                    new net.diexv.potionenchant.network.PotionEnchantTableNetwork.ApplyEffectPacket(blockPos, targetItem, e.getKey(), e.getValue(), 0, java.util.Collections.emptyList()));
+                pending.add(e);
+            }
+            if (!pending.isEmpty()) {
+                int[] effectIds = new int[pending.size()];
+                int[] levels = new int[pending.size()];
+                for (int i = 0; i < pending.size(); i++) {
+                    effectIds[i] = MobEffect.getId(pending.get(i).getKey());
+                    levels[i] = pending.get(i).getValue();
+                }
+                UltimateTableNetwork.CHANNEL.sendToServer(
+                    new UltimateTableNetwork.ApplyPotionBatchPacket(blockPos, targetItem, effectIds, levels, totalCost));
             }
         } else {
             for (var e : enchantLevelAdjustments.entrySet()) {

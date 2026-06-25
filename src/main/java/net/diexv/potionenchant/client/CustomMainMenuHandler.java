@@ -112,6 +112,7 @@ public class CustomMainMenuHandler {
     @SubscribeEvent
     public static void onScreenRender(ScreenEvent.Render event) {
         if (!(event.getScreen() instanceof TitleScreen) || !isActive) return;
+        if (event instanceof net.minecraftforge.client.event.ScreenEvent.Render.Post) return;
         if (!PotionEnchantConfig.COMMON.enableCustomMainMenu.get()) {
             if (isActive) { isActive = false; particles.clear(); }
             return;
@@ -141,8 +142,13 @@ public class CustomMainMenuHandler {
         if (checkBackgroundExists()) {
             g.fill(0, 0, w, h, 0xFF000000);
             drawCustomBackground(g, w, h);
-            drawButtonShadows(g, event.getScreen(), event.getMouseX(), event.getMouseY());
+            // 小按钮/图标按钮完整渲染
+            drawButtonTextAndIcons(g, event.getScreen(), event.getMouseX(), event.getMouseY());
+            // 大按钮阴影+文本（合并到同一循环确保文本在阴影之上）
+            drawButtonShadowsAndText(g, event.getScreen(), event.getMouseX(), event.getMouseY());
+            // Forge版本信息（左下角）
             drawFogGradient(g, w, h);
+            drawForgeBranding(g);
         }
         if (checkLogoExists()) drawCustomLogo(g, w, h, fadeAlpha);
         updateAndDrawParticles(g, fadeAlpha);
@@ -232,6 +238,40 @@ public class CustomMainMenuHandler {
 
     // ====== 背景绘制（含视差偏移） ======
 
+    private static void drawButtonTextAndIcons(GuiGraphics g, Screen s, int mx, int my) {
+        var font = Minecraft.getInstance().font;
+        for (var r : s.renderables) {
+            if (!(r instanceof net.minecraft.client.gui.components.AbstractWidget w)) continue;
+            int x = w.getX(), y = w.getY(), bw = w.getWidth(), bh = w.getHeight();
+            // 小按钮（≤40px，如无障碍图标）或ImageButton → 完整渲染保留图案
+            if ((bw <= 40 || bh <= 15) || r instanceof net.minecraft.client.gui.components.ImageButton) {
+                w.render(g, mx, my, 0f);
+            }
+        }
+    }
+
+    // ====== Forge 品牌信息 ======
+
+        private static void drawForgeBranding(GuiGraphics g) {
+        try {
+            var mc = Minecraft.getInstance();
+            var font = mc.font;
+            int sw = mc.getWindow().getGuiScaledWidth();
+            int sh = mc.getWindow().getGuiScaledHeight();
+            // 左下角：Forge 版本信息 + 模组数量（匹配 TitleScreen.render 的计算方式）
+            net.minecraftforge.internal.BrandingControl.forEachLine(true, true, (brdline, brd) -> {
+                g.drawString(font, brd, 2, sh - (10 + brdline * (font.lineHeight + 1)), 0xFFFFFFFF);
+            });
+            // 右下角：状态行（版权信息上方，匹配 TitleScreen.render）
+            net.minecraftforge.internal.BrandingControl.forEachAboveCopyrightLine((brdline, brd) -> {
+                int x = sw - font.width(brd);
+                g.drawString(font, brd, x, sh - (10 + (brdline + 1) * (font.lineHeight + 1)), 0xFFFFFFFF);
+            });
+        } catch (Exception e) {
+            // Forge branding not available
+        }
+    }
+
     private static void drawCustomBackground(GuiGraphics g, int w, int h) {
         RenderSystem.enableBlend();
         g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -302,6 +342,9 @@ public class CustomMainMenuHandler {
 
 
     // ====== Logo 绘制 ======
+
+    
+    // ====== 底部信息区域（Forge 信息 + 版权，防止残留） ======
 
     private static void drawCustomLogo(GuiGraphics g, int sw, int h, float a) {
         RenderSystem.enableBlend();
@@ -518,14 +561,16 @@ public class CustomMainMenuHandler {
 
     // ====== 按钮阴影 ======
 
-    private static void drawButtonShadows(GuiGraphics g, Screen s, int mx, int my) {
-        RenderSystem.enableBlend();
+    private static void drawButtonShadowsAndText(GuiGraphics g, Screen s, int mx, int my) {
+        var font = Minecraft.getInstance().font;
         for (var r : s.renderables) {
             if (!(r instanceof net.minecraft.client.gui.components.AbstractWidget w)) continue;
             int x = w.getX(), y = w.getY(), bw = w.getWidth(), bh = w.getHeight();
-            if (bw < 50 || bh < 15) continue;
-            if (y < 10 || y > s.height - 40) continue;
+            if (bw < 10 || bh < 10) continue;
+            if (bw <= 40 || r instanceof net.minecraft.client.gui.components.ImageButton) continue;
+            // 阴影背景（GuiGraphics.fill自动管理混合）
             g.fill(x-2, y-2, x+bw+2, y+bh+2, 0x60000000);
+            // 悬停发光边框
             if (mx >= x && mx <= x+bw && my >= y && my <= y+bh) {
                 int c1 = 0xCCFFAA00, c2 = 0xAAFFDD44;
                 g.fill(x-2, y-2, x-1, y+bh+2, c1); g.fill(x+bw+1, y-2, x+bw+2, y+bh+2, c1);
@@ -533,8 +578,13 @@ public class CustomMainMenuHandler {
                 g.fill(x-1, y-1, x, y+bh+1, c2);   g.fill(x+bw, y-1, x+bw+1, y+bh+1, c2);
                 g.fill(x-1, y-1, x+bw+1, y, c2);   g.fill(x-1, y+bh, x+bw+1, y+bh+1, c2);
             }
+            // 按钮文本（同一循环中绘制，确保在阴影之上）
+            var msg = w.getMessage();
+            if (msg != null && !msg.getString().isEmpty()) {
+                int color = 0xFFFFFFFF;
+                g.drawString(font, msg, x + (bw - font.width(msg)) / 2, y + (bh - 8) / 2, color);
+            }
         }
-        RenderSystem.disableBlend();
     }
 
     // ====== 粒子类 ======
@@ -728,4 +778,12 @@ public class CustomMainMenuHandler {
         }
     }
 }
+
+
+
+
+
+
+
+
 

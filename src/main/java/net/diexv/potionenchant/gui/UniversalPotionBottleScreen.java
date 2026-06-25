@@ -221,7 +221,7 @@ public class UniversalPotionBottleScreen extends Screen {
             .sorted(Comparator.comparing(effect -> effect.getDisplayName().getString()))
             .forEach(effect -> {
                 ResourceLocation key = ForgeRegistries.MOB_EFFECTS.getKey(effect);
-                if (key != null) {
+                if (key != null && !PotionEnchantConfig.getBlacklistedEffects().contains(key)) {
                     String name = effect.getDisplayName().getString();
                     String descriptionKey = "effect." + key.getNamespace() + "." + key.getPath() + ".description";
                     String description = net.minecraft.client.resources.language.I18n.get(descriptionKey, "");

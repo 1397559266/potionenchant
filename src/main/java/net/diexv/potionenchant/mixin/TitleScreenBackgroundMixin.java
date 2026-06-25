@@ -2,19 +2,20 @@ package net.diexv.potionenchant.mixin;
 
 import net.diexv.potionenchant.config.PotionEnchantConfig;
 import net.minecraft.client.gui.screens.TitleScreen;
-import net.minecraft.client.renderer.PanoramaRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(TitleScreen.class)
 public class TitleScreenBackgroundMixin {
 
-    @Redirect(method = "render", 
-              at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/PanoramaRenderer;render(FF)V"))
-    private void cancelPanorama(PanoramaRenderer instance, float f, float g) {
-        if (!PotionEnchantConfig.COMMON.enableCustomMainMenu.get()) {
-            instance.render(f, g);
+    @Inject(method = "render", 
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/PanoramaRenderer;render(FF)V"),
+            cancellable = true)
+    private void onPanoramaRender(CallbackInfo ci) {
+        if (PotionEnchantConfig.COMMON.enableCustomMainMenu.get()) {
+            ci.cancel();
         }
     }
 }
