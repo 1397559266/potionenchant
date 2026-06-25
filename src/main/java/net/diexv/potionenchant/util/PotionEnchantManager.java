@@ -39,6 +39,13 @@ public class PotionEnchantManager {
 
     // 添加药水附魔到物品
     public static void addPotionEnchantment(ItemStack stack, PotionEnchantData data) {
+        // Global blacklist check - prevent blacklisted effects from being applied anywhere
+        if (data != null && data.getEffect() != null) {
+            net.minecraft.resources.ResourceLocation effectId = net.minecraftforge.registries.ForgeRegistries.MOB_EFFECTS.getKey(data.getEffect());
+            if (effectId != null && net.diexv.potionenchant.config.PotionEnchantConfig.isEffectBlacklisted(effectId)) {
+                return; // Blacklisted, skip
+            }
+        }
         CompoundTag tag = stack.getOrCreateTag();
         ListTag enchantList;
 
@@ -102,7 +109,7 @@ public class PotionEnchantManager {
                 // 终极药水护符不受等级上限限制
                 if (!isUltimatePotionAmulet(stack)) {
                     // 应用等级上限
-                    int maxLevel = PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get();
+                    int maxLevel = PotionEnchantConfig.SERVER.maxPotionEnchantLevel.get();
                     newAmplifier = Math.min(newAmplifier, maxLevel - 1); // -1 因为amplifier从0开始
                 }
                 
@@ -115,7 +122,7 @@ public class PotionEnchantManager {
         if (!found) {
             // 对于新添加的效果，也要应用等级上限（如果不是终极药水护符）
             if (!isUltimatePotionAmulet(stack)) {
-                int maxLevel = PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get();
+                int maxLevel = PotionEnchantConfig.SERVER.maxPotionEnchantLevel.get();
                 if (data.getAmplifier() >= maxLevel) {
                     data = new PotionEnchantData(data.getEffect(), maxLevel - 1, data.isArmorEnchant(), data.getColor());
                 }

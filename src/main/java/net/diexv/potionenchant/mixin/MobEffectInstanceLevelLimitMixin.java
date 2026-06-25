@@ -18,9 +18,9 @@ public class MobEffectInstanceLevelLimitMixin {
     )
     private void onConstruct(MobEffect effect, int duration, int amplifier, boolean bl, boolean bl2, boolean bl3, CallbackInfo ci) {
         try {
-            if (PotionEnchantConfig.COMMON != null &&
-                PotionEnchantConfig.COMMON.allowPotionLevelBeyond255 != null &&
-                PotionEnchantConfig.COMMON.allowPotionLevelBeyond255.get()) {
+            if (PotionEnchantConfig.SERVER != null &&
+                PotionEnchantConfig.SERVER.allowPotionLevelBeyond255 != null &&
+                PotionEnchantConfig.SERVER.allowPotionLevelBeyond255.get()) {
                 return;
             }
         } catch (Exception e) {

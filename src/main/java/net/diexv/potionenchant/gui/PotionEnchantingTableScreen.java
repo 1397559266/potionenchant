@@ -21,6 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
+import net.diexv.potionenchant.util.PinyinHelper;
 
 public class PotionEnchantingTableScreen extends Screen {
 
@@ -39,6 +40,8 @@ public class PotionEnchantingTableScreen extends Screen {
     private ItemStack targetItem = ItemStack.EMPTY;
 
     private int leftX, leftY, leftW, leftH;
+    private String tooltipText = "";
+    private int tooltipTimer = 0;
     private int rightX, rightY, rightW, rightH;
     private int btnY, confirmX, cancelX;
     private final GuiZoom zoom = new GuiZoom("potion_enchanting_table");
@@ -196,6 +199,8 @@ public class PotionEnchantingTableScreen extends Screen {
                     int xpColor = canAfford ? 0x80FF20 : 0xFF6060;
                     String costStr = Component.translatable("gui.potionenchant.xp_cost", opt.cost).getString();
                     g.drawString(font, costStr, leftX + 10, sy + slotH - 14, xpColor);
+                    String eid = net.minecraftforge.registries.ForgeRegistries.MOB_EFFECTS.getKey(opt.effect).toString();
+                    g.drawString(font, eid, leftX + 10, sy + slotH - 14 - 10, 0xFF666666);
                 }
             } else if (cannotEnchant) {
                 g.drawCenteredString(font, Component.translatable("gui.potionenchant.already_enchanted"), leftX + leftW / 2, sy + slotH / 2 - 4, 0xFF5555);
@@ -257,6 +262,14 @@ public class PotionEnchantingTableScreen extends Screen {
                 zoom.pop(g);
         zoom.renderPanel(g, font, scrMX, scrMY, width, height);
         zoom.editBox.render(g, scrMX, scrMY, partialTick);
+        if (tooltipTimer > 0) {
+            int tw = font.width(tooltipText);
+            int tx = (width - tw) / 2;
+            int ty = height - 40;
+            g.fill(tx - 4, ty - 2, tx + tw + 4, ty + 12, 0xCC000000);
+            g.drawString(font, tooltipText, tx, ty, 0x55FF55);
+            tooltipTimer--;
+        }
     }
 
     private void drawSlot(GuiGraphics g, int x, int y, int size, ItemStack stack, int mx, int my, boolean highlight) {
@@ -313,7 +326,16 @@ public class PotionEnchantingTableScreen extends Screen {
         if (zmx >= leftX && zmx < leftX + leftW && zmy >= leftY && zmy < leftY + leftH) {
             int slotH = (leftH - 22) / 3;
             int slot = (int)(zmy - leftY - 18) / slotH;
-            if (slot >= 0 && slot < 3 && options[slot] != null) selectedSlot = slot;
+            if (slot >= 0 && slot < 3 && options[slot] != null) {
+                if (btn == 1) {
+                    String eid = net.minecraftforge.registries.ForgeRegistries.MOB_EFFECTS.getKey(options[slot].effect).toString();
+                    Minecraft.getInstance().keyboardHandler.setClipboard(eid);
+                    tooltipText = net.minecraft.network.chat.Component.translatable("gui.potionenchant.copied", eid).getString();
+                    tooltipTimer = 80;
+                    return true;
+                }
+                selectedSlot = slot;
+            }
             return true;
         }
         // RIGHT: inventory
@@ -354,10 +376,10 @@ public class PotionEnchantingTableScreen extends Screen {
         List<PotionEnchantData> existing = PotionEnchantManager.getPotionEnchantments(targetItem);
         for (PotionEnchantData ed : existing)
             if (ed.getEffect() == opt.effect && ed.getAmplifier() + 1 >= opt.level) return;
-        if (PotionEnchantConfig.COMMON.limitAllEnchants.get()) {
+        if (PotionEnchantConfig.SERVER.limitAllEnchants.get()) {
             long count = existing.stream().map(PotionEnchantData::getEffect).distinct().count();
             boolean has = existing.stream().anyMatch(e -> e.getEffect() == opt.effect);
-            if (!has && count >= PotionEnchantConfig.COMMON.maxAllEnchants.get()) return;
+            if (!has && count >= PotionEnchantConfig.SERVER.maxAllEnchants.get()) return;
         }
         int existingLvl = getExistingLevel(opt.effect);
         int newLvl = Math.max(opt.level, existingLvl + 1);

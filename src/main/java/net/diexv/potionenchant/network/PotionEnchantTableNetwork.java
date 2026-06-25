@@ -79,7 +79,7 @@ public class PotionEnchantTableNetwork {
                 if (effectRL != null && PotionEnchantConfig.isEffectBlacklisted(effectRL)) return;
                 
                 // Level cap check
-                int maxLvl = PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get();
+                int maxLvl = PotionEnchantConfig.SERVER.maxPotionEnchantLevel.get();
                 if (p.level > maxLvl) return;
 
                 // Check enchant limits
@@ -87,10 +87,10 @@ public class PotionEnchantTableNetwork {
                 for (PotionEnchantData ed : existing) {
                     if (ed.getEffect() == p.effect && ed.getAmplifier() + 1 >= p.level) return;
                 }
-                if (PotionEnchantConfig.COMMON.limitAllEnchants.get()) {
+                if (PotionEnchantConfig.SERVER.limitAllEnchants.get()) {
                     long count = existing.stream().map(PotionEnchantData::getEffect).distinct().count();
                     boolean has = existing.stream().anyMatch(en -> en.getEffect() == p.effect);
-                    if (!has && count >= PotionEnchantConfig.COMMON.maxAllEnchants.get()) return;
+                    if (!has && count >= PotionEnchantConfig.SERVER.maxAllEnchants.get()) return;
                 }
 
                 ItemStack result = p.target.copy();

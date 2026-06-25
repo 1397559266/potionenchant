@@ -41,7 +41,7 @@ public class ArmorOverlayHandler {
         if (!event.getOverlay().id().equals(VanillaGuiOverlay.ARMOR_LEVEL.id())) return;
 
         Minecraft mc = Minecraft.getInstance();
-        if (!PotionEnchantConfig.COMMON.enableArmorValueRender.get()) return;
+        if (!PotionEnchantConfig.CLIENT.enableArmorValueRender.get()) return;
         if (mc.player == null || mc.options.hideGui) return;
 
         ForgeGui gui = (ForgeGui) mc.gui;

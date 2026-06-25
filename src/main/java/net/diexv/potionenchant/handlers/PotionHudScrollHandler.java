@@ -55,7 +55,7 @@ public class PotionHudScrollHandler {
      * 调整滚动偏移量
      */
     public static void adjustScrollOffset(int delta, int totalEffects) {
-        int maxVisible = PotionEnchantConfig.COMMON.maxVisibleEffects.get();
+        int maxVisible = PotionEnchantConfig.CLIENT.maxVisibleEffects.get();
         
         if (totalEffects <= maxVisible) {
             // 如果效果总数不超过最大显示数，不需要滚动
@@ -85,7 +85,7 @@ public class PotionHudScrollHandler {
         }
         
         // 检查是否启用了自定义HUD
-        if (!PotionEnchantConfig.COMMON.customPotionHud.get()) {
+        if (!PotionEnchantConfig.CLIENT.customPotionHud.get()) {
             return;
         }
         
@@ -100,7 +100,7 @@ public class PotionHudScrollHandler {
         }
         
         int totalEffects = effects.size();
-        int maxVisible = PotionEnchantConfig.COMMON.maxVisibleEffects.get();
+        int maxVisible = PotionEnchantConfig.CLIENT.maxVisibleEffects.get();
         
         // 只有当效果数量超过最大显示数时才处理滚动
         if (totalEffects > maxVisible) {

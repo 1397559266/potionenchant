@@ -1,6 +1,7 @@
 package net.diexv.potionenchant.gui;
 
 import net.diexv.potionenchant.config.PotionEnchantConfig;
+import net.diexv.potionenchant.util.PinyinHelper;
 import net.diexv.potionenchant.network.EnchantBookPacketHandler;
 import net.diexv.potionenchant.gui.GuiZoom;
 import net.minecraft.client.Minecraft;
@@ -34,6 +35,8 @@ public class UniversalEnchantmentBookScreen extends Screen {
     private int descScrollOffset;
     private boolean isDescDragging, isDragging;
     private boolean showSingleEffectMode = true;
+    private String tooltipText = "";
+    private int tooltipTimer = 0;
     private CategoryBar categoryBar;
 
     public UniversalEnchantmentBookScreen(ItemStack targetItem, ItemStack bookItem) {
@@ -83,7 +86,7 @@ public class UniversalEnchantmentBookScreen extends Screen {
     private int getTotalXpCost() {
         int totalXp = 0;
         int cpl = 1000;
-        try { if (PotionEnchantConfig.COMMON != null && PotionEnchantConfig.COMMON.enchantBookXpCost != null) cpl = PotionEnchantConfig.COMMON.enchantBookXpCost.get(); } catch (Exception ignored) {}
+        try { if (PotionEnchantConfig.SERVER != null && PotionEnchantConfig.SERVER.enchantBookXpCost != null) cpl = PotionEnchantConfig.SERVER.enchantBookXpCost.get(); } catch (Exception ignored) {}
         for (var e : levelAdjustments.entrySet()) {
             int tgt = e.getValue(), ex = getExistingLevel(e.getKey());
             if (tgt > ex) totalXp += Math.max(1, (tgt - ex) * cpl);
@@ -103,7 +106,7 @@ public class UniversalEnchantmentBookScreen extends Screen {
     }
     private boolean canInc(Enchantment e, int cur) {
         boolean ab = false;
-        try { if (PotionEnchantConfig.COMMON != null && PotionEnchantConfig.COMMON.allowEnchantLevelBeyondCap != null) ab = PotionEnchantConfig.COMMON.allowEnchantLevelBeyondCap.get(); } catch (Exception ignored) {}
+        try { if (PotionEnchantConfig.SERVER != null && PotionEnchantConfig.SERVER.allowEnchantLevelBeyondCap != null) ab = PotionEnchantConfig.SERVER.allowEnchantLevelBeyondCap.get(); } catch (Exception ignored) {}
         return ab ? cur < Integer.MAX_VALUE : cur < Math.max(e.getMaxLevel(), 1);
     }
     private void onLevelInputChanged(String t) {
@@ -112,7 +115,7 @@ public class UniversalEnchantmentBookScreen extends Screen {
             int lv = Integer.parseInt(t);
             if (lv < 0) { lv = 0; levelEditBox.setValue("0"); }
             boolean ab = false;
-            try { if (PotionEnchantConfig.COMMON != null && PotionEnchantConfig.COMMON.allowEnchantLevelBeyondCap != null) ab = PotionEnchantConfig.COMMON.allowEnchantLevelBeyondCap.get(); } catch (Exception ignored) {}
+            try { if (PotionEnchantConfig.SERVER != null && PotionEnchantConfig.SERVER.allowEnchantLevelBeyondCap != null) ab = PotionEnchantConfig.SERVER.allowEnchantLevelBeyondCap.get(); } catch (Exception ignored) {}
             if (!ab) {
                 int cap = Math.max(editingEnchant.getMaxLevel(), 1);
                 if (lv > cap) { lv = cap; levelEditBox.setValue(String.valueOf(cap)); }
@@ -124,7 +127,7 @@ public class UniversalEnchantmentBookScreen extends Screen {
     private void loadAllEnchantments() {
         allEnchants.clear();
         boolean ab = false;
-        try { if (PotionEnchantConfig.COMMON != null && PotionEnchantConfig.COMMON.allowEnchantLevelBeyondCap != null) ab = PotionEnchantConfig.COMMON.allowEnchantLevelBeyondCap.get(); } catch (Exception ignored) {}
+        try { if (PotionEnchantConfig.SERVER != null && PotionEnchantConfig.SERVER.allowEnchantLevelBeyondCap != null) ab = PotionEnchantConfig.SERVER.allowEnchantLevelBeyondCap.get(); } catch (Exception ignored) {}
         for (Enchantment e : ForgeRegistries.ENCHANTMENTS) {
             if (e == null) continue;
             allEnchants.add(new EnchantInfo(e, getExistingLevel(e), ab ? Integer.MAX_VALUE : Math.max(e.getMaxLevel(), 1)));
@@ -141,9 +144,10 @@ public class UniversalEnchantmentBookScreen extends Screen {
             filteredEnchants = new ArrayList<>();
             for (EnchantInfo ei : allEnchants) {
                 if (!matchesCategory(ei)) continue;
-                String n = ei.enchantment.getFullname(1).getString().toLowerCase();
+                String n = ei.enchantment.getFullname(1).getString();
                 String id = ForgeRegistries.ENCHANTMENTS.getKey(ei.enchantment).toString().toLowerCase();
-                if (n.contains(q) || id.contains(q)) filteredEnchants.add(ei);
+                String displayName = Component.translatable(ei.enchantment.getDescriptionId()).getString();
+                if (PinyinHelper.matchesSearch(n, displayName, n, id, q)) filteredEnchants.add(ei);
             }
         }
         scrollOffset = Math.min(scrollOffset, Math.max(0, filteredEnchants.size() - MAX_VISIBLE));
@@ -204,6 +208,15 @@ public class UniversalEnchantmentBookScreen extends Screen {
         zoom.pop(g);
         zoom.renderPanel(g, font, scrMX, scrMY, width, height);
         zoom.editBox.render(g, scrMX, scrMY, pt);
+        // 显示复制提示
+        if (tooltipTimer > 0 && !tooltipText.isEmpty()) {
+            int tw = font.width(tooltipText);
+            int tx = (width - tw) / 2;
+            int ty2 = height - 30;
+            g.fill(tx - 4, ty2 - 2, tx + tw + 4, ty2 + 12, 0xCC000000);
+            g.drawString(font, tooltipText, tx, ty2, 0xFFFFFF);
+            tooltipTimer--;
+        }
     }
 
     private void renderList(GuiGraphics g, int mx, int my, float pt) {
@@ -219,6 +232,10 @@ public class UniversalEnchantmentBookScreen extends Screen {
             String name = ei.enchantment.getFullname(1).getString();
             if (font.width(name) > lw - 60) name = font.plainSubstrByWidth(name, lw - 70) + "...";
             g.drawString(font, name, lx + 5, y, 0xFFFFFF);
+            if (my >= y && my < y + 20 && mx >= lx + 5 && mx < lx + lw - 50) {
+                String eid = ForgeRegistries.ENCHANTMENTS.getKey(ei.enchantment).toString();
+                g.drawString(font, eid, lx + 5, y + 10, 0x80808080);
+            }
             int mxb = lx + lw - 50, myb = y + 2, bs = 14;
             boolean mh = mx >= mxb && mx <= mxb + bs && my >= myb && my <= myb + bs;
             g.fill(mxb, myb, mxb + bs, myb + bs, target > 0 ? 0xCC3333 : 0x666666);
@@ -264,7 +281,7 @@ public class UniversalEnchantmentBookScreen extends Screen {
         g.drawString(font, Component.translatable("gui.potionenchant.enchant_book.target_level").getString() + ": " + (tgt > 0 ? String.valueOf(tgt) : Component.translatable("gui.potionenchant.no_adjustments").getString()), px + 5, y, tgt > 0 ? 0x55FFFF : 0xCCCCCC); y += 14;
         if (tgt > 0) {
             int cpl = 1000;
-            try { if (PotionEnchantConfig.COMMON != null && PotionEnchantConfig.COMMON.enchantBookXpCost != null) cpl = PotionEnchantConfig.COMMON.enchantBookXpCost.get(); } catch (Exception ignored) {}
+            try { if (PotionEnchantConfig.SERVER != null && PotionEnchantConfig.SERVER.enchantBookXpCost != null) cpl = PotionEnchantConfig.SERVER.enchantBookXpCost.get(); } catch (Exception ignored) {}
             int cost = Math.max(1, (tgt - ei.existingLevel) * cpl);
             g.drawString(font, Component.translatable("gui.potionenchant.enchant_book.xp_cost").getString() + ": " + fmt(cost), px + 5, y, 0x55FFFF); y += 14;
             if (Minecraft.getInstance().player != null) g.drawString(font, Component.translatable("gui.potionenchant.enchant_book.total_xp").getString() + ": " + fmt(Minecraft.getInstance().player.totalExperience), px + 5, y, 0xAAAAAA);
@@ -300,7 +317,7 @@ public class UniversalEnchantmentBookScreen extends Screen {
         List<String> lines = new ArrayList<>();
         int totalXp = 0;
         int cpl = 1000;
-        try { if (PotionEnchantConfig.COMMON != null && PotionEnchantConfig.COMMON.enchantBookXpCost != null) cpl = PotionEnchantConfig.COMMON.enchantBookXpCost.get(); } catch (Exception ignored) {}
+        try { if (PotionEnchantConfig.SERVER != null && PotionEnchantConfig.SERVER.enchantBookXpCost != null) cpl = PotionEnchantConfig.SERVER.enchantBookXpCost.get(); } catch (Exception ignored) {}
 
         if (levelAdjustments.isEmpty() && !cur.isEmpty()) {
             for (var e : cur.entrySet())
@@ -438,7 +455,16 @@ public class UniversalEnchantmentBookScreen extends Screen {
         if (mx >= lx && mx < lx + lw - 50 && my >= ly && my <= ly + lh) {
             int idx = (int)((my - ly - 5) / 20) + scrollOffset;
             if (idx >= 0 && idx < filteredEnchants.size()) {
-                selectedEnchant = filteredEnchants.get(idx);
+                EnchantInfo clicked = filteredEnchants.get(idx);
+                // 右键复制附魔ID
+                if (btn == 1) {
+                    String eid = ForgeRegistries.ENCHANTMENTS.getKey(clicked.enchantment).toString();
+                    Minecraft.getInstance().keyboardHandler.setClipboard(eid);
+                    tooltipText = "\u00a7a" + net.minecraft.network.chat.Component.translatable("gui.potionenchant.copied", eid).getString();
+                    tooltipTimer = 80;
+                    return true;
+                }
+                selectedEnchant = clicked;
                 showSingleEffectMode = true; descScrollOffset = 0;
                 return true;
             }

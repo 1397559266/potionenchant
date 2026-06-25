@@ -35,7 +35,7 @@ public class PotionEnchantTooltipHandler {
         }
 
         // 如果启用了独立tooltip，则不在原版tooltip中添加信息
-        if (PotionEnchantConfig.COMMON.enablePotionEnchantTooltip.get()) {
+        if (PotionEnchantConfig.SERVER.enablePotionEnchantTooltip.get()) {
             return;
         }
 

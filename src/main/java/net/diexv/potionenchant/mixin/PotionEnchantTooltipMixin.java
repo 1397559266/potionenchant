@@ -104,7 +104,7 @@ public class PotionEnchantTooltipMixin {
         List<Component> customTooltipLines = null;
 
         // 检查是否有药水附魔且配置启用独立tooltip
-        if (PotionEnchantManager.hasPotionEnchantments(stack) && PotionEnchantConfig.COMMON.enablePotionEnchantTooltip.get()) {
+        if (PotionEnchantManager.hasPotionEnchantments(stack) && PotionEnchantConfig.SERVER.enablePotionEnchantTooltip.get()) {
             customTooltipLines = buildPotionEnchantTooltip(stack, font);
         }
 

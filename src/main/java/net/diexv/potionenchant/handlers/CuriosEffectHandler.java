@@ -37,7 +37,7 @@ public class CuriosEffectHandler {
         if (event.phase != TickEvent.Phase.END) return;
 
         // 检查是否允许饰品进行药水附魔
-        if (!PotionEnchantConfig.COMMON.allowCurioPotionEnchant.get()) return;
+        if (!PotionEnchantConfig.SERVER.allowCurioPotionEnchant.get()) return;
 
         Player player = event.player;
         if (player.level().isClientSide) return;

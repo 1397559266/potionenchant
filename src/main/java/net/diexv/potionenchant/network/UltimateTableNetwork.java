@@ -134,7 +134,7 @@ public class UltimateTableNetwork {
                 if (actualTarget == null || actualTarget.isEmpty()) return;
 
                 // 验证每个效果：黑名单检查 + 等级上限
-                int maxLevel = PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get();
+                int maxLevel = PotionEnchantConfig.SERVER.maxPotionEnchantLevel.get();
                 List<PotionEnchantData> toApply = new ArrayList<>();
                 for (int i = 0; i < p.effectIds.length; i++) {
                     MobEffect effect = MobEffect.byId(p.effectIds[i]);

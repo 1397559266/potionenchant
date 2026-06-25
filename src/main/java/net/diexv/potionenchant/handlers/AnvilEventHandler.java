@@ -43,10 +43,10 @@ public class AnvilEventHandler {
             }
 
             // 检查全局限制（优先级高于特定类型限制）
-            if (PotionEnchantConfig.COMMON.limitAllEnchants.get() && !isUltimateAmulet) {
+            if (PotionEnchantConfig.SERVER.limitAllEnchants.get() && !isUltimateAmulet) {
                 // 获取当前物品的所有药水附魔
                 List<PotionEnchantData> currentEnchants = PotionEnchantManager.getPotionEnchantments(left);
-                int maxEnchants = PotionEnchantConfig.COMMON.maxAllEnchants.get();
+                int maxEnchants = PotionEnchantConfig.SERVER.maxAllEnchants.get();
                 int newEnchantsCount = effects.size();
 
                 // 计算添加新效果后的总数量（考虑替换）
@@ -67,10 +67,10 @@ public class AnvilEventHandler {
             }
 
             // 检查盔甲附魔数量限制
-            else if (isArmor && PotionEnchantConfig.COMMON.limitArmorEnchants.get() && !isUltimateAmulet) {
+            else if (isArmor && PotionEnchantConfig.SERVER.limitArmorEnchants.get() && !isUltimateAmulet) {
                 // 获取当前物品的药水附魔数量
                 List<PotionEnchantData> currentEnchants = PotionEnchantManager.getPotionEnchantments(left);
-                int maxEnchants = PotionEnchantConfig.COMMON.maxArmorEnchants.get();
+                int maxEnchants = PotionEnchantConfig.SERVER.maxArmorEnchants.get();
                 int newEnchantsCount = effects.size(); // 新添加的药水效果数量
 
                 // 计算添加新效果后的总数量

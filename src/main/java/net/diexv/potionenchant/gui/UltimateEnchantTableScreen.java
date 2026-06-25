@@ -4,6 +4,7 @@ import net.diexv.potionenchant.config.PotionEnchantConfig;
 import net.diexv.potionenchant.data.PotionEnchantData;
 import net.diexv.potionenchant.network.UltimateTableNetwork;
 import net.diexv.potionenchant.util.PotionEnchantManager;
+import net.diexv.potionenchant.util.PinyinHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -41,7 +42,7 @@ public class UltimateEnchantTableScreen extends Screen {
     private Map<MobEffect, Integer> levelAdjustments = new HashMap<>();
     private int potionScroll = 0, potionDescScroll = 0;
     private EditBox potionLevelBox;
-    private record EnchantInfo(Enchantment enchantment, String name) {}
+    private record EnchantInfo(Enchantment enchantment, String name, String id) {}
     private List<EnchantInfo> allEnchants = new ArrayList<>(), filteredEnchants = new ArrayList<>();
     private EnchantInfo selectedEnchant;
     private Map<Enchantment, Integer> enchantLevelAdjustments = new HashMap<>();
@@ -208,7 +209,7 @@ public class UltimateEnchantTableScreen extends Screen {
             g.drawCenteredString(font, "-", minusX + bs / 2, y + 6, 0xFFFFFF);
             // Plus button (left of minus, green)
             int plusX = minusX - bs - 2;
-            int maxLevelCfg = PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get(); boolean canInc = curLv < maxLevelCfg;
+            int maxLevelCfg = PotionEnchantConfig.SERVER.maxPotionEnchantLevel.get(); boolean canInc = curLv < maxLevelCfg;
             boolean ph = mx >= plusX && mx <= plusX + bs && my >= y + 4 && my <= y + 4 + bs;
             g.fill(plusX, y + 4, plusX + bs, y + 4 + bs, canInc ? 0xFF55FF55 : 0xFF666666);
             g.drawCenteredString(font, "+", plusX + bs / 2, y + 6, 0xFFFFFF);
@@ -270,7 +271,10 @@ public class UltimateEnchantTableScreen extends Screen {
 
     private void loadAllEnchants() {
         allEnchants.clear();
-        ForgeRegistries.ENCHANTMENTS.getValues().forEach(e -> allEnchants.add(new EnchantInfo(e, Component.translatable(e.getDescriptionId()).getString())));
+        ForgeRegistries.ENCHANTMENTS.getValues().forEach(e -> {
+            ResourceLocation eid = ForgeRegistries.ENCHANTMENTS.getKey(e);
+            allEnchants.add(new EnchantInfo(e, Component.translatable(e.getDescriptionId()).getString(), eid != null ? eid.toString() : ""));
+        });
         allEnchants.sort(Comparator.comparing(a -> a.name)); filteredEnchants = new ArrayList<>(allEnchants);
     }
 
@@ -313,6 +317,10 @@ public class UltimateEnchantTableScreen extends Screen {
             else if (hover) g.fill(listX + 2, y, plusX, y + rowH, 0x30FFFFFF);
             if (sel) g.fill(listX + 2, y, listX + 4, y + rowH, 0xFFFFAA00);
             g.drawString(font, d, listX + 6, y + 6, sel ? 0xFFDD55 : (hover ? 0xFFFF55 : 0xFFFFFF));
+            // 悬停显示附魔ID
+            if (hover && !info.id().isEmpty()) {
+                g.drawString(font, info.id(), listX + 6, y + rowH - 3, 0x80808080);
+            }
         }
         if (filteredEnchants.size() > MAX_VISIBLE) {
             int th = Math.max(15, listH * MAX_VISIBLE / filteredEnchants.size());
@@ -357,7 +365,7 @@ public class UltimateEnchantTableScreen extends Screen {
     }
 
     private int getTotalCost() {
-        int cp = PotionEnchantConfig.COMMON.ultimateTableXpCostPerLevel.get(); int t = 0;
+        int cp = PotionEnchantConfig.SERVER.ultimateTableXpCostPerLevel.get(); int t = 0;
         if (currentMode == Mode.POTION) {
             for (var e : levelAdjustments.entrySet()) { int d = e.getValue() - getExistingEffectLevel(e.getKey()); if (d > 0) t += d * cp; }
         } else {
@@ -414,7 +422,7 @@ public class UltimateEnchantTableScreen extends Screen {
                         int curLv = levelAdjustments.getOrDefault(info.effect, getExistingEffectLevel(info.effect));
                         int minusX = listX + listW - bs - 6;
                         int plusX = minusX - bs - 2;
-                        int maxLevelCfg2 = PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get();
+                        int maxLevelCfg2 = PotionEnchantConfig.SERVER.maxPotionEnchantLevel.get();
                         // 右键点击复制效果ID
                         if (btn == 1 && zmx >= listX && zmx < plusX && zmy >= rowY && zmy < rowY + rowH) {
                             if (!info.effectId.isEmpty()) {
@@ -634,7 +642,7 @@ public class UltimateEnchantTableScreen extends Screen {
             int tg = e.getValue();
             String nm = e.getKey().getDisplayName().getString();
             if (tg > ex) {
-                int cost = (tg - ex) * net.diexv.potionenchant.config.PotionEnchantConfig.COMMON.ultimateTableXpCostPerLevel.get();
+                int cost = (tg - ex) * net.diexv.potionenchant.config.PotionEnchantConfig.SERVER.ultimateTableXpCostPerLevel.get();
                 slines.add(nm + ": lv" + ex + " -> lv" + tg + " (" + net.minecraft.network.chat.Component.translatable("gui.potionenchant.cost_xp", cost).getString() + ")");
             } else if (tg <= 0) {
                 slines.add(nm + ": " + net.minecraft.network.chat.Component.translatable("gui.potionenchant.removed").getString());
@@ -656,7 +664,7 @@ public class UltimateEnchantTableScreen extends Screen {
         }
         for (var e : enchantLevelAdjustments.entrySet()) {
             String nm = e.getKey().getFullname(1).getString();
-            int cost = (e.getValue() - getExistingEnchantLevel(e.getKey())) * net.diexv.potionenchant.config.PotionEnchantConfig.COMMON.ultimateTableXpCostPerLevel.get();
+            int cost = (e.getValue() - getExistingEnchantLevel(e.getKey())) * net.diexv.potionenchant.config.PotionEnchantConfig.SERVER.ultimateTableXpCostPerLevel.get();
             if (cost > 0)
                 slines.add(nm + ": lv" + e.getValue() + " (" + net.minecraft.network.chat.Component.translatable("gui.potionenchant.cost_xp", cost).getString() + ")");
             else
@@ -692,7 +700,7 @@ public class UltimateEnchantTableScreen extends Screen {
             String cat = categoryBar.getFilter();
             filteredEffects = allEffects.stream().filter(e -> {
                 if (!"all".equals(cat)) { if ("beneficial".equals(cat) && !e.beneficial) return false; if ("harmful".equals(cat) && !e.harmful) return false; if ("neutral".equals(cat) && e.beneficial && !e.harmful) return false; }
-                return lo.isEmpty() || e.name.toLowerCase().contains(lo);
+                return lo.isEmpty() || PinyinHelper.matchesSearch(e.name, e.name, "", e.effectId, lo);
             }).collect(Collectors.toList()); potionScroll = 0;
         } else {
             String cat = enchantCategoryBar.getFilter();
@@ -704,12 +712,13 @@ public class UltimateEnchantTableScreen extends Screen {
                     if ("tool".equals(cat) && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.DIGGER && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.FISHING_ROD && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.BREAKABLE) return false;
                     if ("curse".equals(cat) && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.WEAPON && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.ARMOR && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.ARMOR_HEAD && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.ARMOR_CHEST && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.ARMOR_LEGS && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.ARMOR_FEET && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.DIGGER && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.FISHING_ROD && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.BREAKABLE && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.BOW && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.CROSSBOW && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.TRIDENT && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.VANISHABLE) return false;
                 }
-                return lo.isEmpty() || e.name.toLowerCase().contains(lo);
+                String eid = ForgeRegistries.ENCHANTMENTS.getKey(e.enchantment) != null ? ForgeRegistries.ENCHANTMENTS.getKey(e.enchantment).toString() : "";
+                return lo.isEmpty() || PinyinHelper.matchesSearch(e.name, "", e.name, eid, lo);
             }).collect(Collectors.toList()); enchantScroll = 0;
         }
     }
 
-    private void onPotionLevelChanged(String t) { if (selectedEffect != null && !t.isEmpty()) { try { int val = Integer.parseInt(t); int maxLv = net.diexv.potionenchant.config.PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get(); val = Math.max(0, Math.min(maxLv, val)); levelAdjustments.put(selectedEffect.effect, val); if (!potionLevelBox.getValue().equals(String.valueOf(val))) potionLevelBox.setValue(String.valueOf(val)); } catch (Exception ignored) {} } }
+    private void onPotionLevelChanged(String t) { if (selectedEffect != null && !t.isEmpty()) { try { int val = Integer.parseInt(t); int maxLv = net.diexv.potionenchant.config.PotionEnchantConfig.SERVER.maxPotionEnchantLevel.get(); val = Math.max(0, Math.min(maxLv, val)); levelAdjustments.put(selectedEffect.effect, val); if (!potionLevelBox.getValue().equals(String.valueOf(val))) potionLevelBox.setValue(String.valueOf(val)); } catch (Exception ignored) {} } }
     private void onEnchantLevelChanged(String t) { if (selectedEnchant != null && !t.isEmpty()) { try { int val = Integer.parseInt(t); int maxLv = selectedEnchant.enchantment.getMaxLevel(); val = Math.max(0, Math.min(maxLv, val)); enchantLevelAdjustments.put(selectedEnchant.enchantment, val); if (!enchantLevelBox.getValue().equals(String.valueOf(val))) enchantLevelBox.setValue(String.valueOf(val)); } catch (Exception ignored) {} } }
 
     @Override public boolean mouseScrolled(double mx, double my, double d) {
@@ -781,3 +790,4 @@ public class UltimateEnchantTableScreen extends Screen {
     @Override public void onClose() { zoom.saveToConfig(); if (Minecraft.getInstance().player != null) Minecraft.getInstance().player.closeContainer(); super.onClose(); }
     @Override public void removed() { zoom.saveToConfig(); super.removed(); }
 }
+

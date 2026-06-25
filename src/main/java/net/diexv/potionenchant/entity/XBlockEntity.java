@@ -178,8 +178,7 @@ public class XBlockEntity extends Monster implements PowerableMob {
             // 毁灭模式：秒杀
             if (blockOwner instanceof Player destructionPlayer && ArmorXFeatureHandler.isDestructionModeEnabled(destructionPlayer)) {
                 XSwordTargetTracker.mark(entity);
-                entity.getEntityData().set(LivingEntityAccessor.HEALTH(), 0.0F);
-                entity.die(damageSource);
+                entity.hurt(damageSource, Float.MAX_VALUE);
             } else {
                 entity.hurt(damageSource, 1.0f * damageMultiplier);
             }
@@ -238,3 +237,4 @@ public class XBlockEntity extends Monster implements PowerableMob {
         else { this.entityData.set(DATA_TARGET_ID, 0); }
     }
 }
+

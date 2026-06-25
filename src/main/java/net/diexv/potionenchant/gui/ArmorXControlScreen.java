@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import net.diexv.potionenchant.util.PinyinHelper;
 
 public class ArmorXControlScreen extends Screen {
 
@@ -65,6 +66,8 @@ public class ArmorXControlScreen extends Screen {
     private EditBox enchantLevelBox;
     private int currentUpgradeLevel = 0;
     private boolean levelEditActive = false;
+    private String tooltipText = "";
+    private int tooltipTimer = 0;
 
     private static final int GUI_WIDTH = 450;
     private int listX, listY, listWidth, listHeight;
@@ -217,7 +220,7 @@ public class ArmorXControlScreen extends Screen {
         try {
             int val = text.isEmpty() ? 0 : Integer.parseInt(text);
             if (val < 0) val = 0;
-            int maxLevel = PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get();
+            int maxLevel = PotionEnchantConfig.SERVER.maxPotionEnchantLevel.get();
             if (val > maxLevel) val = maxLevel;
             setLevelAdjustment(selectedEffect.effect, val);
             if (potionLevelBox != null && !potionLevelBox.getValue().equals(String.valueOf(val)))
@@ -269,12 +272,10 @@ public class ArmorXControlScreen extends Screen {
 
     private void onPotionSearchTextChanged(String text) {
         String lt = (text == null ? "" : text).toLowerCase().trim();
-        if (lt.isEmpty())
-            filteredEffects = allEffects.stream().filter(this::matchesPotionCategory).collect(Collectors.toList());
-        else
-            filteredEffects = allEffects.stream()
-                .filter(i -> i.name.toLowerCase().contains(lt) || i.description.toLowerCase().contains(lt))
-                .filter(this::matchesPotionCategory).collect(Collectors.toList());
+        filteredEffects = allEffects.stream()
+            .filter(this::matchesPotionCategory)
+            .filter(i -> lt.isEmpty() || PinyinHelper.matchesSearch(i.name, i.name, "", i.key.toString(), lt))
+            .collect(Collectors.toList());
         scrollOffset = 0; selectedEffect = null;
         updateConfirmButton();
     }
@@ -301,8 +302,8 @@ public class ArmorXControlScreen extends Screen {
         allEnchants.clear();
         boolean ab = false;
         try {
-            if (PotionEnchantConfig.COMMON != null && PotionEnchantConfig.COMMON.allowEnchantLevelBeyondCap != null)
-                ab = PotionEnchantConfig.COMMON.allowEnchantLevelBeyondCap.get();
+            if (PotionEnchantConfig.SERVER != null && PotionEnchantConfig.SERVER.allowEnchantLevelBeyondCap != null)
+                ab = PotionEnchantConfig.SERVER.allowEnchantLevelBeyondCap.get();
         } catch (Exception ignored) {}
         for (Enchantment e : ForgeRegistries.ENCHANTMENTS) {
             if (e == null) continue;
@@ -314,15 +315,15 @@ public class ArmorXControlScreen extends Screen {
 
     private void onEnchantSearchTextChanged(String text) {
         String q = (text == null ? "" : text).toLowerCase().trim();
-        if (q.isEmpty())
-            filteredEnchants = allEnchants.stream().filter(this::matchesEnchantCategory).collect(Collectors.toList());
-        else
-            filteredEnchants = allEnchants.stream().filter(ei -> {
-                if (!matchesEnchantCategory(ei)) return false;
-                String n = ei.enchantment.getFullname(1).getString().toLowerCase();
-                String id = ForgeRegistries.ENCHANTMENTS.getKey(ei.enchantment).toString().toLowerCase();
-                return n.contains(q) || id.contains(q);
-            }).collect(Collectors.toList());
+        filteredEnchants = allEnchants.stream()
+            .filter(this::matchesEnchantCategory)
+            .filter(ei -> {
+                if (q.isEmpty()) return true;
+                String n = ei.enchantment.getFullname(1).getString();
+                String displayName = net.minecraft.network.chat.Component.translatable(ei.enchantment.getDescriptionId()).getString();
+                return PinyinHelper.matchesSearch(n, displayName, n, ei.id, q);
+            })
+            .collect(Collectors.toList());
         enchantScrollOffset = 0; selectedEnchant = null;
         updateConfirmButton();
     }
@@ -444,19 +445,28 @@ public class ArmorXControlScreen extends Screen {
         mouseX = (int) zoom.mx(mouseX, width);
         mouseY = (int) zoom.my(mouseY, height);
         if (currentMode == PanelMode.POTION) {
-            renderPotionList(guiGraphics, mouseX, mouseY, listX, listY, listWidth, listHeight);
+            renderPotionList(guiGraphics, mouseX, mouseY, listX, listY, listWidth, listHeight, partialTick);
             if (selectedEffect != null && potionLevelBox != null && potionLevelBox.isVisible() && !isEffectVisible(selectedEffect)) potionLevelBox.setVisible(false);
-            renderPotionStats(guiGraphics, listX, statsY, listWidth, statsHeight);
+            renderPotionStats(guiGraphics, listX, statsY, listWidth, statsHeight, partialTick);
         } else {
-            renderEnchantList(guiGraphics, mouseX, mouseY, listX, listY, listWidth, listHeight);
+            renderEnchantList(guiGraphics, mouseX, mouseY, listX, listY, listWidth, listHeight, partialTick);
             if (selectedEnchant != null && enchantLevelBox != null && enchantLevelBox.isVisible() && !isEnchantVisible(selectedEnchant)) enchantLevelBox.setVisible(false);
-            renderEnchantStats(guiGraphics, listX, statsY, listWidth, statsHeight);
+            renderEnchantStats(guiGraphics, listX, statsY, listWidth, statsHeight, partialTick);
         }
         renderFeaturePanel(guiGraphics, mouseX, mouseY, featureX, listY, featureWidth, featurePanelHeight);
-        renderUpgradePanel(guiGraphics, mouseX, mouseY, featureX, upgradeY, featureWidth, upgradeHeight);
+        renderUpgradePanel(guiGraphics, mouseX, mouseY, featureX, upgradeY, featureWidth, upgradeHeight, partialTick);
         zoom.pop(guiGraphics);
         zoom.renderPanel(guiGraphics, font, scrMX, scrMY, width, height);
         zoom.editBox.render(guiGraphics, scrMX, scrMY, partialTick);
+        // 显示复制提示
+        if (tooltipTimer > 0 && !tooltipText.isEmpty()) {
+            int tw = font.width(tooltipText);
+            int tx = (width - tw) / 2;
+            int ty2 = height - 30;
+            guiGraphics.fill(tx - 4, ty2 - 2, tx + tw + 4, ty2 + 12, 0xCC000000);
+            guiGraphics.drawString(font, tooltipText, tx, ty2, 0xFFFFFF);
+            tooltipTimer--;
+        }
     }
 
     private void renderModeButtons(GuiGraphics g, int mx, int my, int x, int y, int w) {
@@ -473,9 +483,9 @@ public class ArmorXControlScreen extends Screen {
         g.drawCenteredString(font, Component.translatable("gui.potionenchant.mode.enchant"), ex + bw / 2, y + 4, 0xFFFFFF);
     }
 
-    private void renderPotionList(GuiGraphics g, int mx, int my, int lx, int ly, int lw, int lh) {
+    private void renderPotionList(GuiGraphics g, int mx, int my, int lx, int ly, int lw, int lh, float partialTick) {
         g.fill(lx, ly, lx + lw, ly + lh, 0x80000000);
-        int maxLevel = PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get();
+        int maxLevel = PotionEnchantConfig.SERVER.maxPotionEnchantLevel.get();
         for (int i = 0; i < MAX_VISIBLE && (i + scrollOffset) < filteredEffects.size(); i++) {
             int idx = i + scrollOffset;
             MobEffectInfo info = filteredEffects.get(idx);
@@ -513,7 +523,7 @@ public class ArmorXControlScreen extends Screen {
                 potionLevelBox.setY(y + 2);
                 potionLevelBox.setWidth(44);
                 potionLevelBox.setHeight(14);
-                potionLevelBox.render(g, mx, my, 0);
+                potionLevelBox.render(g, mx, my, partialTick);
             }
         }
         if (filteredEffects.size() > MAX_VISIBLE)
@@ -521,7 +531,7 @@ public class ArmorXControlScreen extends Screen {
                 filteredEffects.size() - MAX_VISIBLE, filteredEffects.size(), MAX_VISIBLE);
     }
 
-    private void renderEnchantList(GuiGraphics g, int mx, int my, int lx, int ly, int lw, int lh) {
+    private void renderEnchantList(GuiGraphics g, int mx, int my, int lx, int ly, int lw, int lh, float partialTick) {
         g.fill(lx, ly, lx + lw, ly + lh, 0x80000000);
         for (int i = 0; i < MAX_VISIBLE && (i + enchantScrollOffset) < filteredEnchants.size(); i++) {
             int idx = i + enchantScrollOffset;
@@ -560,7 +570,7 @@ public class ArmorXControlScreen extends Screen {
                 enchantLevelBox.setY(y + 2);
                 enchantLevelBox.setWidth(44);
                 enchantLevelBox.setHeight(14);
-                enchantLevelBox.render(g, mx, my, 0);
+                enchantLevelBox.render(g, mx, my, partialTick);
             }
             }
         }
@@ -569,7 +579,7 @@ public class ArmorXControlScreen extends Screen {
                 filteredEnchants.size() - MAX_VISIBLE, filteredEnchants.size(), MAX_VISIBLE);
     }
 
-    private void renderPotionStats(GuiGraphics g, int x, int y, int w, int h) {
+    private void renderPotionStats(GuiGraphics g, int x, int y, int w, int h, float partialTick) {
         g.fill(x, y, x + w, y + h, 0x80000000);
         g.drawCenteredString(font,
             Component.translatable("gui.potionenchant.no_stats").getString(), x + w / 2, y + 5, 0xFFFF55);
@@ -609,7 +619,7 @@ public class ArmorXControlScreen extends Screen {
         return lines;
     }
 
-    private void renderEnchantStats(GuiGraphics g, int x, int y, int w, int h) {
+    private void renderEnchantStats(GuiGraphics g, int x, int y, int w, int h, float partialTick) {
         g.fill(x, y, x + w, y + h, 0x80000000);
         g.drawCenteredString(font,
             Component.translatable("gui.potionenchant.enchant_stats").getString(), x + w / 2, y + 5, 0xFFFF55);
@@ -684,7 +694,7 @@ public class ArmorXControlScreen extends Screen {
             renderScrollbar(g, x + w - 8, y + 18, 6, h - 30, featureScrollOffset, maxFs, keys.length, maxVis);
     }
 
-    private void renderUpgradePanel(GuiGraphics g, int mx, int my, int x, int y, int w, int h) {
+    private void renderUpgradePanel(GuiGraphics g, int mx, int my, int x, int y, int w, int h, float partialTick) {
         g.fill(x, y, x + w, y + h, 0x80000000);
         g.drawCenteredString(font,
             Component.translatable("gui.potionenchant.upgrade.title").getString(), x + w / 2, y + 5, 0xFFFF55);
@@ -713,6 +723,15 @@ public class ArmorXControlScreen extends Screen {
         g.fill(saX, iy, saX + 36, iy + bs, sh ? 0xFF8888FF : 0xFF6666AA);
         g.drawString(font,
             Component.translatable("gui.potionenchant.upgrade.select_all").getString(), saX + 3, iy + 3, 0xFFFFFF);
+        // 渲染药水瓶数量编辑框（位于-和+按钮之间）
+        bottleEditBox.render(g, mx, my, partialTick);
+        // 绘制编辑框边框，使其更明显
+        int bex = bottleEditBox.getX(), bey = bottleEditBox.getY();
+        int bew = bottleEditBox.getWidth(), beh = bottleEditBox.getHeight();
+        g.fill(bex - 1, bey - 1, bex + bew + 1, bey, 0xFF444444);
+        g.fill(bex - 1, bey + beh, bex + bew + 1, bey + beh + 1, 0xFF444444);
+        g.fill(bex - 1, bey, bex, bey + beh, 0xFF444444);
+        g.fill(bex + bew, bey, bex + bew + 1, bey + beh, 0xFF444444);
         int bonus = currentUpgradeLevel * 10;
         String li = Component.translatable("gui.potionenchant.upgrade.level_info", currentUpgradeLevel, bonus).getString();
         g.drawString(font, li, x + w - font.width(li) - 5, y + 22, 0xFFAA55);
@@ -770,9 +789,9 @@ public class ArmorXControlScreen extends Screen {
             updateFilter(); return true;
         }
         if (currentMode == PanelMode.POTION) {
-            if (handlePotionListClick(mx, my)) return true;
+            if (handlePotionListClick(mx, my, btn)) return true;
         } else {
-            if (handleEnchantListClick(mx, my)) return true;
+            if (handleEnchantListClick(mx, my, btn)) return true;
         }
         if (mx >= featureX && mx <= featureX + featureWidth && my >= listY && my <= listY + featurePanelHeight) {
             int maxVisF = Math.max(1, (featurePanelHeight - 25) / 25);
@@ -790,24 +809,24 @@ public class ArmorXControlScreen extends Screen {
                 }
             }
         }
-        if (mx >= featureX && mx <= featureX + featureWidth && my >= upgradeY && my <= upgradeY + upgradeHeight) {
-            int iy = upgradeY + 38; int bs = 14;
-            if (bottleEditBox.isMouseOver(mx, my)) { setFocused(bottleEditBox); return bottleEditBox.mouseClicked(mx, my, btn); }
+        if (origMX >= featureX && origMX <= featureX + featureWidth && origMY >= upgradeY && origMY <= upgradeY + upgradeHeight) {
+            int iy = upgradeY + 38; int bs2 = 14;
+            if (bottleEditBox.isMouseOver(origMX, origMY)) { setFocused(bottleEditBox); return bottleEditBox.mouseClicked(origMX, origMY, btn); }
             int minusX = featureX + 5;
-            int plusX = minusX + bs + 48;
-            int saX = plusX + bs + 6;
-            if (mx >= minusX && mx <= minusX + bs && my >= iy && my <= iy + bs) {
+            int plusX = minusX + bs2 + 48;
+            int saX = plusX + bs2 + 6;
+            if (origMX >= minusX && origMX <= minusX + bs2 && origMY >= iy && origMY <= iy + bs2) {
                 bottleCount = Math.max(0, bottleCount - 1);
                 bottleEditBox.setValue(String.valueOf(bottleCount));
                 updateConfirmButton(); return true;
             }
-            if (mx >= plusX && mx <= plusX + bs && my >= iy && my <= iy + bs) {
+            if (origMX >= plusX && origMX <= plusX + bs2 && origMY >= iy && origMY <= iy + bs2) {
                 int maxB = getTotalAvailableBottles();
                 bottleCount = Math.min(maxB, bottleCount + 1);
                 bottleEditBox.setValue(String.valueOf(bottleCount));
                 updateConfirmButton(); return true;
             }
-            if (mx >= saX && mx <= saX + 36 && my >= iy && my <= iy + bs) {
+            if (origMX >= saX && origMX <= saX + 36 && origMY >= iy && origMY <= iy + bs2) {
                 bottleCount = getTotalAvailableBottles();
                 bottleEditBox.setValue(String.valueOf(bottleCount));
                 updateConfirmButton(); return true;
@@ -815,12 +834,12 @@ public class ArmorXControlScreen extends Screen {
         }
         // Click outside EditBox -> hide it
         if (levelEditActive) {
-            if (potionLevelBox == null || !potionLevelBox.isMouseOver(origMX, origMY)) {
-                if (enchantLevelBox == null || !enchantLevelBox.isMouseOver(origMX, origMY)) {
-                    levelEditActive = false;
-                    if (potionLevelBox != null) potionLevelBox.setVisible(false);
-                    if (enchantLevelBox != null) enchantLevelBox.setVisible(false);
-                }
+            boolean outsidePotion = potionLevelBox == null || !potionLevelBox.isMouseOver(origMX, origMY);
+            boolean outsideEnchant = enchantLevelBox == null || !enchantLevelBox.isMouseOver(origMX, origMY);
+            if (outsidePotion && outsideEnchant) {
+                levelEditActive = false;
+                if (potionLevelBox != null) { potionLevelBox.setVisible(false); potionLevelBox.setFocused(false); }
+                if (enchantLevelBox != null) { enchantLevelBox.setVisible(false); enchantLevelBox.setFocused(false); }
             }
         }
         if (mx >= listX && mx <= listX + listWidth && my >= statsY && my <= statsY + statsHeight) {
@@ -829,9 +848,9 @@ public class ArmorXControlScreen extends Screen {
         return super.mouseClicked(origMX, origMY, btn);
     }
 
-    private boolean handlePotionListClick(double mx, double my) {
+    private boolean handlePotionListClick(double mx, double my, int btn) {
         int bs = 14;
-        int maxLevel = PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get();
+        int maxLevel = PotionEnchantConfig.SERVER.maxPotionEnchantLevel.get();
         for (int i = 0; i < MAX_VISIBLE && (i + scrollOffset) < filteredEffects.size(); i++) {
             int idx = i + scrollOffset;
             MobEffectInfo info = filteredEffects.get(idx);
@@ -851,6 +870,15 @@ public class ArmorXControlScreen extends Screen {
                 return true;
             }
             int nameRight = plusX - 2;
+            // Right-click on name area -> copy effect ID
+            if (btn == 1 && mx >= listX && mx <= nameRight && my >= y && my <= y + 20) {
+                if (info.key != null) {
+                    Minecraft.getInstance().keyboardHandler.setClipboard(info.key.toString());
+                    tooltipText = "\u00a7a" + Component.translatable("gui.potionenchant.copied", info.key.toString()).getString();
+                    tooltipTimer = 80;
+                }
+                return true;
+            }
             if (mx >= listX && mx <= nameRight - 55 && my >= y && my <= y + 20) {
                 selectedEffect = info; selectedEnchant = null;
                 levelEditActive = false;
@@ -885,7 +913,7 @@ public class ArmorXControlScreen extends Screen {
         return false;
     }
 
-    private boolean handleEnchantListClick(double mx, double my) {
+    private boolean handleEnchantListClick(double mx, double my, int btn) {
         int bs = 14;
         for (int i = 0; i < MAX_VISIBLE && (i + enchantScrollOffset) < filteredEnchants.size(); i++) {
             int idx = i + enchantScrollOffset;
@@ -904,6 +932,16 @@ public class ArmorXControlScreen extends Screen {
                 return true;
             }
             int nameRight = plusX - 2;
+            // Right-click on name area -> copy enchant ID
+            if (btn == 1 && mx >= listX && mx <= nameRight && my >= y && my <= y + 20) {
+                ResourceLocation eid = ForgeRegistries.ENCHANTMENTS.getKey(info.enchantment);
+                if (eid != null) {
+                    Minecraft.getInstance().keyboardHandler.setClipboard(eid.toString());
+                    tooltipText = "\u00a7a" + Component.translatable("gui.potionenchant.copied", eid.toString()).getString();
+                    tooltipTimer = 80;
+                }
+                return true;
+            }
             if (mx >= listX && mx <= nameRight - 55 && my >= y && my <= y + 20) {
                 selectedEnchant = info; selectedEffect = null;
                 levelEditActive = false;
@@ -1072,7 +1110,19 @@ public class ArmorXControlScreen extends Screen {
     private static class EnchantInfo {
         final Enchantment enchantment;
         final int maxLevel;
-        EnchantInfo(Enchantment e, int max) { this.enchantment = e; this.maxLevel = max; }
+        final String id;
+        EnchantInfo(Enchantment e, int max) {
+            this.enchantment = e; this.maxLevel = max;
+            net.minecraft.resources.ResourceLocation rl = net.minecraftforge.registries.ForgeRegistries.ENCHANTMENTS.getKey(e);
+            this.id = rl != null ? rl.toString() : "";
+        }
+    }
+
+    private int getCurrentEnchantLevel(Enchantment e) {
+        if (minecraft == null || minecraft.player == null) return 0;
+        net.minecraft.world.item.ItemStack helmet = minecraft.player.getItemBySlot(EquipmentSlot.HEAD);
+        if (helmet.isEmpty()) return 0;
+        return net.minecraft.world.item.enchantment.EnchantmentHelper.getItemEnchantmentLevel(e, helmet);
     }
 
     private boolean isEffectVisible(MobEffectInfo info) {

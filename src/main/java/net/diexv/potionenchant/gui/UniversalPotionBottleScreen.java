@@ -7,6 +7,7 @@ import net.diexv.potionenchant.item.ModItems;
 import net.diexv.potionenchant.network.UniversalBottlePacketHandler;
 import net.diexv.potionenchant.gui.GuiZoom;
 import net.diexv.potionenchant.util.PotionEnchantManager;
+import net.diexv.potionenchant.util.PinyinHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -62,6 +63,8 @@ public class UniversalPotionBottleScreen extends Screen {
     
     // 面板显示模式：true=显示单个药水描述，false=显示批量统计
     private boolean showSingleEffectMode = true;
+    private String tooltipText = "";
+    private int tooltipTimer = 0;
     
     public UniversalPotionBottleScreen(ItemStack targetItem, ItemStack bottleItem) {
         super(Component.translatable("gui.potionenchant.universal_potion_bottle"));
@@ -140,7 +143,7 @@ public class UniversalPotionBottleScreen extends Screen {
             // 检查是否超过等级上限
             boolean isUltimateAmulet = targetItem.getItem() == ModItems.ULTIMATE_POTION_AMULET.get();
             if (!isUltimateAmulet) {
-                int maxLevel = PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get();
+                int maxLevel = PotionEnchantConfig.SERVER.maxPotionEnchantLevel.get();
                 if (newLevel > maxLevel) {
                     newLevel = maxLevel;
                     levelEditBox.setValue(String.valueOf(newLevel));
@@ -247,7 +250,7 @@ public class UniversalPotionBottleScreen extends Screen {
         } else {
             String lowerText = text.toLowerCase();
             filteredEffects = allEffects.stream()
-                .filter(info -> info.name.toLowerCase().contains(lowerText) || 
+                .filter(info -> PinyinHelper.matchesSearch(info.name, info.name, "", info.key.toString(), lowerText) || 
                                info.description.toLowerCase().contains(lowerText))
                 .filter(this::matchesCategory)
                 .collect(Collectors.toList());
@@ -352,7 +355,7 @@ public class UniversalPotionBottleScreen extends Screen {
         }
         
         // 获取配置的最大等级限制
-        int maxLevel = PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get();
+        int maxLevel = PotionEnchantConfig.SERVER.maxPotionEnchantLevel.get();
         
         // 检查是否超过限制
         return currentTargetLevel < maxLevel;
@@ -426,6 +429,9 @@ public class UniversalPotionBottleScreen extends Screen {
                 displayName = font.plainSubstrByWidth(displayName, nameMaxWidth - 10) + "...";
             }
             guiGraphics.drawString(font, displayName, listX + 5, y, 0xFFFFFF);
+            if (isRowHovered) {
+                guiGraphics.drawString(font, info.key.toString(), listX + 5, y + 10, 0x80808080);
+            }
             
             // 绘制 - 按钮
             int minusBtnX = listX + listWidth - 50;
@@ -538,6 +544,15 @@ public class UniversalPotionBottleScreen extends Screen {
         zoom.pop(guiGraphics);
         zoom.renderPanel(guiGraphics, font, scrMX, scrMY, width, height);
         zoom.editBox.render(guiGraphics, scrMX, scrMY, partialTick);
+        // 显示复制提示
+        if (tooltipTimer > 0 && !tooltipText.isEmpty()) {
+            int tw = font.width(tooltipText);
+            int tx = (width - tw) / 2;
+            int ty2 = height - 30;
+            guiGraphics.fill(tx - 4, ty2 - 2, tx + tw + 4, ty2 + 12, 0xCC000000);
+            guiGraphics.drawString(font, tooltipText, tx, ty2, 0xFFFFFF);
+            tooltipTimer--;
+        }
     }
     
     /**
@@ -831,7 +846,7 @@ public class UniversalPotionBottleScreen extends Screen {
                 } else {
                     // 达到等级上限，显示提示
                     if (minecraft != null && minecraft.player != null) {
-                        int maxLevel = PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get();
+                        int maxLevel = PotionEnchantConfig.SERVER.maxPotionEnchantLevel.get();
                         minecraft.player.displayClientMessage(
                             Component.translatable("gui.potionenchant.level_limit_reached", maxLevel),
                             true
@@ -848,7 +863,15 @@ public class UniversalPotionBottleScreen extends Screen {
             
             int index = (int)((mouseY - listY - 5) / 20) + scrollOffset;
             if (index >= 0 && index < filteredEffects.size()) {
-                selectedEffect = filteredEffects.get(index);
+                MobEffectInfo clickedInfo = filteredEffects.get(index);
+                // 右键复制效果ID
+                if (button == 1) {
+                    Minecraft.getInstance().keyboardHandler.setClipboard(clickedInfo.key.toString());
+                    tooltipText = "\u00a7a" + Component.translatable("gui.potionenchant.copied", clickedInfo.key.toString()).getString();
+                    tooltipTimer = 80;
+                    return true;
+                }
+                selectedEffect = clickedInfo;
                 // 点击列表项时切换到单个药水描述模式
                 showSingleEffectMode = true;
                 descScrollOffset = 0; // 重置滚动

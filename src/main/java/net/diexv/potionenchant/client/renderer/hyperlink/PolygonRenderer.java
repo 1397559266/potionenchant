@@ -356,10 +356,10 @@ public class PolygonRenderer {
                             .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_SHADER)
                             .setTextureState(new TextureStateShard(texture, false, false))
                             .setTransparencyState(LIGHTNING_TRANSPARENCY)
-                            
                             .setCullState(NO_CULL)
                             .setLightmapState(LIGHTMAP)
                             .setOverlayState(OVERLAY)
+                            .setOutputState(MAIN_TARGET)
                             .setWriteMaskState(COLOR_WRITE)
                             .createCompositeState(true));
         }
@@ -382,6 +382,7 @@ public class PolygonRenderer {
                             .setWriteMaskState(COLOR_WRITE)
                             .createCompositeState(true));
         }
+
     }
 
     public static VertexConsumer colorize(VertexConsumer consumer, int color) {

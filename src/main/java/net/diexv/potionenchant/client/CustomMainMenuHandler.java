@@ -73,7 +73,7 @@ public class CustomMainMenuHandler {
     @SubscribeEvent
     public static void onScreenOpen(ScreenEvent.Opening event) {
         if (event.getScreen() instanceof TitleScreen) {
-            if (!PotionEnchantConfig.COMMON.enableCustomMainMenu.get()) return;
+            if (!PotionEnchantConfig.CLIENT.enableCustomMainMenu.get()) return;
             isActive = true;
             openTime = System.currentTimeMillis();
             particles.clear();
@@ -99,8 +99,8 @@ public class CustomMainMenuHandler {
     @SubscribeEvent
     public static void onMouseClick(ScreenEvent.MouseButtonPressed event) {
         if (!(event.getScreen() instanceof TitleScreen) || !isActive) return;
-        if (!PotionEnchantConfig.COMMON.enableCustomMainMenu.get()) return;
-        int count = PotionEnchantConfig.COMMON.mouseTrailClickCount.get();
+        if (!PotionEnchantConfig.CLIENT.enableCustomMainMenu.get()) return;
+        int count = PotionEnchantConfig.CLIENT.mouseTrailClickCount.get();
         if (count <= 0) return;
         double mx = event.getMouseX();
         double my = event.getMouseY();
@@ -113,7 +113,7 @@ public class CustomMainMenuHandler {
     public static void onScreenRender(ScreenEvent.Render event) {
         if (!(event.getScreen() instanceof TitleScreen) || !isActive) return;
         if (event instanceof net.minecraftforge.client.event.ScreenEvent.Render.Post) return;
-        if (!PotionEnchantConfig.COMMON.enableCustomMainMenu.get()) {
+        if (!PotionEnchantConfig.CLIENT.enableCustomMainMenu.get()) {
             if (isActive) { isActive = false; particles.clear(); }
             return;
         }
@@ -122,7 +122,7 @@ public class CustomMainMenuHandler {
         float fadeAlpha = Mth.clamp((System.currentTimeMillis() - openTime) / (float)FADE_DURATION, 0.0f, 1.0f);
         int w = event.getScreen().width, h = event.getScreen().height;
         // 更新鼠标目标值（帧率无关平滑插值）
-        if (PotionEnchantConfig.COMMON.enableMenuParallax.get()) {
+        if (PotionEnchantConfig.CLIENT.enableMenuParallax.get()) {
             long now = System.nanoTime();
             if (lastFrameTime == 0L) lastFrameTime = now;
             float deltaSec = (now - lastFrameTime) / 1_000_000_000f;
@@ -276,8 +276,8 @@ public class CustomMainMenuHandler {
         RenderSystem.enableBlend();
         g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-        if (PotionEnchantConfig.COMMON.enableMenuParallax.get()) {
-            int maxOff = PotionEnchantConfig.COMMON.menuParallaxMaxOffset.get();
+        if (PotionEnchantConfig.CLIENT.enableMenuParallax.get()) {
+            int maxOff = PotionEnchantConfig.CLIENT.menuParallaxMaxOffset.get();
             // 每个方向独立限制偏移量，[-maxOff, +maxOff]
             float offX = mouseNormX * maxOff;
             float offY = mouseNormY * maxOff;
@@ -297,9 +297,9 @@ public class CustomMainMenuHandler {
     // ====== 边缘白色雾化渐变 ======
 
     private static void drawFogGradient(GuiGraphics g, int w, int h) {
-        if (!PotionEnchantConfig.COMMON.enableMenuVignette.get()) return;
+        if (!PotionEnchantConfig.CLIENT.enableMenuVignette.get()) return;
 
-        int rangePct = PotionEnchantConfig.COMMON.menuFogRange.get();
+        int rangePct = PotionEnchantConfig.CLIENT.menuFogRange.get();
         int fogH = h * rangePct / 100;
         int fogW = w * rangePct / 100;
 
@@ -368,12 +368,12 @@ public class CustomMainMenuHandler {
         if (deltaSec > 0.1f) deltaSec = 0.1f;
 
         // 时间驱动的生成率
-        spawnAccumulator += PotionEnchantConfig.COMMON.particleSpawnRate.get() * deltaSec;
+        spawnAccumulator += PotionEnchantConfig.CLIENT.particleSpawnRate.get() * deltaSec;
         while (spawnAccumulator >= 1.0f) {
             particles.add(new MenuParticle());
             spawnAccumulator -= 1.0f;
         }
-        while (particles.size() > PotionEnchantConfig.COMMON.particleMaxCount.get()) particles.remove(0);
+        while (particles.size() > PotionEnchantConfig.CLIENT.particleMaxCount.get()) particles.remove(0);
 
         g.flush();
         RenderSystem.disableDepthTest();
@@ -425,7 +425,7 @@ public class CustomMainMenuHandler {
 
         // 只在鼠标移动时生成拖尾
         float mouseSpeed = (float)Math.sqrt(mouseVelX * mouseVelX + mouseVelY * mouseVelY);
-        int interval = PotionEnchantConfig.COMMON.mouseTrailSpawnInterval.get();
+        int interval = PotionEnchantConfig.CLIENT.mouseTrailSpawnInterval.get();
         if (mouseSpeed > 20 && now - lastMouseTrailTime >= interval) {
             mouseTrail.add(new MouseTrailParticle(mx, my, mouseVelX, mouseVelY, false));
             lastMouseTrailTime = now;
@@ -486,8 +486,8 @@ public class CustomMainMenuHandler {
                     this.vy = (float)Math.sin(a) * spread;
                 }
             }
-            this.lifetimeMs = PotionEnchantConfig.COMMON.mouseTrailLifetime.get() + RANDOM.nextInt(-100, 101);
-            int bs = PotionEnchantConfig.COMMON.mouseTrailSize.get();
+            this.lifetimeMs = PotionEnchantConfig.CLIENT.mouseTrailLifetime.get() + RANDOM.nextInt(-100, 101);
+            int bs = PotionEnchantConfig.CLIENT.mouseTrailSize.get();
             this.size = RANDOM.nextFloat() * 8 + bs;
             this.xRot = RANDOM.nextFloat() * 360 - 180;
             this.yRot = RANDOM.nextFloat() * 360 - 180;
@@ -513,7 +513,7 @@ public class CustomMainMenuHandler {
             if (lifeFrac >= 1) return;
 
             // 淡出延迟：在生命周期前 fadeDelay 百分比内保持全透明，之后线性淡出
-            int fadeDelayPct = PotionEnchantConfig.COMMON.mouseTrailFadeDelay.get();
+            int fadeDelayPct = PotionEnchantConfig.CLIENT.mouseTrailFadeDelay.get();
             float fadeStart = fadeDelayPct / 100f;
             float fadeAlpha;
             if (fadeDelayPct >= 100) {
@@ -697,14 +697,14 @@ public class CustomMainMenuHandler {
             this.x = RANDOM.nextFloat() * sw;
             this.y = sh;
             this.spawnY = sh;
-            float speedH = PotionEnchantConfig.COMMON.particleSpeedH.get() / 100f * 60f;
+            float speedH = PotionEnchantConfig.CLIENT.particleSpeedH.get() / 100f * 60f;
             this.sx_sec = (RANDOM.nextFloat() - 0.5f) * 2 * speedH;
-            float sv = PotionEnchantConfig.COMMON.particleSpeedV.get() / 100f * 60f;
-            float svs = PotionEnchantConfig.COMMON.particleSpeedVSpread.get() / 100f * 60f;
-            float dir = PotionEnchantConfig.COMMON.particleGoUp.get() ? -1f : 1f;
+            float sv = PotionEnchantConfig.CLIENT.particleSpeedV.get() / 100f * 60f;
+            float svs = PotionEnchantConfig.CLIENT.particleSpeedVSpread.get() / 100f * 60f;
+            float dir = PotionEnchantConfig.CLIENT.particleGoUp.get() ? -1f : 1f;
             this.sy_sec = dir * (RANDOM.nextFloat() * svs + sv);
-            int bs = PotionEnchantConfig.COMMON.particleBaseSize.get();
-            int ss = PotionEnchantConfig.COMMON.particleSizeSpread.get();
+            int bs = PotionEnchantConfig.CLIENT.particleBaseSize.get();
+            int ss = PotionEnchantConfig.CLIENT.particleSizeSpread.get();
             this.size = ss > 0 ? RANDOM.nextFloat() * ss + bs : bs;
             this.angle = RANDOM.nextFloat() * 360f;
             this.am = (RANDOM.nextFloat() - 0.5f) * 1.2f;
@@ -729,12 +729,12 @@ public class CustomMainMenuHandler {
 
         float getAlpha(float yPos, int screenHeight) {
             // 出生淡入（前 particleFadeIn 帧 → 转换为毫秒）
-            float fadeInFrames = PotionEnchantConfig.COMMON.particleFadeIn.get();
+            float fadeInFrames = PotionEnchantConfig.CLIENT.particleFadeIn.get();
             float elapsedMs = System.currentTimeMillis() - bornTime;
             float birthFade = Mth.clamp(elapsedMs / Math.max(fadeInFrames * 16.667f, 1f), 0, 1);
             // fadeYStart: 从出生点开始计算的淡出位置
-            float pct = PotionEnchantConfig.COMMON.particleFadeYStart.get() / 100f;
-            boolean goUp = PotionEnchantConfig.COMMON.particleGoUp.get();
+            float pct = PotionEnchantConfig.CLIENT.particleFadeYStart.get() / 100f;
+            boolean goUp = PotionEnchantConfig.CLIENT.particleGoUp.get();
             float totalDist = goUp ? spawnY : screenHeight - spawnY;
             float traveled = goUp ? spawnY - yPos : yPos - spawnY;
             float progress = totalDist > 0 ? Math.max(0, traveled / totalDist) : 1;

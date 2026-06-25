@@ -204,8 +204,7 @@ public class BombEntity extends AbstractArrow implements PowerableMob {
                 // 毁灭模式：秒杀
                 if (owner instanceof Player destructionPlayer && ArmorXFeatureHandler.isDestructionModeEnabled(destructionPlayer)) {
                     XSwordTargetTracker.mark(livingEntity);
-                    livingEntity.getEntityData().set(LivingEntityAccessor.HEALTH(), 0.0F);
-                    livingEntity.die(damageSource);
+                    livingEntity.hurt(damageSource, Float.MAX_VALUE);
                 } else {
                     entity.hurt(damageSource, 10.0f * damageMultiplier);
                 }
@@ -333,3 +332,4 @@ public class BombEntity extends AbstractArrow implements PowerableMob {
         this.setAttacking(true);
     }
 }
+

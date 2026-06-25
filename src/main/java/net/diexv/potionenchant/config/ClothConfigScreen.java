@@ -16,7 +16,8 @@ public class ClothConfigScreen {
                 .setParentScreen(parent)
                 .setTitle(Component.translatable("config.potionenchant.title"))
                 .setSavingRunnable(() -> {
-                    PotionEnchantConfig.COMMON_SPEC.save();
+                    PotionEnchantConfig.SERVER_SPEC.save();
+                    PotionEnchantConfig.CLIENT_SPEC.save();
                     EffectConfigValues.SPEC.save();
                     EnchantmentConfigValues.SPEC.save();
                 });
@@ -34,35 +35,35 @@ public class ClothConfigScreen {
         ConfigCategory general = builder.getOrCreateCategory(Component.translatable("config.potionenchant.category.general"));
         ConfigEntryBuilder eb = builder.entryBuilder();
         general.addEntry(eb.startStrList(Component.translatable("config.potionenchant.blacklisted_effects"),
-                (List<String>) PotionEnchantConfig.COMMON.blacklistedEffects.get())
+                (List<String>) PotionEnchantConfig.SERVER.blacklistedEffects.get())
                 .setDefaultValue(java.util.Collections.emptyList())
 
                 .setTooltip(Component.translatable("config.potionenchant.blacklisted_effects.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.blacklistedEffects::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.blacklistedEffects::set).build());
         general.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.limit_armor_enchants"),
-                PotionEnchantConfig.COMMON.limitArmorEnchants.get())
+                PotionEnchantConfig.SERVER.limitArmorEnchants.get())
                 .setDefaultValue(false)
 
                 .setTooltip(Component.translatable("config.potionenchant.limit_armor_enchants.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.limitArmorEnchants::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.limitArmorEnchants::set).build());
         general.addEntry(eb.startIntField(Component.translatable("config.potionenchant.max_armor_enchants"),
-                PotionEnchantConfig.COMMON.maxArmorEnchants.get())
+                PotionEnchantConfig.SERVER.maxArmorEnchants.get())
                 .setDefaultValue(2).setMin(1).setMax(Integer.MAX_VALUE)
 
                 .setTooltip(Component.translatable("config.potionenchant.max_armor_enchants.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.maxArmorEnchants::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.maxArmorEnchants::set).build());
         general.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.limit_all_enchants"),
-                PotionEnchantConfig.COMMON.limitAllEnchants.get())
+                PotionEnchantConfig.SERVER.limitAllEnchants.get())
                 .setDefaultValue(false)
 
                 .setTooltip(Component.translatable("config.potionenchant.limit_all_enchants.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.limitAllEnchants::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.limitAllEnchants::set).build());
         general.addEntry(eb.startIntField(Component.translatable("config.potionenchant.max_all_enchants"),
-                PotionEnchantConfig.COMMON.maxAllEnchants.get())
+                PotionEnchantConfig.SERVER.maxAllEnchants.get())
                 .setDefaultValue(33).setMin(1).setMax(Integer.MAX_VALUE)
 
                 .setTooltip(Component.translatable("config.potionenchant.max_all_enchants.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.maxAllEnchants::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.maxAllEnchants::set).build());
     }
 
     private static void buildPotionEnchantCategory(ConfigBuilder builder) {
@@ -70,158 +71,158 @@ public class ClothConfigScreen {
         ConfigEntryBuilder eb = builder.entryBuilder();
 
         pe.addEntry(eb.startIntField(Component.translatable("config.potionenchant.max_potion_enchant_level"),
-                PotionEnchantConfig.COMMON.maxPotionEnchantLevel.get())
+                PotionEnchantConfig.SERVER.maxPotionEnchantLevel.get())
                 .setDefaultValue(100).setMin(1).setMax(Integer.MAX_VALUE)
 
                 .setTooltip(Component.translatable("config.potionenchant.max_potion_enchant_level.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.maxPotionEnchantLevel::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.maxPotionEnchantLevel::set).build());
 
         pe.addEntry(eb.startIntField(Component.translatable("config.potionenchant.max_potion_enchant_level_per_item"),
-                PotionEnchantConfig.COMMON.maxPotionEnchantLevelPerItem.get())
+                PotionEnchantConfig.SERVER.maxPotionEnchantLevelPerItem.get())
                 .setDefaultValue(2).setMin(1).setMax(Integer.MAX_VALUE)
 
                 .setTooltip(Component.translatable("config.potionenchant.max_potion_enchant_level_per_item.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.maxPotionEnchantLevelPerItem::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.maxPotionEnchantLevelPerItem::set).build());
 
         pe.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.allow_potion_level_beyond_255"),
-                PotionEnchantConfig.COMMON.allowPotionLevelBeyond255.get())
+                PotionEnchantConfig.SERVER.allowPotionLevelBeyond255.get())
                 .setDefaultValue(false)
 
                 .setTooltip(Component.translatable("config.potionenchant.allow_potion_level_beyond_255.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.allowPotionLevelBeyond255::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.allowPotionLevelBeyond255::set).build());
 
         pe.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.allow_enchant_level_beyond_cap"),
-                PotionEnchantConfig.COMMON.allowEnchantLevelBeyondCap.get())
+                PotionEnchantConfig.SERVER.allowEnchantLevelBeyondCap.get())
                 .setDefaultValue(false)
 
                 .setTooltip(Component.translatable("config.potionenchant.allow_enchant_level_beyond_cap.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.allowEnchantLevelBeyondCap::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.allowEnchantLevelBeyondCap::set).build());
 
         pe.addEntry(eb.startIntField(Component.translatable("config.potionenchant.enchant_book_xp_cost"),
-                PotionEnchantConfig.COMMON.enchantBookXpCost.get())
+                PotionEnchantConfig.SERVER.enchantBookXpCost.get())
                 .setDefaultValue(1000).setMin(1).setMax(Integer.MAX_VALUE)
 
                 .setTooltip(Component.translatable("config.potionenchant.enchant_book_xp_cost.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.enchantBookXpCost::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.enchantBookXpCost::set).build());
 
         pe.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.discoverable_in_enchanting_table"),
-                PotionEnchantConfig.COMMON.discoverableInEnchantingTable.get())
+                PotionEnchantConfig.SERVER.discoverableInEnchantingTable.get())
                 .setDefaultValue(true)
 
                 .setTooltip(Component.translatable("config.potionenchant.discoverable_in_enchanting_table.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.discoverableInEnchantingTable::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.discoverableInEnchantingTable::set).build());
 
         pe.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enchant_book_chest_loot"),
-                PotionEnchantConfig.COMMON.enchantBookChestLoot.get())
+                PotionEnchantConfig.SERVER.enchantBookChestLoot.get())
                 .setDefaultValue(true)
 
                 .setTooltip(Component.translatable("config.potionenchant.enchant_book_chest_loot.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.enchantBookChestLoot::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.enchantBookChestLoot::set).build());
 
         pe.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enchant_book_villager_trades"),
-                PotionEnchantConfig.COMMON.enchantBookVillagerTrades.get())
+                PotionEnchantConfig.SERVER.enchantBookVillagerTrades.get())
                 .setDefaultValue(true)
 
                 .setTooltip(Component.translatable("config.potionenchant.enchant_book_villager_trades.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.enchantBookVillagerTrades::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.enchantBookVillagerTrades::set).build());
 
         pe.addEntry(eb.startIntField(Component.translatable("config.potionenchant.ultimate_table_xp_cost_per_level"),
-                PotionEnchantConfig.COMMON.ultimateTableXpCostPerLevel.get())
+                PotionEnchantConfig.SERVER.ultimateTableXpCostPerLevel.get())
                 .setDefaultValue(1000).setMin(1).setMax(Integer.MAX_VALUE)
 
                 .setTooltip(Component.translatable("config.potionenchant.ultimate_table_xp_cost_per_level.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.ultimateTableXpCostPerLevel::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.ultimateTableXpCostPerLevel::set).build());
 
         pe.addEntry(eb.startIntField(Component.translatable("config.potionenchant.ultimate_potion_amulet_loot_chance"),
-                PotionEnchantConfig.COMMON.ultimatePotionAmuletLootChance.get())
+                PotionEnchantConfig.SERVER.ultimatePotionAmuletLootChance.get())
                 .setDefaultValue(1).setMin(0).setMax(100)
 
                 .setTooltip(Component.translatable("config.potionenchant.ultimate_potion_amulet_loot_chance.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.ultimatePotionAmuletLootChance::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.ultimatePotionAmuletLootChance::set).build());
 
         pe.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.allow_curio_potion_enchant"),
-                PotionEnchantConfig.COMMON.allowCurioPotionEnchant.get())
+                PotionEnchantConfig.SERVER.allowCurioPotionEnchant.get())
                 .setDefaultValue(true)
 
                 .setTooltip(Component.translatable("config.potionenchant.allow_curio_potion_enchant.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.allowCurioPotionEnchant::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.allowCurioPotionEnchant::set).build());
     }
 
     private static void buildDisplayCategory(ConfigBuilder builder) {
         ConfigCategory display = builder.getOrCreateCategory(Component.translatable("config.potionenchant.category.display"));
         ConfigEntryBuilder eb = builder.entryBuilder();
         display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.custom_potion_hud"),
-                PotionEnchantConfig.COMMON.customPotionHud.get())
+                PotionEnchantConfig.CLIENT.customPotionHud.get())
                 .setDefaultValue(true)
 
                 .setTooltip(Component.translatable("config.potionenchant.custom_potion_hud.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.customPotionHud::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.customPotionHud::set).build());
         display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.show_potion_level"),
-                PotionEnchantConfig.COMMON.showPotionLevel.get())
+                PotionEnchantConfig.CLIENT.showPotionLevel.get())
                 .setDefaultValue(true)
 
                 .setTooltip(Component.translatable("config.potionenchant.show_potion_level.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.showPotionLevel::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.showPotionLevel::set).build());
         display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.show_text_background"),
-                PotionEnchantConfig.COMMON.showTextBackground.get())
+                PotionEnchantConfig.CLIENT.showTextBackground.get())
                 .setDefaultValue(true)
 
                 .setTooltip(Component.translatable("config.potionenchant.show_text_background.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.showTextBackground::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.showTextBackground::set).build());
         display.addEntry(eb.startIntField(Component.translatable("config.potionenchant.max_visible_effects"),
-                PotionEnchantConfig.COMMON.maxVisibleEffects.get())
+                PotionEnchantConfig.CLIENT.maxVisibleEffects.get())
                 .setDefaultValue(10).setMin(3).setMax(50)
 
                 .setTooltip(Component.translatable("config.potionenchant.max_visible_effects.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.maxVisibleEffects::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.maxVisibleEffects::set).build());
         display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.show_scroll_hint"),
-                PotionEnchantConfig.COMMON.showScrollHint.get())
+                PotionEnchantConfig.CLIENT.showScrollHint.get())
                 .setDefaultValue(true)
 
                 .setTooltip(Component.translatable("config.potionenchant.show_scroll_hint.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.showScrollHint::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.showScrollHint::set).build());
         display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.hud_high_priority"),
-                PotionEnchantConfig.COMMON.hudHighPriority.get())
+                PotionEnchantConfig.CLIENT.hudHighPriority.get())
                 .setDefaultValue(true)
 
                 .setTooltip(Component.translatable("config.potionenchant.hud_high_priority.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.hudHighPriority::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.hudHighPriority::set).build());
         display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enable_custom_potion_tooltip"),
-                PotionEnchantConfig.COMMON.enableCustomPotionTooltip.get())
+                PotionEnchantConfig.SERVER.enableCustomPotionTooltip.get())
                 .setDefaultValue(true)
 
                 .setTooltip(Component.translatable("config.potionenchant.enable_custom_potion_tooltip.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.enableCustomPotionTooltip::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.enableCustomPotionTooltip::set).build());
         display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enable_vanilla_potion_description"),
-                PotionEnchantConfig.COMMON.enableVanillaPotionDescription.get())
+                PotionEnchantConfig.SERVER.enableVanillaPotionDescription.get())
                 .setDefaultValue(false)
 
                 .setTooltip(Component.translatable("config.potionenchant.enable_vanilla_potion_description.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.enableVanillaPotionDescription::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.enableVanillaPotionDescription::set).build());
         display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enable_all_potion_description"),
-                PotionEnchantConfig.COMMON.enableAllPotionDescription.get())
+                PotionEnchantConfig.SERVER.enableAllPotionDescription.get())
                 .setDefaultValue(false)
 
                 .setTooltip(Component.translatable("config.potionenchant.enable_all_potion_description.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.enableAllPotionDescription::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.enableAllPotionDescription::set).build());
         display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enable_potion_enchant_tooltip"),
-                PotionEnchantConfig.COMMON.enablePotionEnchantTooltip.get())
+                PotionEnchantConfig.SERVER.enablePotionEnchantTooltip.get())
                 .setDefaultValue(false)
 
                 .setTooltip(Component.translatable("config.potionenchant.enable_potion_enchant_tooltip.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.enablePotionEnchantTooltip::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.enablePotionEnchantTooltip::set).build());
         display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enable_armor_value_render"),
-                PotionEnchantConfig.COMMON.enableArmorValueRender.get())
+                PotionEnchantConfig.CLIENT.enableArmorValueRender.get())
                 .setDefaultValue(true)
 
                 .setTooltip(Component.translatable("config.potionenchant.enable_armor_value_render.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.enableArmorValueRender::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.enableArmorValueRender::set).build());
         display.addEntry(eb.startIntField(Component.translatable("config.potionenchant.potion_enchant_tooltip_max_per_column"),
-                PotionEnchantConfig.COMMON.potionEnchantTooltipMaxPerColumn.get())
+                PotionEnchantConfig.SERVER.potionEnchantTooltipMaxPerColumn.get())
                 .setDefaultValue(10).setMin(1).setMax(50)
 
                 .setTooltip(Component.translatable("config.potionenchant.potion_enchant_tooltip_max_per_column.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.potionEnchantTooltipMaxPerColumn::set).build());
+                .setSaveConsumer(PotionEnchantConfig.SERVER.potionEnchantTooltipMaxPerColumn::set).build());
     }
 
     private static void buildEffectValuesCategory(ConfigBuilder builder) {
@@ -421,155 +422,155 @@ public class ClothConfigScreen {
         ConfigEntryBuilder eb = builder.entryBuilder();
 
         cm.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enable_custom_main_menu"),
-                PotionEnchantConfig.COMMON.enableCustomMainMenu.get())
+                PotionEnchantConfig.CLIENT.enableCustomMainMenu.get())
                 .setDefaultValue(false)
 
                 .setTooltip(Component.translatable("config.potionenchant.enable_custom_main_menu.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.enableCustomMainMenu::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.enableCustomMainMenu::set).build());
 
         cm.addEntry(eb.startStrList(Component.translatable("config.potionenchant.custom_main_menu_music"),
-                (List<String>) PotionEnchantConfig.COMMON.customMainMenuMusic.get())
+                (List<String>) PotionEnchantConfig.CLIENT.customMainMenuMusic.get())
                 .setDefaultValue(java.util.Collections.singletonList("potionenchant:menu_music"))
 
                 .setTooltip(Component.translatable("config.potionenchant.custom_main_menu_music.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.customMainMenuMusic::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.customMainMenuMusic::set).build());
 
         cm.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enable_menu_parallax"),
-                PotionEnchantConfig.COMMON.enableMenuParallax.get())
+                PotionEnchantConfig.CLIENT.enableMenuParallax.get())
                 .setDefaultValue(true)
 
                 .setTooltip(Component.translatable("config.potionenchant.enable_menu_parallax.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.enableMenuParallax::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.enableMenuParallax::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.menu_parallax_max_offset"),
-                PotionEnchantConfig.COMMON.menuParallaxMaxOffset.get(), 5, 60)
+                PotionEnchantConfig.CLIENT.menuParallaxMaxOffset.get(), 5, 60)
                 .setDefaultValue(27)
 
                 .setTooltip(Component.translatable("config.potionenchant.menu_parallax_max_offset.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.menuParallaxMaxOffset::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.menuParallaxMaxOffset::set).build());
 
         cm.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enable_menu_vignette"),
-                PotionEnchantConfig.COMMON.enableMenuVignette.get())
+                PotionEnchantConfig.CLIENT.enableMenuVignette.get())
                 .setDefaultValue(true)
 
                 .setTooltip(Component.translatable("config.potionenchant.enable_menu_vignette.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.enableMenuVignette::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.enableMenuVignette::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.menu_fog_range"),
-                PotionEnchantConfig.COMMON.menuFogRange.get(), 0, 100)
+                PotionEnchantConfig.CLIENT.menuFogRange.get(), 0, 100)
                 .setDefaultValue(3)
 
                 .setTooltip(Component.translatable("config.potionenchant.menu_fog_range.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.menuFogRange::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.menuFogRange::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.particle_base_size"),
-                PotionEnchantConfig.COMMON.particleBaseSize.get(), 8, 64)
+                PotionEnchantConfig.CLIENT.particleBaseSize.get(), 8, 64)
                 .setDefaultValue(21)
                 .setTooltip(Component.translatable("config.potionenchant.particle_base_size.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.particleBaseSize::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.particleBaseSize::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.particle_size_spread"),
-                PotionEnchantConfig.COMMON.particleSizeSpread.get(), 0, 48)
+                PotionEnchantConfig.CLIENT.particleSizeSpread.get(), 0, 48)
                 .setDefaultValue(17)
                 .setTooltip(Component.translatable("config.potionenchant.particle_size_spread.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.particleSizeSpread::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.particleSizeSpread::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.particle_speed_h"),
-                PotionEnchantConfig.COMMON.particleSpeedH.get(), 0, 100)
+                PotionEnchantConfig.CLIENT.particleSpeedH.get(), 0, 100)
                 .setDefaultValue(17)
 
                 .setTooltip(Component.translatable("config.potionenchant.particle_speed_h.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.particleSpeedH::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.particleSpeedH::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.particle_speed_v"),
-                PotionEnchantConfig.COMMON.particleSpeedV.get(), 1, 100)
+                PotionEnchantConfig.CLIENT.particleSpeedV.get(), 1, 100)
                 .setDefaultValue(8)
 
                 .setTooltip(Component.translatable("config.potionenchant.particle_speed_v.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.particleSpeedV::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.particleSpeedV::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.particle_speed_v_spread"),
-                PotionEnchantConfig.COMMON.particleSpeedVSpread.get(), 0, 100)
+                PotionEnchantConfig.CLIENT.particleSpeedVSpread.get(), 0, 100)
                 .setDefaultValue(25)
 
                 .setTooltip(Component.translatable("config.potionenchant.particle_speed_v_spread.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.particleSpeedVSpread::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.particleSpeedVSpread::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.particle_fade_in"),
-                PotionEnchantConfig.COMMON.particleFadeIn.get(), 1, 100)
+                PotionEnchantConfig.CLIENT.particleFadeIn.get(), 1, 100)
                 .setDefaultValue(25)
 
                 .setTooltip(Component.translatable("config.potionenchant.particle_fade_in.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.particleFadeIn::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.particleFadeIn::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.particle_fade_out"),
-                PotionEnchantConfig.COMMON.particleFadeOut.get(), 1, 100)
+                PotionEnchantConfig.CLIENT.particleFadeOut.get(), 1, 100)
                 .setDefaultValue(40)
 
                 .setTooltip(Component.translatable("config.potionenchant.particle_fade_out.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.particleFadeOut::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.particleFadeOut::set).build());
 
         cm.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.particle_go_up"),
-                PotionEnchantConfig.COMMON.particleGoUp.get())
+                PotionEnchantConfig.CLIENT.particleGoUp.get())
                 .setDefaultValue(true)
 
                 .setTooltip(Component.translatable("config.potionenchant.particle_go_up.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.particleGoUp::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.particleGoUp::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.particle_max_count"),
-                PotionEnchantConfig.COMMON.particleMaxCount.get(), 5, 100)
+                PotionEnchantConfig.CLIENT.particleMaxCount.get(), 5, 100)
                 .setDefaultValue(25)
 
                 .setTooltip(Component.translatable("config.potionenchant.particle_max_count.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.particleMaxCount::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.particleMaxCount::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.particle_fade_y_start"),
-                PotionEnchantConfig.COMMON.particleFadeYStart.get(), 0, 100)
+                PotionEnchantConfig.CLIENT.particleFadeYStart.get(), 0, 100)
                 .setDefaultValue(10)
 
                 .setTooltip(Component.translatable("config.potionenchant.particle_fade_y_start.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.particleFadeYStart::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.particleFadeYStart::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.particle_spawn_rate"),
-                PotionEnchantConfig.COMMON.particleSpawnRate.get(), 1, 20)
+                PotionEnchantConfig.CLIENT.particleSpawnRate.get(), 1, 20)
                 .setDefaultValue(2)
 
                 .setTooltip(Component.translatable("config.potionenchant.particle_spawn_rate.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.particleSpawnRate::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.particleSpawnRate::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.mouse_trail_size"),
-                PotionEnchantConfig.COMMON.mouseTrailSize.get(), 4, 64)
+                PotionEnchantConfig.CLIENT.mouseTrailSize.get(), 4, 64)
                 .setDefaultValue(32)
                 .setTooltip(Component.translatable("config.potionenchant.mouse_trail_size.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.mouseTrailSize::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.mouseTrailSize::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.mouse_trail_lifetime"),
-                PotionEnchantConfig.COMMON.mouseTrailLifetime.get(), 200, 10000)
+                PotionEnchantConfig.CLIENT.mouseTrailLifetime.get(), 200, 10000)
                 .setDefaultValue(800)
 
                 .setTooltip(Component.translatable("config.potionenchant.mouse_trail_lifetime.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.mouseTrailLifetime::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.mouseTrailLifetime::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.mouse_trail_spawn_interval"),
-                PotionEnchantConfig.COMMON.mouseTrailSpawnInterval.get(), 10, 200)
+                PotionEnchantConfig.CLIENT.mouseTrailSpawnInterval.get(), 10, 200)
                 .setDefaultValue(30)
 
                 .setTooltip(Component.translatable("config.potionenchant.mouse_trail_spawn_interval.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.mouseTrailSpawnInterval::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.mouseTrailSpawnInterval::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.mouse_trail_fade_delay"),
-                PotionEnchantConfig.COMMON.mouseTrailFadeDelay.get(), 0, 100)
+                PotionEnchantConfig.CLIENT.mouseTrailFadeDelay.get(), 0, 100)
                 .setDefaultValue(0)
 
                 .setTooltip(Component.translatable("config.potionenchant.mouse_trail_fade_delay.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.mouseTrailFadeDelay::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.mouseTrailFadeDelay::set).build());
 
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.mouse_trail_click_count"),
-                PotionEnchantConfig.COMMON.mouseTrailClickCount.get(), 0, 100)
+                PotionEnchantConfig.CLIENT.mouseTrailClickCount.get(), 0, 100)
                 .setDefaultValue(5)
 
                 .setTooltip(Component.translatable("config.potionenchant.mouse_trail_click_count.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.COMMON.mouseTrailClickCount::set).build());
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.mouseTrailClickCount::set).build());
     }
 }
 

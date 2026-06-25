@@ -26,7 +26,7 @@ public class LogoRendererMixin {
     @Inject(method = "renderLogo(Lnet/minecraft/client/gui/GuiGraphics;IFI)V", at = @At("HEAD"), cancellable = true)
     private void onRenderLogo(GuiGraphics guiGraphics, int screenWidth, float alpha, int heightOffset, CallbackInfo ci) {
         // 仅配置启用 + 自定义标题文件存在时，才取消原版 Logo
-        if (PotionEnchantConfig.COMMON.enableCustomMainMenu.get() && checkLogoExists()) {
+        if (PotionEnchantConfig.CLIENT.enableCustomMainMenu.get() && checkLogoExists()) {
             ci.cancel();
         }
     }

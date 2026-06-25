@@ -30,14 +30,14 @@ public class TitleScreenMusicMixin {
     @Inject(method = "getSituationalMusic", at = @At("HEAD"), cancellable = true)
     private void onGetSituationalMusic(CallbackInfoReturnable<Music> cir) {
         // 仅在配置启用时替换
-        if (!PotionEnchantConfig.COMMON.enableCustomMainMenu.get()) return;
+        if (!PotionEnchantConfig.CLIENT.enableCustomMainMenu.get()) return;
         if (!checkMusicExists()) return;
 
         // 当没有玩家时（仍在菜单界面），播放自定义音乐
         Minecraft mc = (Minecraft)(Object)this;
         if (mc.player != null) return;  // 进入存档后不干预，用原版游戏内音乐
 
-        List<? extends String> musicList = PotionEnchantConfig.COMMON.customMainMenuMusic.get();
+        List<? extends String> musicList = PotionEnchantConfig.CLIENT.customMainMenuMusic.get();
         if (musicList == null || musicList.isEmpty()) return;
 
         String musicId = musicList.get(0);
@@ -68,7 +68,7 @@ public class TitleScreenMusicMixin {
     private static boolean checkMusicExists() {
         if (hasCustomMusic == null) {
             try {
-                List<? extends String> musicList = PotionEnchantConfig.COMMON.customMainMenuMusic.get();
+                List<? extends String> musicList = PotionEnchantConfig.CLIENT.customMainMenuMusic.get();
                 if (musicList == null || musicList.isEmpty()) {
                     hasCustomMusic = false;
                     return false;

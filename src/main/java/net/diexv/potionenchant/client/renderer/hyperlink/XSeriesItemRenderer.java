@@ -19,6 +19,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import net.diexv.potionenchant.client.compat.oculus.ItemShaderModCompat;
+import net.diexv.potionenchant.client.renderer.hyperlink.DeferredParticleQueue;
 import java.util.Random;
 import java.util.function.Supplier;
 
@@ -83,7 +85,22 @@ public class XSeriesItemRenderer extends BlockEntityWithoutLevelRenderer {
                 PARTICLES.add(new Particle(stack));
             }
         }
-        PARTICLES.removeIf(p -> p.render(stack, context, poseStack, buffer, packedLight, packedOverlay));
+        // Oculus光影兼容：延迟渲染粒子到 AFTER_LEVEL 阶段
+        if (ItemShaderModCompat.isOculusShaderPackActive()) {
+            if (!PARTICLES.isEmpty()) {
+                DeferredParticleQueue.enqueue(stack, context, poseStack, packedLight, packedOverlay, new java.util.HashSet<>(PARTICLES));
+                PARTICLES.clear();
+            }
+        } else {
+            // Try direct render first, defer to queue if fails
+            int before = PARTICLES.size();
+            PARTICLES.removeIf(p -> p.render(stack, context, poseStack, buffer, packedLight, packedOverlay));
+            // If direct render didn't consume all particles (e.g. Oculus not detected), try deferred
+            if (!PARTICLES.isEmpty()) {
+                DeferredParticleQueue.enqueue(stack, context, poseStack, packedLight, packedOverlay, new java.util.HashSet<>(PARTICLES));
+                PARTICLES.clear();
+            }
+        }
     }
 
     private void renderMainModel(PoseStack poseStack, MultiBufferSource buffer,

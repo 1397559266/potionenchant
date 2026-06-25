@@ -22,8 +22,8 @@ public class EnchantmentDiscoverableMixin {
 
         // isDiscoverable is used by both enchanting table display and chest loot (EnchantRandomlyFunction)
         // Return true if either source is enabled
-        boolean chestLoot = PotionEnchantConfig.COMMON.enchantBookChestLoot.get();
-        boolean enchantTable = PotionEnchantConfig.COMMON.discoverableInEnchantingTable.get();
+        boolean chestLoot = PotionEnchantConfig.SERVER.enchantBookChestLoot.get();
+        boolean enchantTable = PotionEnchantConfig.SERVER.discoverableInEnchantingTable.get();
         cir.setReturnValue(chestLoot || enchantTable);
     }
 
@@ -36,8 +36,8 @@ public class EnchantmentDiscoverableMixin {
         // isTreasureOnly is used by EnchantRandomlyFunction as: isDiscoverable() && !isTreasureOnly()
         // When chest loot is disabled but enchanting table is enabled, isDiscoverable() returns true,
         // so we must set isTreasureOnly() to true to block chest loot.
-        boolean chestLoot = PotionEnchantConfig.COMMON.enchantBookChestLoot.get();
-        boolean enchantTable = PotionEnchantConfig.COMMON.discoverableInEnchantingTable.get();
+        boolean chestLoot = PotionEnchantConfig.SERVER.enchantBookChestLoot.get();
+        boolean enchantTable = PotionEnchantConfig.SERVER.discoverableInEnchantingTable.get();
         if (!chestLoot && enchantTable) {
             cir.setReturnValue(true);
         } else if (!chestLoot && !enchantTable) {
@@ -58,7 +58,7 @@ public class EnchantmentDiscoverableMixin {
         if (id == null || !PotionEnchantMod.MODID.equals(id.getNamespace())) return;
 
         // isTradeable controls whether villagers can offer enchanted books with this enchantment
-        if (!PotionEnchantConfig.COMMON.enchantBookVillagerTrades.get()) {
+        if (!PotionEnchantConfig.SERVER.enchantBookVillagerTrades.get()) {
             cir.setReturnValue(false);
         }
     }
@@ -69,7 +69,7 @@ public class EnchantmentDiscoverableMixin {
         ResourceLocation id = ForgeRegistries.ENCHANTMENTS.getKey(self);
         if (id == null || !PotionEnchantMod.MODID.equals(id.getNamespace())) return;
 
-        if (!PotionEnchantConfig.COMMON.discoverableInEnchantingTable.get()) {
+        if (!PotionEnchantConfig.SERVER.discoverableInEnchantingTable.get()) {
             cir.setReturnValue(false);
         }
     }

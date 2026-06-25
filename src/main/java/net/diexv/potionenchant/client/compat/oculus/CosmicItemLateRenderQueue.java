@@ -51,12 +51,13 @@ public final class CosmicItemLateRenderQueue {
         }
 
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
-            DeferredParticleQueue.renderAll(buffers);
         Matrix4f previousProjection = new Matrix4f(RenderSystem.getProjectionMatrix());
         PoseStack modelViewStack = RenderSystem.getModelViewStack();
         modelViewStack.pushPose();
         try {
             LateShaderLayerState.prepareMainTargetPass();
+            // Render deferred particles first with correct projection
+            DeferredParticleQueue.renderAll(buffers);
             Iterator<Entry> iterator = ENTRIES.iterator();
             while (iterator.hasNext()) {
                 Entry entry = iterator.next();

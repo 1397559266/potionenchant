@@ -14,7 +14,7 @@ public class TitleScreenBackgroundMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/PanoramaRenderer;render(FF)V"),
             cancellable = true)
     private void onPanoramaRender(CallbackInfo ci) {
-        if (PotionEnchantConfig.COMMON.enableCustomMainMenu.get()) {
+        if (PotionEnchantConfig.CLIENT.enableCustomMainMenu.get()) {
             ci.cancel();
         }
     }

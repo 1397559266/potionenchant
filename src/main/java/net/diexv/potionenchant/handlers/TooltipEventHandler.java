@@ -39,7 +39,7 @@ public class TooltipEventHandler {
         }
         
         // 检查是否为药水物品
-        if (isPotionItem(stack) && PotionEnchantConfig.COMMON.enableCustomPotionTooltip.get()) {
+        if (isPotionItem(stack) && PotionEnchantConfig.SERVER.enableCustomPotionTooltip.get()) {
             List<Component> tooltip = event.getToolTip();
             // 保留第一行（物品名称），避免删除所有行导致Tooltip为空引发崩溃
             Component firstLine = tooltip.isEmpty() ? null : tooltip.get(0);

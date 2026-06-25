@@ -42,12 +42,12 @@ public class PotionHudMixin {
         // 定期更新缓存配置（减少配置读取频率）
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastConfigCheck > CONFIG_CHECK_INTERVAL) {
-            cachedCustomHudEnabled = PotionEnchantConfig.COMMON.customPotionHud.get();
-            cachedShowLevel = PotionEnchantConfig.COMMON.showPotionLevel.get();
-            cachedShowBackground = PotionEnchantConfig.COMMON.showTextBackground.get();
-            cachedMaxVisible = PotionEnchantConfig.COMMON.maxVisibleEffects.get();
-            cachedShowScrollHint = PotionEnchantConfig.COMMON.showScrollHint.get();
-            cachedHighPriority = PotionEnchantConfig.COMMON.hudHighPriority.get();
+            cachedCustomHudEnabled = PotionEnchantConfig.CLIENT.customPotionHud.get();
+            cachedShowLevel = PotionEnchantConfig.CLIENT.showPotionLevel.get();
+            cachedShowBackground = PotionEnchantConfig.CLIENT.showTextBackground.get();
+            cachedMaxVisible = PotionEnchantConfig.CLIENT.maxVisibleEffects.get();
+            cachedShowScrollHint = PotionEnchantConfig.CLIENT.showScrollHint.get();
+            cachedHighPriority = PotionEnchantConfig.CLIENT.hudHighPriority.get();
             lastConfigCheck = currentTime;
         }
         

@@ -3,6 +3,8 @@ package net.diexv.potionenchant.mixin;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.diexv.potionenchant.client.compat.oculus.ItemShaderModCompat;
+import net.diexv.potionenchant.client.renderer.hyperlink.DeferredParticleQueue;
 import net.diexv.potionenchant.client.renderer.hyperlink.PolygonRenderer;
 import net.diexv.potionenchant.client.renderer.hyperlink.XSeriesItemRenderer;
 import net.diexv.potionenchant.item.ModItems;
@@ -108,14 +110,22 @@ public abstract class XSeriesItemRenderMixin {
         spawnItemParticles(stack);
 
         // 渲染粒子（保持在物品上方）
-        PolygonRenderer.with(poseStack, () -> {
-            if (context == ItemDisplayContext.GUI) {
-                poseStack.translate(0, 0, 0.1);
-            } else if (context == ItemDisplayContext.FIXED) {
-                poseStack.translate(0, 0, -0.1);
+        // Oculus光影兼容：延迟渲染粒子到 AFTER_LEVEL 阶段
+        if (ItemShaderModCompat.isOculusShaderPackActive()) {
+            if (!xSeriesParticles.isEmpty()) {
+                DeferredParticleQueue.enqueue(stack, context, poseStack, combinedLight, combinedOverlay, new java.util.HashSet<>(xSeriesParticles));
+                xSeriesParticles.clear();
             }
-            xSeriesParticles.removeIf(p -> p.render(stack, context, poseStack, buffer, combinedLight, combinedOverlay));
-        });
+        } else {
+            PolygonRenderer.with(poseStack, () -> {
+                if (context == ItemDisplayContext.GUI) {
+                    poseStack.translate(0, 0, 0.1);
+                } else if (context == ItemDisplayContext.FIXED) {
+                    poseStack.translate(0, 0, -0.1);
+                }
+                xSeriesParticles.removeIf(p -> p.render(stack, context, poseStack, buffer, combinedLight, combinedOverlay));
+            });
+        }
     }
 
     @Unique

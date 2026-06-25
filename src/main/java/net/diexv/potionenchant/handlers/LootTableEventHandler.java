@@ -22,7 +22,7 @@ public class LootTableEventHandler {
     @SubscribeEvent
     public static void onLootTableLoad(LootTableLoadEvent event) {
         // 获取配置的生成概率
-        int lootChance = PotionEnchantConfig.COMMON.ultimatePotionAmuletLootChance.get();
+        int lootChance = PotionEnchantConfig.SERVER.ultimatePotionAmuletLootChance.get();
         
         // 如果概率为0,不添加
         if (lootChance <= 0) {

@@ -119,7 +119,7 @@ public class EnchantBookPacketHandler {
                 }
 
                 // 升级操作需要计算经验消耗
-                int xpCost = levelDiff * PotionEnchantConfig.COMMON.enchantBookXpCost.get();
+                int xpCost = levelDiff * PotionEnchantConfig.SERVER.enchantBookXpCost.get();
 
                 // 检查经验是否足够
                 if (player.totalExperience < xpCost && !player.isCreative()) {
