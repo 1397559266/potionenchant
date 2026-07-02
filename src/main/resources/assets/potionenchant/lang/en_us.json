@@ -609,5 +609,17 @@
   "config.potionenchant.mouse_trail_fade_delay.tooltip": "How long before trail starts fading. 0=fade from start, 100=never fade. Default: 0",
   "config.potionenchant.mouse_trail_click_count": "Click Firework Count",
   "config.potionenchant.mouse_trail_click_count.tooltip": "Particles spawned on mouse click (set 0 to disable). Range: 0~100. Default: 5",
-  "gui.potionenchant.copied": "Copied: %s"
+  "gui.potionenchant.copied": "Copied: %s",
+  "config.potionenchant.menu_background_file": "Menu Background Image",
+  "config.potionenchant.menu_background_file.tooltip": "Select background image from config/potionenchant/menu/menu/ folder (.png). Select none to use mod default",
+  "config.potionenchant.menu_icon_file": "Menu Icon/Logo",
+  "config.potionenchant.menu_icon_file.tooltip": "Select icon image from config/potionenchant/menu/icon/ folder (.png). Select none to use mod default logo",
+  "config.potionenchant.menu_music_file": "Menu Music File",
+  "config.potionenchant.menu_music_file.tooltip": "Select music file from config/potionenchant/menu/music/ folder (.ogg). Select none to use default music",
+  "config.potionenchant.menu_title_text": "Custom Title Text",
+  "config.potionenchant.menu_title_text.tooltip": "Custom title text displayed below the logo on the main menu. Leave empty to hide",
+  "config.potionenchant.particle_tint_color": "Particle Tint Color",
+  "config.potionenchant.particle_tint_color.tooltip": "Particle tint theme: empty/random=random colors, warm=warm tones (red/orange/yellow/pink), cool=cool tones (blue/cyan/green/purple), or enter hex color like #FF00FF",
+  "config.potionenchant.button_highlight_color": "Button Highlight Color",
+  "config.potionenchant.button_highlight_color.tooltip": "Main menu button hover border highlight color preset: default=orange/gold, red, orange, yellow, green, blue, indigo, violet"
 }

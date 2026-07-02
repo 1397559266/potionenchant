@@ -1,7 +1,10 @@
 package net.diexv.potionenchant.mixin;
 
 import net.diexv.potionenchant.PotionEnchantMod;
+import net.diexv.potionenchant.client.MenuResourceScanner;
 import net.diexv.potionenchant.config.PotionEnchantConfig;
+import net.diexv.potionenchant.sound.CustomMenuMusicPack;
+import net.diexv.potionenchant.sound.ModSounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
@@ -19,25 +22,23 @@ import java.util.List;
 /**
  * 主菜单背景音乐替换
  * 注入 Minecraft.getSituationalMusic()，在没有玩家（仍在菜单界面）时播放自定义音乐
- * 这样音乐在主菜单、选项界面、世界选择界面都会持续播放
- * 直到进入游戏存档（玩家实体出现）后自动切回原版游戏内音乐
+ * 支持：
+ *   1. 内置音乐（menu_music, menu_music_2）→ 从 ForgeRegistries 查找
+ *   2. 自定义外部音乐（config/potionenchant/menu/music/ 中的 .ogg）→ 通过虚拟资源包播放
  */
 @Mixin(Minecraft.class)
 public class TitleScreenMusicMixin {
 
-    private static Boolean hasCustomMusic = null;
-
     @Inject(method = "getSituationalMusic", at = @At("HEAD"), cancellable = true)
     private void onGetSituationalMusic(CallbackInfoReturnable<Music> cir) {
-        // 仅在配置启用时替换
         if (!PotionEnchantConfig.CLIENT.enableCustomMainMenu.get()) return;
         if (!checkMusicExists()) return;
 
-        // 当没有玩家时（仍在菜单界面），播放自定义音乐
         Minecraft mc = (Minecraft)(Object)this;
-        if (mc.player != null) return;  // 进入存档后不干预，用原版游戏内音乐
+        if (mc.player != null) return;
 
-        List<? extends String> musicList = PotionEnchantConfig.CLIENT.customMainMenuMusic.get();
+        String menuMusicFile = PotionEnchantConfig.CLIENT.menuMusicFile.get();
+        java.util.List<String> musicList = getMusicList(menuMusicFile);
         if (musicList == null || musicList.isEmpty()) return;
 
         String musicId = musicList.get(0);
@@ -56,40 +57,77 @@ public class TitleScreenMusicMixin {
             return;
         }
 
-        // 循环播放，无延迟
         Holder<SoundEvent> holder = Holder.direct(soundEvent);
         Music customMusic = new Music(holder, 0, 0, true);
         cir.setReturnValue(customMusic);
     }
 
     /**
-     * 检测自定义音效注册 + OGG 文件是否都存在
+     * 检测声音事件 + OGG 文件是否都可用
+     * 对内置音乐检查 ForgeRegistries + 资源 OGG
+     * 对自定义外部音乐检查虚拟 SoundEvent 注册 + 自定义文件存在
      */
     private static boolean checkMusicExists() {
-        if (hasCustomMusic == null) {
-            try {
-                List<? extends String> musicList = PotionEnchantConfig.CLIENT.customMainMenuMusic.get();
-                if (musicList == null || musicList.isEmpty()) {
-                    hasCustomMusic = false;
-                    return false;
-                }
+        try {
+            String musicFile = PotionEnchantConfig.CLIENT.menuMusicFile.get();
+            java.util.List<String> musicList = getMusicList(musicFile);
+            if (musicList == null || musicList.isEmpty()) return false;
 
-                String musicId = musicList.get(0);
-                ResourceLocation soundRL = new ResourceLocation(musicId);
+            String musicId = musicList.get(0);
+            ResourceLocation soundRL = new ResourceLocation(musicId);
 
-                // 检查注册表
-                boolean registered = ForgeRegistries.SOUND_EVENTS.getValue(soundRL) != null;
+            // 检查注册表中有没有这个 SoundEvent
+            boolean registered = ForgeRegistries.SOUND_EVENTS.getValue(soundRL) != null;
+            if (!registered) return false;
 
-                // 检查 OGG 文件
-                ResourceLocation fileRL = new ResourceLocation(soundRL.getNamespace(), "sounds/" + soundRL.getPath() + ".ogg");
+            // 检查是否是内置音乐
+            boolean isBuiltin = false;
+            for (String b : MenuResourceScanner.BUILTIN_MUSIC) {
+                if (b.equals(musicFile)) { isBuiltin = true; break; }
+            }
+
+            if (isBuiltin) {
+                // 内置音乐：检查 assets 中的 OGG 文件
+                ResourceLocation fileRL = new ResourceLocation(soundRL.getNamespace(),
+                        "sounds/" + soundRL.getPath() + ".ogg");
                 ResourceManager rm = Minecraft.getInstance().getResourceManager();
-                boolean fileExists = rm != null && rm.getResource(fileRL).isPresent();
+                return rm != null && rm.getResource(fileRL).isPresent();
+            } else {
+                // 自定义外部音乐：检查 CustomMenuMusicPack 是否有有效文件
+                return CustomMenuMusicPack.hasCustomMusic();
+            }
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
-                hasCustomMusic = registered && fileExists;
-            } catch (Exception e) {
-                hasCustomMusic = false;
+    /**
+     * 获取音乐 ID 列表
+     * 优先规则：
+     *   1. menuMusicFile 不为空/不为 none
+     *      a. 如果是内置音乐名 → 返回 "potionenchant:<name>"
+     *      b. 如果是自定义文件名 → 返回虚拟 SoundEvent ID
+     *   2. customMainMenuMusic 列表兜底
+     *   3. 最后 hardcode 为 "potionenchant:menu_music"
+     */
+    private static java.util.List<String> getMusicList(String menuMusicFile) {
+        if (menuMusicFile != null && !menuMusicFile.isEmpty() && !"none".equalsIgnoreCase(menuMusicFile)) {
+            // 检查是不是内置音乐
+            boolean isBuiltin = false;
+            for (String b : MenuResourceScanner.BUILTIN_MUSIC) {
+                if (b.equals(menuMusicFile)) { isBuiltin = true; break; }
+            }
+            if (isBuiltin) {
+                return java.util.Collections.singletonList("potionenchant:" + menuMusicFile);
+            } else {
+                // 自定义外部音乐 → 使用虚拟 SoundEvent
+                return java.util.Collections.singletonList("potionenchant:" + CustomMenuMusicPack.VIRTUAL_SOUND_NAME);
             }
         }
-        return hasCustomMusic;
+        List<? extends String> fallback = PotionEnchantConfig.CLIENT.customMainMenuMusic.get();
+        if (fallback != null && !fallback.isEmpty()) {
+            return (java.util.List<String>) fallback;
+        }
+        return java.util.Collections.singletonList("potionenchant:menu_music");
     }
 }

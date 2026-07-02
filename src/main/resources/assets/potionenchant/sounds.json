@@ -1,14 +1,37 @@
 {
-  "sprint": {
-    "sounds": [
-      "potionenchant:sprint"
-    ]
-  },
   "menu_music": {
+    "category": "music",
     "sounds": [
       {
         "name": "potionenchant:menu_music",
         "stream": true
+      }
+    ]
+  },
+  "menu_music_2": {
+    "category": "music",
+    "sounds": [
+      {
+        "name": "potionenchant:menu_music_2",
+        "stream": true
+      }
+    ]
+  },
+  "menu_music_custom": {
+    "category": "music",
+    "sounds": [
+      {
+        "name": "potionenchant:menu_music_custom",
+        "stream": true
+      }
+    ]
+  },
+  "sprint": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "potionenchant:sprint",
+        "stream": false
       }
     ]
   }

@@ -13,6 +13,9 @@ public class ModSounds {
             DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, PotionEnchantMod.MODID);
 
     public static final RegistryObject<SoundEvent> MENU_MUSIC = register("menu_music");
+    public static final RegistryObject<SoundEvent> MENU_MUSIC_2 = register("menu_music_2");
+    /** 虚拟声音事件，用于播放 config/potionenchant/menu/music/ 中的自定义音乐 */
+    public static final RegistryObject<SoundEvent> MENU_MUSIC_CUSTOM = register(CustomMenuMusicPack.VIRTUAL_SOUND_NAME);
     public static final RegistryObject<SoundEvent> SPRINT = register("sprint");
 
     private static RegistryObject<SoundEvent> register(String name) {

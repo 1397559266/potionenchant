@@ -172,6 +172,13 @@ public class PotionEnchantConfig {
         public final ForgeConfigSpec.IntValue mouseTrailSpawnInterval;
         public final ForgeConfigSpec.IntValue mouseTrailFadeDelay;
         public final ForgeConfigSpec.IntValue mouseTrailClickCount;
+        // ===== 用户自定义资源（来自 config/potionenchant/menu/） =====
+        public final ForgeConfigSpec.ConfigValue<String> menuBackgroundFile;
+        public final ForgeConfigSpec.ConfigValue<String> menuIconFile;
+        public final ForgeConfigSpec.ConfigValue<String> menuMusicFile;
+        public final ForgeConfigSpec.ConfigValue<String> menuTitleText;
+        public final ForgeConfigSpec.ConfigValue<String> particleTintColor;
+        public final ForgeConfigSpec.ConfigValue<String> buttonHighlightColor;
 
         public ClientConfig(ForgeConfigSpec.Builder builder) {
             builder.comment("Potion Enchant Configuration - Client (Local)").push("display");
@@ -200,8 +207,8 @@ public class PotionEnchantConfig {
 
             builder.comment("Main Menu").push("main_menu");
             enableCustomMainMenu = builder
-                .comment("Enable custom main menu.", "Default: true")
-                .define("enable_custom_main_menu", true);
+                .comment("Enable custom main menu.", "Default: false")
+                .define("enable_custom_main_menu", false);
             customMainMenuMusic = builder
                 .comment("Custom main menu music.", "Default: []")
                 .defineListAllowEmpty("custom_main_menu_music", List.of("potionenchant:menu_music"), o -> o instanceof String);
@@ -209,27 +216,46 @@ public class PotionEnchantConfig {
                 .comment("Enable menu parallax.", "Default: true")
                 .define("enable_menu_parallax", true);
             menuParallaxMaxOffset = builder
-                .comment("Max parallax offset.", "Default: 10")
-                .defineInRange("menu_parallax_max_offset", 10, 1, 100);
+                .comment("Max parallax offset.", "Default: 27")
+                .defineInRange("menu_parallax_max_offset", 27, 1, 100);
             enableMenuVignette = builder
                 .comment("Enable menu vignette.", "Default: true")
                 .define("enable_menu_vignette", true);
             menuFogRange = builder
-                .comment("Menu fog range.", "Default: 100")
-                .defineInRange("menu_fog_range", 100, 1, 1000);
+                .comment("Menu fog range.", "Default: 3")
+                .defineInRange("menu_fog_range", 3, 1, 1000);
+
+            menuBackgroundFile = builder
+                .comment("Custom menu background image file (from config/potionenchant/menu/menu/ folder).", "Default: none")
+                .define("menu_background_file", "main_menu_bg");
+            menuIconFile = builder
+                .comment("Custom menu icon/logo image file (from config/potionenchant/menu/icon/ folder).", "Default: none")
+                .define("menu_icon_file", "main_menu_logo");
+            menuMusicFile = builder
+                .comment("Custom menu music file (from config/potionenchant/menu/music/ folder).", "Default: none")
+                .define("menu_music_file", "menu_music");
+            menuTitleText = builder
+                .comment("Custom main menu title text (leave empty for default).", "Default: ''")
+                .define("menu_title_text", "");
+            buttonHighlightColor = builder
+                .comment("Button border highlight color preset.", "Options: default, red, orange, yellow, green, blue, indigo, violet", "Default: default")
+                .define("button_highlight_color", "default");
             builder.pop();
 
             builder.comment("Particles").push("particles");
-            particleBaseSize = builder.comment("Particle base size.", "Default: 6").defineInRange("particle_base_size", 6, 1, 64);
-            particleSizeSpread = builder.comment("Particle size spread.", "Default: 4").defineInRange("particle_size_spread", 4, 0, 64);
-            particleSpeedH = builder.comment("Particle horizontal speed.", "Default: 1").defineInRange("particle_speed_h", 1, 0, 20);
-            particleSpeedV = builder.comment("Particle vertical speed.", "Default: 2").defineInRange("particle_speed_v", 2, 0, 20);
-            particleSpeedVSpread = builder.comment("Particle vertical speed spread.", "Default: 2").defineInRange("particle_speed_v_spread", 2, 0, 20);
-            particleFadeIn = builder.comment("Particle fade-in (ticks).", "Default: 10").defineInRange("particle_fade_in", 10, 0, 100);
-            particleFadeOut = builder.comment("Particle fade-out (ticks).", "Default: 30").defineInRange("particle_fade_out", 30, 0, 100);
+            particleBaseSize = builder.comment("Particle base size.", "Default: 21").defineInRange("particle_base_size", 21, 1, 64);
+            particleSizeSpread = builder.comment("Particle size spread.", "Default: 17").defineInRange("particle_size_spread", 17, 0, 64);
+            particleSpeedH = builder.comment("Particle horizontal speed.", "Default: 17").defineInRange("particle_speed_h", 17, 0, 20);
+            particleSpeedV = builder.comment("Particle vertical speed.", "Default: 8").defineInRange("particle_speed_v", 8, 0, 20);
+            particleSpeedVSpread = builder.comment("Particle vertical speed spread.", "Default: 25").defineInRange("particle_speed_v_spread", 25, 0, 20);
+            particleFadeIn = builder.comment("Particle fade-in (ticks).", "Default: 25").defineInRange("particle_fade_in", 25, 0, 100);
+            particleFadeOut = builder.comment("Particle fade-out (ticks).", "Default: 40").defineInRange("particle_fade_out", 40, 0, 100);
             particleGoUp = builder.comment("Particles float upward.", "Default: true").define("particle_go_up", true);
-            particleMaxCount = builder.comment("Max particles on screen.", "Default: 50").defineInRange("particle_max_count", 50, 1, 500);
-            particleFadeYStart = builder.comment("Particle fade Y start.", "Default: 50").defineInRange("particle_fade_y_start", 50, 0, 256);
+            particleTintColor = builder
+                .comment("Particle tint color (hex RGB/RGBA, e.g. '#FF00FF' for magenta, or '' for random).", "Default: '' (random)")
+                .define("particle_tint_color", "");
+            particleMaxCount = builder.comment("Max particles on screen.", "Default: 25").defineInRange("particle_max_count", 25, 1, 500);
+            particleFadeYStart = builder.comment("Particle fade Y start.", "Default: 10").defineInRange("particle_fade_y_start", 10, 0, 256);
             particleSpawnRate = builder.comment("Particle spawn rate/sec.", "Default: 2").defineInRange("particle_spawn_rate", 2, 1, 20);
             mouseTrailSize = builder.comment("Trail particle size.", "Default: 32").defineInRange("mouse_trail_size", 32, 4, 64);
             mouseTrailLifetime = builder.comment("Trail lifetime (ms).", "Default: 800").defineInRange("mouse_trail_lifetime", 800, 200, 10000);

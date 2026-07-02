@@ -609,5 +609,17 @@
   "config.potionenchant.mouse_trail_fade_delay.tooltip": "拖尾粒子存在多久后开始淡出。0=立即淡出，100=永不淡出。默认：0",
   "config.potionenchant.mouse_trail_click_count": "点击烟花粒子数量",
   "config.potionenchant.mouse_trail_click_count.tooltip": "鼠标点击时生成的烟花粒子数（设为0关闭）。范围：0~100。默认：5",
-  "gui.potionenchant.copied": "已复制: %s"
+  "gui.potionenchant.copied": "已复制: %s",
+  "config.potionenchant.menu_background_file": "菜单背景图片",
+  "config.potionenchant.menu_background_file.tooltip": "从 config/potionenchant/menu/menu/ 文件夹中选择背景图片（.png），选 none 则使用模组默认背景",
+  "config.potionenchant.menu_icon_file": "菜单图标/Logo",
+  "config.potionenchant.menu_icon_file.tooltip": "从 config/potionenchant/menu/icon/ 文件夹中选择图标图片（.png），选 none 则使用模组默认Logo",
+  "config.potionenchant.menu_music_file": "菜单音乐文件",
+  "config.potionenchant.menu_music_file.tooltip": "从 config/potionenchant/menu/music/ 文件夹中选择音乐文件（.ogg），选 none 则使用默认音乐",
+  "config.potionenchant.menu_title_text": "自定义标题文字",
+  "config.potionenchant.menu_title_text.tooltip": "在主菜单Logo下方显示的自定义标题文字，留空则不显示",
+  "config.potionenchant.particle_tint_color": "粒子色调颜色",
+  "config.potionenchant.particle_tint_color.tooltip": "粒子色调主题：留空/random=随机颜色，warm=暖色调（红/橙/黄/粉），cool=冷色调（蓝/青/绿/紫），或输入16进制颜色码如 #FF00FF",
+  "config.potionenchant.button_highlight_color": "按钮边框高亮颜色",
+  "config.potionenchant.button_highlight_color.tooltip": "主菜单按钮悬停时边框高亮颜色预设：default=默认橙黄，red=红，orange=橙，yellow=黄，green=绿，blue=蓝，indigo=靛，violet=紫"
 }

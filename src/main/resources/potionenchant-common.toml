@@ -29,8 +29,3 @@ limit_all_enchants = false
 #Range: 1 ~ 99999
 max_all_enchants = 3
 
-#破坏药水免疫模式（重启后生效）
-#启用后，所有 LivingEntity 的药水添加/移除/过期将被底层拦截
-#Break potion immunity mode (requires restart)
-#When enabled, all potion add/remove/expiry on LivingEntity will be intercepted at low level
-break_mode = true

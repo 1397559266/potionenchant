@@ -5,6 +5,7 @@ import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import net.diexv.potionenchant.config.values.EffectConfigValues;
 import net.diexv.potionenchant.config.values.EnchantmentConfigValues;
+import net.diexv.potionenchant.client.MenuResourceScanner;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import java.util.List;
@@ -60,7 +61,7 @@ public class ClothConfigScreen {
                 .setSaveConsumer(PotionEnchantConfig.SERVER.limitAllEnchants::set).build());
         general.addEntry(eb.startIntField(Component.translatable("config.potionenchant.max_all_enchants"),
                 PotionEnchantConfig.SERVER.maxAllEnchants.get())
-                .setDefaultValue(33).setMin(1).setMax(Integer.MAX_VALUE)
+                .setDefaultValue(3).setMin(1).setMax(Integer.MAX_VALUE)
 
                 .setTooltip(Component.translatable("config.potionenchant.max_all_enchants.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.SERVER.maxAllEnchants::set).build());
@@ -79,7 +80,7 @@ public class ClothConfigScreen {
 
         pe.addEntry(eb.startIntField(Component.translatable("config.potionenchant.max_potion_enchant_level_per_item"),
                 PotionEnchantConfig.SERVER.maxPotionEnchantLevelPerItem.get())
-                .setDefaultValue(2).setMin(1).setMax(Integer.MAX_VALUE)
+                .setDefaultValue(5).setMin(1).setMax(Integer.MAX_VALUE)
 
                 .setTooltip(Component.translatable("config.potionenchant.max_potion_enchant_level_per_item.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.SERVER.maxPotionEnchantLevelPerItem::set).build());
@@ -107,21 +108,21 @@ public class ClothConfigScreen {
 
         pe.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.discoverable_in_enchanting_table"),
                 PotionEnchantConfig.SERVER.discoverableInEnchantingTable.get())
-                .setDefaultValue(true)
+                .setDefaultValue(false)
 
                 .setTooltip(Component.translatable("config.potionenchant.discoverable_in_enchanting_table.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.SERVER.discoverableInEnchantingTable::set).build());
 
         pe.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enchant_book_chest_loot"),
                 PotionEnchantConfig.SERVER.enchantBookChestLoot.get())
-                .setDefaultValue(true)
+                .setDefaultValue(false)
 
                 .setTooltip(Component.translatable("config.potionenchant.enchant_book_chest_loot.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.SERVER.enchantBookChestLoot::set).build());
 
         pe.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enchant_book_villager_trades"),
                 PotionEnchantConfig.SERVER.enchantBookVillagerTrades.get())
-                .setDefaultValue(true)
+                .setDefaultValue(false)
 
                 .setTooltip(Component.translatable("config.potionenchant.enchant_book_villager_trades.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.SERVER.enchantBookVillagerTrades::set).build());
@@ -171,7 +172,7 @@ public class ClothConfigScreen {
                 .setSaveConsumer(PotionEnchantConfig.CLIENT.showTextBackground::set).build());
         display.addEntry(eb.startIntField(Component.translatable("config.potionenchant.max_visible_effects"),
                 PotionEnchantConfig.CLIENT.maxVisibleEffects.get())
-                .setDefaultValue(10).setMin(3).setMax(50)
+                .setDefaultValue(8).setMin(3).setMax(50)
 
                 .setTooltip(Component.translatable("config.potionenchant.max_visible_effects.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.CLIENT.maxVisibleEffects::set).build());
@@ -195,19 +196,19 @@ public class ClothConfigScreen {
                 .setSaveConsumer(PotionEnchantConfig.SERVER.enableCustomPotionTooltip::set).build());
         display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enable_vanilla_potion_description"),
                 PotionEnchantConfig.SERVER.enableVanillaPotionDescription.get())
-                .setDefaultValue(false)
+                .setDefaultValue(true)
 
                 .setTooltip(Component.translatable("config.potionenchant.enable_vanilla_potion_description.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.SERVER.enableVanillaPotionDescription::set).build());
         display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enable_all_potion_description"),
                 PotionEnchantConfig.SERVER.enableAllPotionDescription.get())
-                .setDefaultValue(false)
+                .setDefaultValue(true)
 
                 .setTooltip(Component.translatable("config.potionenchant.enable_all_potion_description.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.SERVER.enableAllPotionDescription::set).build());
         display.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enable_potion_enchant_tooltip"),
                 PotionEnchantConfig.SERVER.enablePotionEnchantTooltip.get())
-                .setDefaultValue(false)
+                .setDefaultValue(true)
 
                 .setTooltip(Component.translatable("config.potionenchant.enable_potion_enchant_tooltip.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.SERVER.enablePotionEnchantTooltip::set).build());
@@ -219,7 +220,7 @@ public class ClothConfigScreen {
                 .setSaveConsumer(PotionEnchantConfig.CLIENT.enableArmorValueRender::set).build());
         display.addEntry(eb.startIntField(Component.translatable("config.potionenchant.potion_enchant_tooltip_max_per_column"),
                 PotionEnchantConfig.SERVER.potionEnchantTooltipMaxPerColumn.get())
-                .setDefaultValue(10).setMin(1).setMax(50)
+                .setDefaultValue(5).setMin(1).setMax(50)
 
                 .setTooltip(Component.translatable("config.potionenchant.potion_enchant_tooltip_max_per_column.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.SERVER.potionEnchantTooltipMaxPerColumn::set).build());
@@ -371,7 +372,7 @@ public class ClothConfigScreen {
                 .setTooltip(Component.translatable("config.potionenchant.enchantment.advanced_sharpness.damage_per_level.tooltip"))
                 .setSaveConsumer(cfg.advancedSharpnessDamagePerLevel::set).build());
         ec.addEntry(eb.startIntField(Component.translatable("config.potionenchant.enchantment.advanced_protection.protection_points_per_level"), cfg.advancedProtectionPointsPerLevel.get())
-                .setDefaultValue(2).setMin(1).setMax(100)
+                .setDefaultValue(5).setMin(1).setMax(100)
 
                 .setTooltip(Component.translatable("config.potionenchant.enchantment.advanced_protection.protection_points_per_level.tooltip"))
                 .setSaveConsumer(cfg.advancedProtectionPointsPerLevel::set).build());
@@ -428,12 +429,6 @@ public class ClothConfigScreen {
                 .setTooltip(Component.translatable("config.potionenchant.enable_custom_main_menu.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.CLIENT.enableCustomMainMenu::set).build());
 
-        cm.addEntry(eb.startStrList(Component.translatable("config.potionenchant.custom_main_menu_music"),
-                (List<String>) PotionEnchantConfig.CLIENT.customMainMenuMusic.get())
-                .setDefaultValue(java.util.Collections.singletonList("potionenchant:menu_music"))
-
-                .setTooltip(Component.translatable("config.potionenchant.custom_main_menu_music.tooltip"))
-                .setSaveConsumer(PotionEnchantConfig.CLIENT.customMainMenuMusic::set).build());
 
         cm.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enable_menu_parallax"),
                 PotionEnchantConfig.CLIENT.enableMenuParallax.get())
@@ -463,6 +458,63 @@ public class ClothConfigScreen {
                 .setTooltip(Component.translatable("config.potionenchant.menu_fog_range.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.CLIENT.menuFogRange::set).build());
 
+        // ===== 用户自定义资源（从 config/potionenchant/menu/ 扫描） =====
+
+        cm.addEntry(eb.<String>startDropdownMenu(Component.translatable("config.potionenchant.menu_background_file"),
+                PotionEnchantConfig.CLIENT.menuBackgroundFile.get(),
+                java.util.function.Function.identity(),
+                net.minecraft.network.chat.Component::literal)
+                .setSelections(java.util.Arrays.asList(net.diexv.potionenchant.client.MenuResourceScanner.getBackgroundOptions()))
+                .setDefaultValue("main_menu_bg")
+                .setTooltip(Component.translatable("config.potionenchant.menu_background_file.tooltip"))
+                .setSaveConsumer(val -> PotionEnchantConfig.CLIENT.menuBackgroundFile.set(val))
+                .build());
+
+        cm.addEntry(eb.<String>startDropdownMenu(Component.translatable("config.potionenchant.menu_icon_file"),
+                PotionEnchantConfig.CLIENT.menuIconFile.get(),
+                java.util.function.Function.identity(),
+                net.minecraft.network.chat.Component::literal)
+                .setSelections(java.util.Arrays.asList(net.diexv.potionenchant.client.MenuResourceScanner.getIconOptions()))
+                .setDefaultValue("main_menu_logo")
+                .setTooltip(Component.translatable("config.potionenchant.menu_icon_file.tooltip"))
+                .setSaveConsumer(val -> PotionEnchantConfig.CLIENT.menuIconFile.set(val))
+                .build());
+
+        cm.addEntry(eb.<String>startDropdownMenu(Component.translatable("config.potionenchant.menu_music_file"),
+                PotionEnchantConfig.CLIENT.menuMusicFile.get(),
+                java.util.function.Function.identity(),
+                net.minecraft.network.chat.Component::literal)
+                .setSelections(java.util.Arrays.asList(net.diexv.potionenchant.client.MenuResourceScanner.getMusicOptions()))
+                .setDefaultValue("menu_music")
+                .setTooltip(Component.translatable("config.potionenchant.menu_music_file.tooltip"))
+                .setSaveConsumer(val -> PotionEnchantConfig.CLIENT.menuMusicFile.set(val))
+                .build());
+
+        cm.addEntry(eb.startStrField(Component.translatable("config.potionenchant.menu_title_text"),
+                PotionEnchantConfig.CLIENT.menuTitleText.get())
+                .setDefaultValue("")
+                .setTooltip(Component.translatable("config.potionenchant.menu_title_text.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.menuTitleText::set).build());
+
+        cm.addEntry(eb.<String>startDropdownMenu(Component.translatable("config.potionenchant.particle_tint_color"),
+                PotionEnchantConfig.CLIENT.particleTintColor.get(),
+                java.util.function.Function.identity(),
+                net.minecraft.network.chat.Component::literal)
+                .setSelections(java.util.Arrays.asList("random", "warm", "cool"))
+                .setDefaultValue("")
+                .setTooltip(Component.translatable("config.potionenchant.particle_tint_color.tooltip"))
+                .setSaveConsumer(val -> PotionEnchantConfig.CLIENT.particleTintColor.set(val))
+                .build());
+
+        cm.addEntry(eb.<String>startDropdownMenu(Component.translatable("config.potionenchant.button_highlight_color"),
+                PotionEnchantConfig.CLIENT.buttonHighlightColor.get(),
+                java.util.function.Function.identity(),
+                net.minecraft.network.chat.Component::literal)
+                .setSelections(java.util.Arrays.asList("default", "red", "orange", "yellow", "green", "blue", "indigo", "violet"))
+                .setDefaultValue("default")
+                .setTooltip(Component.translatable("config.potionenchant.button_highlight_color.tooltip"))
+                .setSaveConsumer(val -> PotionEnchantConfig.CLIENT.buttonHighlightColor.set(val))
+                .build());
         cm.addEntry(eb.startIntSlider(Component.translatable("config.potionenchant.particle_base_size"),
                 PotionEnchantConfig.CLIENT.particleBaseSize.get(), 8, 64)
                 .setDefaultValue(21)
@@ -573,4 +625,3 @@ public class ClothConfigScreen {
                 .setSaveConsumer(PotionEnchantConfig.CLIENT.mouseTrailClickCount::set).build());
     }
 }
-

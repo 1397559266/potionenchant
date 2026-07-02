@@ -38,14 +38,11 @@ public class PotionEnchantMod {
     public static final String MODID = "potionenchant";
     public static final Logger LOGGER = LogManager.getLogger();
 
-
-
     @SuppressWarnings("removal")
     public PotionEnchantMod() {
         System.out.println("[PotionEnchant] ===== MOD CONSTRUCTOR START =====");
 
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-
 
         // 注册配置
         ConfigManager.registerConfigs();
@@ -78,6 +75,10 @@ public class PotionEnchantMod {
 
         // 注册音效
         net.diexv.potionenchant.sound.ModSounds.register(modEventBus);
+        // 注册自定义菜单音乐资源包
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            modEventBus.addListener(this::onAddPackFinders);
+        }
 
         // 注册方块
         ModBlocks.BLOCKS.register(modEventBus);
@@ -130,7 +131,6 @@ public class PotionEnchantMod {
         LOGGER.info("Potion Enchant mod loaded successfully!");
     }
 
-
     @SuppressWarnings("removal")
     // 客户端初始化：注册ItemProperties
     private void clientSetup(net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent event) {
@@ -139,6 +139,8 @@ public class PotionEnchantMod {
         net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(net.diexv.potionenchant.blockentity.ModBlockEntities.ULTIMATE_ENCHANT_TABLE.get(), net.diexv.potionenchant.render.UltimateEnchantTableRenderer::new);
 
         event.enqueueWork(() -> {
+
+            // 注册 ItemProperties
             ItemProperties.register(
                 ModItems.X_SWORD.get(),
                 new ResourceLocation(MODID, "supermode"),
@@ -150,6 +152,24 @@ public class PotionEnchantMod {
                 }
             );
         });    }
+
+    // 注册 AddPackFindersEvent
+    private void onAddPackFinders(net.minecraftforge.event.AddPackFindersEvent event) {
+        if (event.getPackType() == net.minecraft.server.packs.PackType.CLIENT_RESOURCES) {
+            event.addRepositorySource(consumer -> {
+                var pack = net.minecraft.server.packs.repository.Pack.readMetaAndCreate(
+                    net.diexv.potionenchant.sound.CustomMenuMusicPack.PACK_ID,
+                    net.minecraft.network.chat.Component.literal("PotionEnchant Menu Music"),
+                    true,
+                    id -> new net.diexv.potionenchant.sound.CustomMenuMusicPack(),
+                    net.minecraft.server.packs.PackType.CLIENT_RESOURCES,
+                    net.minecraft.server.packs.repository.Pack.Position.BOTTOM,
+                    net.minecraft.server.packs.repository.PackSource.DEFAULT
+                );
+                if (pack != null) consumer.accept(pack);
+            });
+        }
+    }
 
     // 注册命令
     private void registerCommands(RegisterCommandsEvent event) {

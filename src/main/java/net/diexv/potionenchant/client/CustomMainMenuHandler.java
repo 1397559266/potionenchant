@@ -23,12 +23,15 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import com.mojang.blaze3d.platform.NativeImage;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.Random;
+import net.diexv.potionenchant.sound.CustomMenuMusicPack;
 
 @Mod.EventBusSubscriber(modid = PotionEnchantMod.MODID, value = Dist.CLIENT)
 public class CustomMainMenuHandler {
@@ -37,6 +40,15 @@ public class CustomMainMenuHandler {
 
     private static final ResourceLocation CUSTOM_BG = new ResourceLocation(PotionEnchantMod.MODID, "textures/gui/main_menu_bg.png");
     private static final ResourceLocation CUSTOM_LOGO = new ResourceLocation(PotionEnchantMod.MODID, "textures/gui/main_menu_logo.png");
+
+    // ===== 用户自定义资源（来自 config/potionenchant/menu/） =====
+    private static ResourceLocation CUSTOM_BG_DYNAMIC = null;
+    private static ResourceLocation CUSTOM_LOGO_DYNAMIC = null;
+    private static boolean useDynamicBg = false;
+    private static boolean useDynamicLogo = false;
+    private static String lastBgConfig = "";
+    private static String lastIconConfig = "";
+    private static String lastMusicConfig = "";
 
     // 物品贴图池（直接 blit 渲染，跳过 cosmic 模型加载器）
     private static List<ResourceLocation> ITEM_TEXTURES = null;
@@ -83,6 +95,11 @@ public class CustomMainMenuHandler {
             mouseNormX = 0f;
             mouseNormY = 0f;
             initTextures();
+            // 加载用户自定义资源（来自 config/potionenchant/menu/）
+            loadCustomBackgroundFromFile();
+            loadCustomIconFromFile();
+            lastMusicConfig = PotionEnchantConfig.CLIENT.menuMusicFile.get();
+            CustomMenuMusicPack.refreshMusicPath();
             for (int i = 0; i < 15; i++) particles.add(new MenuParticle());
             PotionEnchantMod.LOGGER.info("[CustomMainMenu] enabled [bg] [logo] textures:{}", ITEM_TEXTURES.size());
         }
@@ -151,6 +168,7 @@ public class CustomMainMenuHandler {
             drawForgeBranding(g);
         }
         if (checkLogoExists()) drawCustomLogo(g, w, h, fadeAlpha);
+        drawCustomTitle(g, w, h, fadeAlpha);
         updateAndDrawParticles(g, fadeAlpha);
         updateMouseTrail(g, fadeAlpha, event.getMouseX(), event.getMouseY());
     }
@@ -212,9 +230,177 @@ public class CustomMainMenuHandler {
         PotionEnchantMod.LOGGER.info("[CustomMainMenu] initialized {} item textures", ITEM_TEXTURES.size());
     }
 
+    // ====== 动态纹理加载（从 config 文件夹） ======
+
+    /**
+     * 从 config/potionenchant/menu/menu/ 加载背景图片为动态纹理
+     */
+    private static void loadCustomBackgroundFromFile() {
+        String cfg = PotionEnchantConfig.CLIENT.menuBackgroundFile.get();
+        if (cfg == null || cfg.isEmpty() || "none".equalsIgnoreCase(cfg)) {
+            useDynamicBg = false;
+            lastBgConfig = "";
+            return;
+        }
+        if (cfg.equals(lastBgConfig) && CUSTOM_BG_DYNAMIC != null) {
+            useDynamicBg = true;
+            return;
+        }
+        // 检查是否为内置背景资源
+        boolean isBuiltIn = false;
+        ResourceLocation builtInLoc = null;
+        for (String b : net.diexv.potionenchant.client.MenuResourceScanner.BUILTIN_BACKGROUNDS) {
+            if (b.equals(cfg)) {
+                isBuiltIn = true;
+                builtInLoc = new ResourceLocation(PotionEnchantMod.MODID, "textures/gui/" + cfg + ".png");
+                break;
+            }
+        }
+        if (isBuiltIn && builtInLoc != null) {
+            try {
+                var mc = Minecraft.getInstance();
+                boolean exists = mc.getResourceManager().getResource(builtInLoc).isPresent();
+                if (exists) {
+                    CUSTOM_BG_DYNAMIC = builtInLoc;
+                    useDynamicBg = true;
+                    lastBgConfig = cfg;
+                    PotionEnchantMod.LOGGER.info("[CustomMainMenu] using built-in background: {}", cfg);
+                    return;
+                }
+            } catch (Exception ignored) {}
+        }
+        // 来自 config 文件夹的自定义背景
+        try {
+            java.nio.file.Path bgPath = net.diexv.potionenchant.client.MenuResourceScanner.getBackgroundPath(cfg);
+            if (bgPath != null && java.nio.file.Files.exists(bgPath)) {
+                try (var input = new java.io.FileInputStream(bgPath.toFile())) {
+                    NativeImage img = NativeImage.read(input);
+                    DynamicTexture tex = new DynamicTexture(img);
+                    ResourceLocation loc = new ResourceLocation(PotionEnchantMod.MODID, "dynamic/menu_bg_" + cfg);
+                    Minecraft.getInstance().getTextureManager().register(loc, tex);
+                    CUSTOM_BG_DYNAMIC = loc;
+                    useDynamicBg = true;
+                    lastBgConfig = cfg;
+                    PotionEnchantMod.LOGGER.info("[CustomMainMenu] loaded custom background: {}", bgPath);
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            PotionEnchantMod.LOGGER.warn("[CustomMainMenu] failed to load custom background: {}", cfg, e);
+        }
+        useDynamicBg = false;
+        lastBgConfig = "";
+    }
+    private static void loadCustomIconFromFile() {
+        String cfg = PotionEnchantConfig.CLIENT.menuIconFile.get();
+        if (cfg == null || cfg.isEmpty() || "none".equalsIgnoreCase(cfg)) {
+            useDynamicLogo = false;
+            lastIconConfig = "";
+            return;
+        }
+        if (cfg.equals(lastIconConfig) && CUSTOM_LOGO_DYNAMIC != null) {
+            useDynamicLogo = true;
+            return;
+        }
+        // 检查是否为内置图标资源
+        boolean isBuiltIn = false;
+        ResourceLocation builtInLoc = null;
+        for (String b : net.diexv.potionenchant.client.MenuResourceScanner.BUILTIN_ICONS) {
+            if (b.equals(cfg)) {
+                isBuiltIn = true;
+                builtInLoc = new ResourceLocation(PotionEnchantMod.MODID, "textures/gui/" + cfg + ".png");
+                break;
+            }
+        }
+        if (isBuiltIn && builtInLoc != null) {
+            try {
+                var mc = Minecraft.getInstance();
+                boolean exists = mc.getResourceManager().getResource(builtInLoc).isPresent();
+                if (exists) {
+                    CUSTOM_LOGO_DYNAMIC = builtInLoc;
+                    useDynamicLogo = true;
+                    lastIconConfig = cfg;
+                    PotionEnchantMod.LOGGER.info("[CustomMainMenu] using built-in icon: {}", cfg);
+                    return;
+                }
+            } catch (Exception ignored) {}
+        }
+        // 来自 config 文件夹的自定义图标
+        try {
+            java.nio.file.Path iconPath = net.diexv.potionenchant.client.MenuResourceScanner.getIconPath(cfg);
+            if (iconPath != null && java.nio.file.Files.exists(iconPath)) {
+                try (var input = new java.io.FileInputStream(iconPath.toFile())) {
+                    NativeImage img = NativeImage.read(input);
+                    DynamicTexture tex = new DynamicTexture(img);
+                    ResourceLocation loc = new ResourceLocation(PotionEnchantMod.MODID, "dynamic/menu_icon_" + cfg);
+                    Minecraft.getInstance().getTextureManager().register(loc, tex);
+                    CUSTOM_LOGO_DYNAMIC = loc;
+                    useDynamicLogo = true;
+                    lastIconConfig = cfg;
+                    PotionEnchantMod.LOGGER.info("[CustomMainMenu] loaded custom icon: {}", iconPath);
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            PotionEnchantMod.LOGGER.warn("[CustomMainMenu] failed to load custom icon: {}", cfg, e);
+        }
+        useDynamicLogo = false;
+        lastIconConfig = "";
+    }
+
+    /**
+     * 解析粒子色调配置（预设关键词或 hex RGB/RGBA）
+     *   "random" 或 "" → 每个粒子随机颜色
+     *   "warm" → 暖色调随机（红/橙/黄/粉）
+     *   "cool" → 冷色调随机（蓝/青/绿/紫）
+     *   "#RRGGBB" 或 "#AARRGGBB" → 固定颜色
+     */
+    private static int getConfiguredParticleTint() {
+        String cfg = PotionEnchantConfig.CLIENT.particleTintColor.get();
+        if (cfg == null || cfg.isEmpty() || "random".equalsIgnoreCase(cfg)) {
+            return RANDOM.nextInt(0xFFFFFF);
+        }
+        if ("warm".equalsIgnoreCase(cfg)) {
+            // 暖色调色盘：红/橙/黄/粉/珊瑚/金
+            int[] warmPalette = {
+                0xFF0000, 0xFF4400, 0xFF8800, 0xFFCC00,
+                0xFFFF00, 0xFFAA00, 0xFF5500, 0xFF2200,
+                0xFF00AA, 0xFF66AA, 0xFFAA66, 0xFFD700,
+                0xFF7F50, 0xFF69B4, 0xFF1493, 0xDC143C
+            };
+            return warmPalette[RANDOM.nextInt(warmPalette.length)];
+        }
+        if ("cool".equalsIgnoreCase(cfg)) {
+            // 冷色调色盘：蓝/青/绿/紫/靛/蓝绿
+            int[] coolPalette = {
+                0x0000FF, 0x0066FF, 0x0088FF, 0x0099FF,
+                0x00AAFF, 0x00BBFF, 0x00CCFF, 0x00DDFF,
+                0x00EEFF, 0x00FFFF, 0x33CCFF, 0x66B2FF,
+                0x3399FF, 0x4488FF, 0x00CED1, 0x00BFFF
+            };
+            return coolPalette[RANDOM.nextInt(coolPalette.length)];
+        }
+        // hex 颜色解析
+        try {
+            String hex = cfg.startsWith("#") ? cfg.substring(1) : cfg;
+            if (hex.length() == 6) {
+                return Integer.parseInt(hex, 16) | 0xFF000000;
+            } else if (hex.length() == 8) {
+                long val = Long.parseLong(hex, 16);
+                int a = (int)((val >> 24) & 0xFF);
+                int r = (int)((val >> 16) & 0xFF);
+                int g = (int)((val >> 8) & 0xFF);
+                int b = (int)(val & 0xFF);
+                return (a << 24) | (r << 16) | (g << 8) | b;
+            }
+        } catch (Exception ignored) {}
+        return RANDOM.nextInt(0xFFFFFF);
+    }
+
     // ====== 文件检查 ======
 
     private static boolean checkBackgroundExists() {
+        if (useDynamicBg) return true;
         if (hasBackgroundFile != null) return hasBackgroundFile;
         try {
             var mc = Minecraft.getInstance();
@@ -226,6 +412,7 @@ public class CustomMainMenuHandler {
     }
 
     private static boolean checkLogoExists() {
+        if (useDynamicLogo) return true;
         if (hasLogoFile != null) return hasLogoFile;
         try {
             var mc = Minecraft.getInstance();
@@ -276,18 +463,15 @@ public class CustomMainMenuHandler {
         RenderSystem.enableBlend();
         g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
 
+        ResourceLocation bgTex = useDynamicBg ? CUSTOM_BG_DYNAMIC : CUSTOM_BG;
+
         if (PotionEnchantConfig.CLIENT.enableMenuParallax.get()) {
             int maxOff = PotionEnchantConfig.CLIENT.menuParallaxMaxOffset.get();
-            // 每个方向独立限制偏移量，[-maxOff, +maxOff]
             float offX = mouseNormX * maxOff;
             float offY = mouseNormY * maxOff;
-            // 将背景放大 2*maxOff 并反向偏移，产生视差效果
-            // 画面外扩 + 移动，微小的拉伸在视觉上可忽略
-            // 使用 10 参数 blit：dest 位置/大小 + src 区域/大小 + 纹理总尺寸
-            // 使用 float UV blit（无整数截断，子像素平滑）
-            g.blit(CUSTOM_BG, 0, 0, maxOff + offX, maxOff + offY, w, h, w + 2*maxOff, h + 2*maxOff);
+            g.blit(bgTex, 0, 0, maxOff + offX, maxOff + offY, w, h, w + 2*maxOff, h + 2*maxOff);
         } else {
-            g.blit(CUSTOM_BG, 0, 0, 0, 0, w, h, w, h);
+            g.blit(bgTex, 0, 0, 0, 0, w, h, w, h);
         }
 
         g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -349,9 +533,24 @@ public class CustomMainMenuHandler {
     private static void drawCustomLogo(GuiGraphics g, int sw, int h, float a) {
         RenderSystem.enableBlend();
         g.setColor(1.0F, 1.0F, 1.0F, a);
-        g.blit(CUSTOM_LOGO, sw/2 - 128, 30, 0, 0, 256, 44, 256, 44);
+        ResourceLocation logo = useDynamicLogo ? CUSTOM_LOGO_DYNAMIC : CUSTOM_LOGO;
+        g.blit(logo, sw/2 - 128, 30, 0, 0, 256, 44, 256, 44);
         g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.disableBlend();
+    }
+
+    // ====== 自定义标题文字绘制 ======
+
+    private static void drawCustomTitle(GuiGraphics g, int w, int h, float fadeAlpha) {
+        String title = PotionEnchantConfig.CLIENT.menuTitleText.get();
+        if (title == null || title.isEmpty()) return;
+        var font = Minecraft.getInstance().font;
+        int textWidth = font.width(title);
+        int x = (w - textWidth) / 2;
+        int y = 80;
+        int alpha = Mth.clamp((int)(fadeAlpha * 255), 0, 255);
+        int color = (alpha << 24) | 0xFFFFFF;
+        g.drawString(font, title, x, y, color);
     }
 
     // ====== 粒子更新与绘制 ======
@@ -461,7 +660,7 @@ public class CustomMainMenuHandler {
             } else {
                 this.tex = ITEM_TEXTURES.get(RANDOM.nextInt(ITEM_TEXTURES.size()));
             }
-            this.tintColor = RANDOM.nextInt(0xFFFFFF);
+            this.tintColor = CustomMainMenuHandler.getConfiguredParticleTint();
             this.x = mx;
             this.y = my;
             float spread;
@@ -561,6 +760,29 @@ public class CustomMainMenuHandler {
 
     // ====== 按钮阴影 ======
 
+
+    // ====== 按钮边框高亮颜色预设 ======
+
+    /**
+     * 获取按钮边框高亮颜色对 [outer, inner]，基于配置预设
+     */
+    private static int[] getButtonHighlightColors() {
+        String cfg = PotionEnchantConfig.CLIENT.buttonHighlightColor.get();
+        if (cfg == null || cfg.isEmpty() || "default".equalsIgnoreCase(cfg)) {
+            return new int[]{0xCCFFAA00, 0xAAFFDD44};
+        }
+        switch (cfg.toLowerCase()) {
+            case "red":    return new int[]{0xCCFF0000, 0xAAFF4444};
+            case "orange": return new int[]{0xCCFF8800, 0xAAFFAA44};
+            case "yellow": return new int[]{0xCCFFFF00, 0xAAFFFF44};
+            case "green":  return new int[]{0xCC00FF00, 0xAA44FF44};
+            case "blue":   return new int[]{0xCC0088FF, 0xAA44AAFF};
+            case "indigo": return new int[]{0xCC4B0082, 0xAA6A5ACD};
+            case "violet": return new int[]{0xCCAA00FF, 0xAACC44FF};
+            default:       return new int[]{0xCCFFAA00, 0xAAFFDD44};
+        }
+    }
+
     private static void drawButtonShadowsAndText(GuiGraphics g, Screen s, int mx, int my) {
         var font = Minecraft.getInstance().font;
         for (var r : s.renderables) {
@@ -572,8 +794,8 @@ public class CustomMainMenuHandler {
             g.fill(x-2, y-2, x+bw+2, y+bh+2, 0x60000000);
             // 悬停发光边框
             if (mx >= x && mx <= x+bw && my >= y && my <= y+bh) {
-                int c1 = 0xCCFFAA00, c2 = 0xAAFFDD44;
-                g.fill(x-2, y-2, x-1, y+bh+2, c1); g.fill(x+bw+1, y-2, x+bw+2, y+bh+2, c1);
+                int[] colors = getButtonHighlightColors();
+                int c1 = colors[0], c2 = colors[1];
                 g.fill(x-2, y-2, x+bw+2, y-1, c1); g.fill(x-2, y+bh+1, x+bw+2, y+bh+2, c1);
                 g.fill(x-1, y-1, x, y+bh+1, c2);   g.fill(x+bw, y-1, x+bw+1, y+bh+1, c2);
                 g.fill(x-1, y-1, x+bw+1, y, c2);   g.fill(x-1, y+bh, x+bw+1, y+bh+1, c2);
@@ -687,7 +909,7 @@ public class CustomMainMenuHandler {
                 this.tex = ITEM_TEXTURES.get(RANDOM.nextInt(ITEM_TEXTURES.size()));
             }
 
-            this.tintColor = RANDOM.nextInt(0xFFFFFF);
+            this.tintColor = getConfiguredParticleTint();
             this.animData = loadAnimation(tex);
 
             Minecraft mc = Minecraft.getInstance();
@@ -778,12 +1000,5 @@ public class CustomMainMenuHandler {
         }
     }
 }
-
-
-
-
-
-
-
 
 
