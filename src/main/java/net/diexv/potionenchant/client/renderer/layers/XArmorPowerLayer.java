@@ -1,8 +1,7 @@
 package net.diexv.potionenchant.client.renderer.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import net.diexv.potionenchant.client.renderer.hyperlink.PolygonRenderer;
+import net.diexv.potionenchant.client.renderer.gl.PolygonRenderer;
 import net.diexv.potionenchant.item.ModItems;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.player.AbstractClientPlayer;

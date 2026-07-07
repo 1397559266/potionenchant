@@ -1,16 +1,14 @@
 package net.diexv.potionenchant.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.diexv.potionenchant.PotionEnchantMod;
 import net.diexv.potionenchant.SkyRender.client.model.BlackHoleBakeModel;
 import net.diexv.potionenchant.SkyRender.client.model.CosmicBakeModel;
-import net.diexv.potionenchant.client.renderer.hyperlink.PolygonRenderer;
-import net.diexv.potionenchant.client.renderer.hyperlink.XSeriesItemRenderer;
+import net.diexv.potionenchant.client.renderer.gl.PolygonRenderer;
+import net.diexv.potionenchant.client.renderer.gl.XSeriesItemRenderer;
 import net.diexv.potionenchant.client.compat.oculus.ItemRenderCompatibilityContext;
 import net.diexv.potionenchant.client.compat.oculus.ItemShaderModCompat;
-import net.diexv.potionenchant.client.renderer.hyperlink.DeferredParticleQueue;
+import net.diexv.potionenchant.client.renderer.gl.DeferredParticleQueue;
 import net.diexv.potionenchant.item.ModItems;
-import net.minecraft.Util;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;

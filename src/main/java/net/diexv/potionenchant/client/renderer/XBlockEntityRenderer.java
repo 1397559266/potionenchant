@@ -1,7 +1,7 @@
 package net.diexv.potionenchant.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.diexv.potionenchant.client.renderer.hyperlink.PolygonRenderer;
+import net.diexv.potionenchant.client.renderer.gl.PolygonRenderer;
 import net.diexv.potionenchant.entity.XBlockEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;

@@ -2,7 +2,6 @@ package net.diexv.potionenchant.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -18,12 +17,11 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.FastColor;
-import net.diexv.potionenchant.client.renderer.hyperlink.PolygonRenderer;
+import net.diexv.potionenchant.client.renderer.gl.PolygonRenderer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 
 import java.util.ArrayList;

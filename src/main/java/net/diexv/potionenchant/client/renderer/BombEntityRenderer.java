@@ -1,7 +1,7 @@
 package net.diexv.potionenchant.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.diexv.potionenchant.client.renderer.hyperlink.PolygonRenderer;
+import net.diexv.potionenchant.client.renderer.gl.PolygonRenderer;
 import net.diexv.potionenchant.entity.BombEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -11,7 +11,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 
 /**
  * Bomb 实体渲染器 — 使用 Hyperlink 风格的蓝色半透明立方体

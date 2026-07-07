@@ -1,4 +1,4 @@
-package net.diexv.potionenchant.client.renderer.hyperlink;
+package net.diexv.potionenchant.client.renderer.gl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;

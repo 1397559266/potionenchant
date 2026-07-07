@@ -1,4 +1,4 @@
-package net.diexv.potionenchant.client.renderer.hyperlink;
+package net.diexv.potionenchant.client.renderer.gl;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -7,7 +7,6 @@ import net.diexv.potionenchant.client.compat.oculus.LateShaderLayerState;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
