@@ -69,7 +69,7 @@ public class UniversalEnchantmentBookScreen extends Screen {
         levelEditBox.setResponder(this::onLevelInputChanged);
         // levelEditBox is rendered manually inside zoom - do not add as renderable widget
         categoryBar = new CategoryBar("gui.potionenchant.category",
-            new String[]{"all", "weapon", "armor", "tool", "curse"}, 50, 16, 4);
+            new String[]{"all", "valid", "weapon", "armor", "tool", "curse"}, 42, 16, 4);
         categoryBar.init(Math.max(2, (width - 450) / 2), 55);
         updateFilter();
     }
@@ -160,6 +160,7 @@ public class UniversalEnchantmentBookScreen extends Screen {
         if (categoryBar == null) return true;
         String f = categoryBar.getFilter();
         if (f.equals("all")) return true;
+        if (f.equals("valid")) return ei.enchantment.canEnchant(targetItem);
         EnchantmentCategory ec = ei.enchantment.category;
         switch (f) {
             case "weapon": return ec == EnchantmentCategory.WEAPON || ec == EnchantmentCategory.BOW || ec == EnchantmentCategory.CROSSBOW || ec == EnchantmentCategory.TRIDENT;
@@ -621,5 +622,3 @@ public class UniversalEnchantmentBookScreen extends Screen {
         EnchantInfo(Enchantment e, int ex, int mx) { enchantment = e; existingLevel = ex; maxLevel = mx; }
     }
 }
-
-

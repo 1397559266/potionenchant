@@ -129,18 +129,21 @@ public class EnchantBookPacketHandler {
                     return;
                 }
 
-                // 检查附魔兼容性
-                for (Enchantment existing : existingEnchants.keySet()) {
-                    if (existing != enchantment && !enchantment.isCompatibleWith(existing)) {
-                        player.displayClientMessage(
-                            net.minecraft.network.chat.Component.translatable("message.potionenchant.enchant_book.incompatible")
-                                .withStyle(net.minecraft.ChatFormatting.RED), true);
-                        return;
+                // 检查附魔兼容性（超级附魔模式下跳过）
+                boolean superMode = PotionEnchantConfig.SERVER.superEnchantMode.get();
+                if (!superMode) {
+                    for (Enchantment existing : existingEnchants.keySet()) {
+                        if (existing != enchantment && !enchantment.isCompatibleWith(existing)) {
+                            player.displayClientMessage(
+                                net.minecraft.network.chat.Component.translatable("message.potionenchant.enchant_book.incompatible")
+                                    .withStyle(net.minecraft.ChatFormatting.RED), true);
+                            return;
+                        }
                     }
                 }
 
-                // 检查物品能否接受此附魔
-                if (!enchantment.canEnchant(targetItem)) {
+                // 检查物品能否接受此附魔（超级附魔模式下跳过）
+                if (!superMode && !enchantment.canEnchant(targetItem)) {
                     player.displayClientMessage(
                         net.minecraft.network.chat.Component.translatable("message.potionenchant.enchant_book.cannot_enchant")
                             .withStyle(net.minecraft.ChatFormatting.RED), true);
@@ -187,7 +190,8 @@ public class EnchantBookPacketHandler {
                     && armor.getItem() != net.diexv.potionenchant.item.ModItems.X_CHESTPLATE.get()
                     && armor.getItem() != net.diexv.potionenchant.item.ModItems.X_LEGGINGS.get()
                     && armor.getItem() != net.diexv.potionenchant.item.ModItems.X_BOOTS.get()) continue;
-                if (!enchantment.canEnchant(armor)) continue;
+                boolean superModeArmor = PotionEnchantConfig.SERVER.superEnchantMode.get();
+                if (!superModeArmor && !enchantment.canEnchant(armor)) continue;
                 Map<Enchantment, Integer> existingEnchants = EnchantmentHelper.getEnchantments(armor);
                 if (targetLevel <= 0) {
                     existingEnchants.remove(enchantment);

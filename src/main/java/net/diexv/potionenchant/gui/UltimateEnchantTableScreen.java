@@ -72,7 +72,7 @@ public class UltimateEnchantTableScreen extends Screen {
         searchBox.setMaxLength(50); searchBox.setResponder(this::onSearchChanged); addRenderableWidget(searchBox);
         categoryBar = new CategoryBar("gui.potionenchant.category", new String[]{"all","beneficial","harmful","neutral"}, listW / 4, 14, 4);
         categoryBar.init(listX, categoryY);
-        enchantCategoryBar = new CategoryBar("gui.potionenchant.category", new String[]{"all","weapon","armor","tool","curse"}, listW / 5, 14, 5);
+        enchantCategoryBar = new CategoryBar("gui.potionenchant.category", new String[]{"all","valid","weapon","armor","tool","curse"}, listW / 6, 14, 5);
         enchantCategoryBar.init(listX, categoryY);
         potionLevelBox = new EditBox(font, listX + 5, statsY + 18, 50, 14, Component.translatable("gui.potionenchant.search"));
         potionLevelBox.setMaxLength(5); potionLevelBox.setResponder(this::onPotionLevelChanged); potionLevelBox.setVisible(false);
@@ -148,9 +148,9 @@ public class UltimateEnchantTableScreen extends Screen {
         int btnY = height - 40;
         int totalXpCost = getTotalCost();
         boolean canAfford = player != null && (player.isCreative() || getTotalXp(player) >= totalXpCost);
-        boolean hasSel = (currentMode == Mode.POTION && selectedEffect != null && levelAdjustments.containsKey(selectedEffect.effect))
-            || (currentMode == Mode.ENCHANT && selectedEnchant != null && enchantLevelAdjustments.containsKey(selectedEnchant.enchantment));
-        boolean canConfirm = !targetItem.isEmpty() && hasSel && canAfford && totalXpCost > 0;
+        boolean hasPending = (currentMode == Mode.POTION && levelAdjustments.entrySet().stream().anyMatch(e -> e.getValue() != getExistingEffectLevel(e.getKey())))
+            || (currentMode == Mode.ENCHANT && enchantLevelAdjustments.entrySet().stream().anyMatch(e -> e.getValue() != getExistingEnchantLevel(e.getKey())));
+        boolean canConfirm = !targetItem.isEmpty() && hasPending && canAfford;
         int btnW = 100, btnGap = 10, cx = width / 2 - btnW - btnGap / 2;
         g.fill(cx, btnY, cx + btnW, btnY + 20, canConfirm ? 0xFF226622 : 0xFF444444);
         g.drawCenteredString(font, Component.translatable("gui.potionenchant.confirm").getString(), cx + btnW / 2, btnY + 6, canConfirm ? 0xFFFFFF : 0xAAAAAA);
@@ -600,8 +600,9 @@ public class UltimateEnchantTableScreen extends Screen {
 
     private void onConfirm() {
         if (targetItem.isEmpty() || player == null) return;
-        int totalCost = getTotalCost(); if (totalCost <= 0) return;
+        int totalCost = getTotalCost();
         if (!player.isCreative() && getTotalXp(player) < totalCost) return;
+        int cp = PotionEnchantConfig.SERVER.ultimateTableXpCostPerLevel.get();
         if (currentMode == Mode.POTION) {
             java.util.List<java.util.Map.Entry<MobEffect, Integer>> pending = new java.util.ArrayList<>();
             for (var e : levelAdjustments.entrySet()) {
@@ -621,8 +622,9 @@ public class UltimateEnchantTableScreen extends Screen {
         } else {
             for (var e : enchantLevelAdjustments.entrySet()) {
                 int ex = getExistingEnchantLevel(e.getKey()); if (e.getValue() == ex) continue;
+                int perCost = Math.max(0, (e.getValue() - ex) * cp);
                 UltimateTableNetwork.CHANNEL.sendToServer(
-                    new UltimateTableNetwork.ApplyEnchantPacket(blockPos, targetItem, ForgeRegistries.ENCHANTMENTS.getKey(e.getKey()).toString(), e.getValue(), totalCost));
+                    new UltimateTableNetwork.ApplyEnchantPacket(blockPos, targetItem, ForgeRegistries.ENCHANTMENTS.getKey(e.getKey()).toString(), e.getValue(), perCost));
             }
         }
         levelAdjustments.clear(); enchantLevelAdjustments.clear(); selectedEffect = null; selectedEnchant = null;
@@ -706,6 +708,7 @@ public class UltimateEnchantTableScreen extends Screen {
             String cat = enchantCategoryBar.getFilter();
             filteredEnchants = allEnchants.stream().filter(e -> {
                 if (!"all".equals(cat)) {
+                    if ("valid".equals(cat)) return e.enchantment.canEnchant(targetItem);
                     var ec = e.enchantment.category;
                     if ("weapon".equals(cat) && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.WEAPON && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.BOW && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.CROSSBOW && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.TRIDENT) return false;
                     if ("armor".equals(cat) && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.ARMOR && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.ARMOR_HEAD && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.ARMOR_CHEST && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.ARMOR_LEGS && ec != net.minecraft.world.item.enchantment.EnchantmentCategory.ARMOR_FEET) return false;
@@ -790,4 +793,3 @@ public class UltimateEnchantTableScreen extends Screen {
     @Override public void onClose() { zoom.saveToConfig(); if (Minecraft.getInstance().player != null) Minecraft.getInstance().player.closeContainer(); super.onClose(); }
     @Override public void removed() { zoom.saveToConfig(); super.removed(); }
 }
-

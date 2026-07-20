@@ -63,25 +63,32 @@ public class UltimateTableNetwork {
                     ResourceLocationHelper.parse(p.enchantId));
                 if (enchantment == null) return;
 
-                // Deduct XP points
+                ItemStack actualTarget = findItemInInventory(sp, p.target);
+                if (actualTarget == null || actualTarget.isEmpty()) return;
+
+                boolean superMode = PotionEnchantConfig.SERVER.superEnchantMode.get();
+                if (!superMode) {
+                    if (!enchantment.canEnchant(actualTarget)) return;
+                    Map<Enchantment, Integer> cur = EnchantmentHelper.getEnchantments(actualTarget);
+                    for (Enchantment ex : cur.keySet()) {
+                        if (ex != enchantment && !enchantment.isCompatibleWith(ex)) return;
+                    }
+                }
+
                 if (!sp.isCreative()) {
                     int totalXp = getTotalXp(sp);
                     if (totalXp < p.xpCost) return;
                     removeXpPoints(sp, p.xpCost);
                 }
 
-                ItemStack result = p.target.copy();
-
-                // Apply enchantment (override level)
+                ItemStack result = actualTarget.copy();
                 Map<Enchantment, Integer> enchants = EnchantmentHelper.getEnchantments(result);
                 enchants.put(enchantment, p.level);
                 EnchantmentHelper.setEnchantments(enchants, result);
 
-                // Replace in inventory
-                if (replaceInInventory(sp, p.target, result)) {
-                    sp.level().playSound(null, p.pos, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS, 1.0f,
-                        sp.level().random.nextFloat() * 0.1f + 0.9f);
-                }
+                replaceStackInInventory(sp, p.target, result);
+                sp.level().playSound(null, p.pos, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS, 1.0f,
+                    sp.level().random.nextFloat() * 0.1f + 0.9f);
             });
             ctx.get().setPacketHandled(true);
         }
@@ -253,20 +260,6 @@ public class UltimateTableNetwork {
     }
 
     static void removeXpPoints(ServerPlayer player, int points) {
-        int total = getTotalXp(player) - points;
-        if (total <= 0) {
-            player.experienceLevel = 0;
-            player.experienceProgress = 0;
-            return;
-        }
-        int newLevel = 0;
-        int remain = total;
-        while (true) {
-            int need = getXpNeeded(newLevel);
-            if (remain >= need) { remain -= need; newLevel++; }
-            else break;
-        }
-        player.experienceLevel = newLevel;
-        player.experienceProgress = (float)remain / (float)getXpNeeded(newLevel);
+        player.giveExperiencePoints(-points);
     }
 }

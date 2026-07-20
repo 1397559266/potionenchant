@@ -45,6 +45,7 @@ public class PotionEnchantConfig {
         public final ForgeConfigSpec.BooleanValue allowCurioPotionEnchant;
         public final ForgeConfigSpec.BooleanValue allowPotionLevelBeyond255;
         public final ForgeConfigSpec.BooleanValue allowEnchantLevelBeyondCap;
+        public final ForgeConfigSpec.BooleanValue superEnchantMode;
         public final ForgeConfigSpec.IntValue enchantBookXpCost;
         public final ForgeConfigSpec.BooleanValue discoverableInEnchantingTable;
         public final ForgeConfigSpec.BooleanValue enchantBookChestLoot;
@@ -104,6 +105,10 @@ public class PotionEnchantConfig {
                 .comment("Allow enchant levels to break vanilla cap.", "Default: false")
                 .translation("config.potionenchant.allow_enchant_level_beyond_cap")
                 .define("allow_enchant_level_beyond_cap", false);
+            superEnchantMode = builder
+                .comment("Super Enchant Mode: ignore enchantment conflicts and item type restrictions.", "Default: false")
+                .translation("config.potionenchant.super_enchant_mode")
+                .define("super_enchant_mode", false);
             enchantBookXpCost = builder
                 .comment("XP cost per enchant level for Universal Book.", "Default: 1000")
                 .defineInRange("enchant_book_xp_cost", 1000, 1, Integer.MAX_VALUE);

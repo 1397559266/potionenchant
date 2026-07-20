@@ -328,6 +328,7 @@
   "gui.potionenchant.category.harmful": "Negative",
   "gui.potionenchant.category.neutral": "Neutral",
   "gui.potionenchant.category.tool": "Tool",
+  "gui.potionenchant.category.valid": "Valid",
   "gui.potionenchant.category.weapon": "Weapon",
   "gui.potionenchant.click_to_apply": "Click to enchant",
   "gui.potionenchant.confirm": "Confirm",

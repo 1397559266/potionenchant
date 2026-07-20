@@ -328,6 +328,7 @@
   "gui.potionenchant.category.harmful": "负面",
   "gui.potionenchant.category.neutral": "中性",
   "gui.potionenchant.category.tool": "通用",
+  "gui.potionenchant.category.valid": "有效",
   "gui.potionenchant.category.weapon": "武器",
   "gui.potionenchant.click_to_apply": "点击附魔",
   "gui.potionenchant.confirm": "确认",
