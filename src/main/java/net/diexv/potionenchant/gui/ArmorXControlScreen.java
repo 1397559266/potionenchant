@@ -93,7 +93,7 @@ public class ArmorXControlScreen extends Screen {
         listWidth = 200;
         listHeight = MAX_VISIBLE * 20 + 5;
         featureX = listX + listWidth + 20;
-        featureWidth = width - featureX - listX;
+        featureWidth = 230;
 
         searchY = 30;
         modeBtnY = 55;
@@ -431,19 +431,19 @@ public class ArmorXControlScreen extends Screen {
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(guiGraphics);
         int scrMX = mouseX, scrMY = mouseY;
+        zoom.push(guiGraphics, width, height);
+        mouseX = (int) zoom.mx(mouseX, width);
+        mouseY = (int) zoom.my(mouseY, height);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         guiGraphics.drawCenteredString(font,
             Component.translatable("gui.potionenchant.armorx_control"), width / 2, 10, 0xFFFF55);
-        zoom.renderHeaderZoom(guiGraphics, font, width / 2 + 60, 6, 50, scrMX, scrMY, partialTick);
+        zoom.renderHeaderZoom(guiGraphics, font, width / 2 + 60, 6, 50, mouseX, mouseY, partialTick);
         guiGraphics.drawString(font,
             Component.translatable(currentMode == PanelMode.POTION ? "gui.potionenchant.search" : "gui.potionenchant.search_enchant"),
             listX, searchY - 12, 0xCCCCCC);
         renderModeButtons(guiGraphics, mouseX, mouseY, listX, modeBtnY, listWidth);
         CategoryBar activeBar = currentMode == PanelMode.POTION ? categoryBar : enchantCategoryBar;
         if (activeBar != null) activeBar.render(guiGraphics, font, mouseX, mouseY, width, height);
-        zoom.push(guiGraphics, width, height);
-        mouseX = (int) zoom.mx(mouseX, width);
-        mouseY = (int) zoom.my(mouseY, height);
         if (currentMode == PanelMode.POTION) {
             renderPotionList(guiGraphics, mouseX, mouseY, listX, listY, listWidth, listHeight, partialTick);
             if (selectedEffect != null && potionLevelBox != null && potionLevelBox.isVisible() && !isEffectVisible(selectedEffect)) potionLevelBox.setVisible(false);
@@ -759,46 +759,45 @@ public class ArmorXControlScreen extends Screen {
     }
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
-        if (mx >= width - 32) {
+        if (zoom.isOverPanel(mx, width)) {
             if (zoom.editBox.isMouseOver(mx, my)) { setFocused(zoom.editBox); return zoom.editBox.mouseClicked(mx, my, btn); }
-            if (my >= 50 && my <= height - 20) { zoom.dragging = true; zoom.updateFromMouse(my, height); return true; }
+            if (zoom.isOverDragBar(my, height)) { zoom.dragging = true; zoom.updateFromMouse(my, height); return true; }
             return true;
         }
-        if (zoom.headerEditBox.isMouseOver(mx, my)) {
-            setFocused(zoom.headerEditBox); return zoom.headerEditBox.mouseClicked(mx, my, btn);
+        double zmx = zoom.mx(mx, width), zmy = zoom.my(my, height);
+        if (zoom.headerEditBox.isMouseOver(zmx, zmy)) {
+            setFocused(zoom.headerEditBox); return zoom.headerEditBox.mouseClicked(zmx, zmy, btn);
         }
         double origMX = mx, origMY = my;
-        mx = zoom.mx(mx, width);
-        my = zoom.my(my, height);
         String[] fk = {"ranged_attack","auto_ranged_attack","destruction_mode","flight_mode"};
         int bw = (listWidth - 6) / 2;
-        if (origMY >= modeBtnY && origMY <= modeBtnY + 16) {
-            if (origMX >= listX + 2 && origMX <= listX + 2 + bw) { switchMode(PanelMode.POTION); return true; }
-            if (origMX >= listX + bw + 6 && origMX <= listX + bw + 6 + bw) { switchMode(PanelMode.ENCHANT); return true; }
+        if (zmy >= modeBtnY && zmy <= modeBtnY + 16) {
+            if (zmx >= listX + 2 && zmx <= listX + 2 + bw) { switchMode(PanelMode.POTION); return true; }
+            if (zmx >= listX + bw + 6 && zmx <= listX + bw + 6 + bw) { switchMode(PanelMode.ENCHANT); return true; }
         }
-        if (searchBox.isMouseOver(origMX, origMY)) {
+        if (searchBox.isMouseOver(zmx, zmy)) {
             setFocused(searchBox);
             searchBox.setResponder(currentMode == PanelMode.POTION
                 ? this::onPotionSearchTextChanged : this::onEnchantSearchTextChanged);
-            return searchBox.mouseClicked(origMX, origMY, btn);
+            return searchBox.mouseClicked(zmx, zmy, btn);
         }
         CategoryBar ab = currentMode == PanelMode.POTION ? categoryBar : enchantCategoryBar;
-        if (ab != null && ab.mouseClicked(origMX, origMY)) {
+        if (ab != null && ab.mouseClicked(zmx, zmy)) {
             scrollOffset = 0; enchantScrollOffset = 0;
             selectedEffect = null; selectedEnchant = null;
             updateFilter(); return true;
         }
         if (currentMode == PanelMode.POTION) {
-            if (handlePotionListClick(mx, my, btn)) return true;
+            if (handlePotionListClick(zmx, zmy, btn)) return true;
         } else {
-            if (handleEnchantListClick(mx, my, btn)) return true;
+            if (handleEnchantListClick(zmx, zmy, btn)) return true;
         }
-        if (mx >= featureX && mx <= featureX + featureWidth && my >= listY && my <= listY + featurePanelHeight) {
+        if (zmx >= featureX && zmx <= featureX + featureWidth && zmy >= listY && zmy <= listY + featurePanelHeight) {
             int maxVisF = Math.max(1, (featurePanelHeight - 25) / 25);
             for (int i = 0; i < maxVisF && (i + featureScrollOffset) < fk.length; i++) {
                 int idxx = i + featureScrollOffset;
                 int cy = listY + 20 + i * 25;
-                if (my >= cy && my <= cy + 20) {
+                if (zmy >= cy && zmy <= cy + 20) {
                     String key = fk[idxx];
                     boolean nv = !armorFeatures.getOrDefault(key, false);
                     armorFeatures.put(key, nv);
@@ -809,24 +808,24 @@ public class ArmorXControlScreen extends Screen {
                 }
             }
         }
-        if (origMX >= featureX && origMX <= featureX + featureWidth && origMY >= upgradeY && origMY <= upgradeY + upgradeHeight) {
+        if (zmx >= featureX && zmx <= featureX + featureWidth && zmy >= upgradeY && zmy <= upgradeY + upgradeHeight) {
             int iy = upgradeY + 38; int bs2 = 14;
-            if (bottleEditBox.isMouseOver(origMX, origMY)) { setFocused(bottleEditBox); return bottleEditBox.mouseClicked(origMX, origMY, btn); }
+            if (bottleEditBox.isMouseOver(zmx, zmy)) { setFocused(bottleEditBox); return bottleEditBox.mouseClicked(zmx, zmy, btn); }
             int minusX = featureX + 5;
             int plusX = minusX + bs2 + 48;
             int saX = plusX + bs2 + 6;
-            if (origMX >= minusX && origMX <= minusX + bs2 && origMY >= iy && origMY <= iy + bs2) {
+            if (zmx >= minusX && zmx <= minusX + bs2 && zmy >= iy && zmy <= iy + bs2) {
                 bottleCount = Math.max(0, bottleCount - 1);
                 bottleEditBox.setValue(String.valueOf(bottleCount));
                 updateConfirmButton(); return true;
             }
-            if (origMX >= plusX && origMX <= plusX + bs2 && origMY >= iy && origMY <= iy + bs2) {
+            if (zmx >= plusX && zmx <= plusX + bs2 && zmy >= iy && zmy <= iy + bs2) {
                 int maxB = getTotalAvailableBottles();
                 bottleCount = Math.min(maxB, bottleCount + 1);
                 bottleEditBox.setValue(String.valueOf(bottleCount));
                 updateConfirmButton(); return true;
             }
-            if (origMX >= saX && origMX <= saX + 36 && origMY >= iy && origMY <= iy + bs2) {
+            if (zmx >= saX && zmx <= saX + 36 && zmy >= iy && zmy <= iy + bs2) {
                 bottleCount = getTotalAvailableBottles();
                 bottleEditBox.setValue(String.valueOf(bottleCount));
                 updateConfirmButton(); return true;
@@ -834,18 +833,18 @@ public class ArmorXControlScreen extends Screen {
         }
         // Click outside EditBox -> hide it
         if (levelEditActive) {
-            boolean outsidePotion = potionLevelBox == null || !potionLevelBox.isMouseOver(origMX, origMY);
-            boolean outsideEnchant = enchantLevelBox == null || !enchantLevelBox.isMouseOver(origMX, origMY);
+            boolean outsidePotion = potionLevelBox == null || !potionLevelBox.isMouseOver(zmx, zmy);
+            boolean outsideEnchant = enchantLevelBox == null || !enchantLevelBox.isMouseOver(zmx, zmy);
             if (outsidePotion && outsideEnchant) {
                 levelEditActive = false;
                 if (potionLevelBox != null) { potionLevelBox.setVisible(false); potionLevelBox.setFocused(false); }
                 if (enchantLevelBox != null) { enchantLevelBox.setVisible(false); enchantLevelBox.setFocused(false); }
             }
         }
-        if (mx >= listX && mx <= listX + listWidth && my >= statsY && my <= statsY + statsHeight) {
+        if (zmx >= listX && zmx <= listX + listWidth && zmy >= statsY && zmy <= statsY + statsHeight) {
             isDragging = true; return true;
         }
-        return super.mouseClicked(origMX, origMY, btn);
+        return super.mouseClicked(zmx, zmy, btn);
     }
 
     private boolean handlePotionListClick(double mx, double my, int btn) {
@@ -1001,8 +1000,8 @@ public class ArmorXControlScreen extends Screen {
             return true;
         }
         CategoryBar ab = currentMode == PanelMode.POTION ? categoryBar : enchantCategoryBar;
-        if (ab != null && ab.mouseDragged(origMX)) return true;
-        return super.mouseDragged(origMX, origMY, btn, dx, dy);
+        if (ab != null && ab.mouseDragged(mx)) return true;
+        return super.mouseDragged(mx, my, btn, dx, dy);
     }
     @Override
     public boolean mouseReleased(double mx, double my, int btn) {
@@ -1012,12 +1011,12 @@ public class ArmorXControlScreen extends Screen {
         my = zoom.my(my, height);
         CategoryBar ab = currentMode == PanelMode.POTION ? categoryBar : enchantCategoryBar;
         if (ab != null) ab.mouseReleased();
-        return super.mouseReleased(origMX, origMY, btn);
+        return super.mouseReleased(mx, my, btn);
     }
 
     @Override
     public boolean mouseScrolled(double mx, double my, double delta) {
-        if (mx >= width - 32) { zoom.scroll(delta); return true; }
+        if (zoom.isOverPanel(mx, width)) { zoom.scroll(delta); return true; }
         double origMX = mx, origMY = my;
         mx = zoom.mx(mx, width);
         my = zoom.my(my, height);
@@ -1053,8 +1052,8 @@ public class ArmorXControlScreen extends Screen {
             return true;
         }
         CategoryBar ab = currentMode == PanelMode.POTION ? categoryBar : enchantCategoryBar;
-        if (ab != null && ab.mouseScrolled(origMX, origMY, delta)) return true;
-        return super.mouseScrolled(origMX, origMY, delta);
+        if (ab != null && ab.mouseScrolled(mx, my, delta)) return true;
+        return super.mouseScrolled(mx, my, delta);
     }
 
     @Override

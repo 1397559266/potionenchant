@@ -195,14 +195,14 @@ public class UniversalEnchantmentBookScreen extends Screen {
     public void render(GuiGraphics g, int mx, int my, float pt) {
         renderBackground(g);
         int scrMX = mx, scrMY = my;
-        super.render(g, mx, my, pt);
-        g.drawCenteredString(font, title, width / 2, 10, 0xFFFFFF);
-        zoom.renderHeaderZoom(g, font, width / 2 + 60, 6, 50, scrMX, scrMY, pt);
-        g.drawString(font, Component.translatable("gui.potionenchant.target_item", targetItem.getHoverName().getString()), descX(), descY() - 15, 0xAAAAAA);
-        if (categoryBar != null) categoryBar.render(g, font, mx, my, width, height);
         zoom.push(g, width, height);
         mx = (int) zoom.mx(mx, width);
         my = (int) zoom.my(my, height);
+        super.render(g, mx, my, pt);
+        g.drawCenteredString(font, title, width / 2, 10, 0xFFFFFF);
+        zoom.renderHeaderZoom(g, font, width / 2 + 60, 6, 50, mx, my, pt);
+        g.drawString(font, Component.translatable("gui.potionenchant.target_item", targetItem.getHoverName().getString()), descX(), descY() - 15, 0xAAAAAA);
+        if (categoryBar != null) categoryBar.render(g, font, mx, my, width, height);
         renderList(g, mx, my, pt);
         if (showSingleEffectMode && selectedEnchant != null) renderSingle(g);
         else renderBatch(g);
@@ -402,25 +402,24 @@ public class UniversalEnchantmentBookScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
-        if (mx >= width - 32) {
+        if (zoom.isOverPanel(mx, width)) {
             if (zoom.editBox.isMouseOver(mx, my)) { setFocused(zoom.editBox); return zoom.editBox.mouseClicked(mx, my, btn); }
-            if (my >= 50 && my <= height - 20) { zoom.dragging = true; zoom.updateFromMouse(my, height); return true; }
+            if (zoom.isOverDragBar(my, height)) { zoom.dragging = true; zoom.updateFromMouse(my, height); return true; }
             return true;
         }
-        if (zoom.headerEditBox.isMouseOver(mx, my)) {
-            setFocused(zoom.headerEditBox); return zoom.headerEditBox.mouseClicked(mx, my, btn);
+        double zmx = zoom.mx(mx, width), zmy = zoom.my(my, height);
+        if (zoom.headerEditBox.isMouseOver(zmx, zmy)) {
+            setFocused(zoom.headerEditBox); return zoom.headerEditBox.mouseClicked(zmx, zmy, btn);
         }
         double origMX = mx, origMY = my;
-        mx = zoom.mx(mx, width);
-        my = zoom.my(my, height);
-        if (levelEditBox.isVisible() && !levelEditBox.isMouseOver(mx, my)) { levelEditBox.setVisible(false); editingEnchant = null; }
-        if (categoryBar != null && categoryBar.mouseClicked(origMX, origMY)) { scrollOffset = 0; updateFilter(); return true; }
+        if (levelEditBox.isVisible() && !levelEditBox.isMouseOver(zmx, zmy)) { levelEditBox.setVisible(false); editingEnchant = null; }
+        if (categoryBar != null && categoryBar.mouseClicked(zmx, zmy)) { scrollOffset = 0; updateFilter(); return true; }
         int lx = listX(), ly = listY(), lw = listW(), lh = listH();
         if (filteredEnchants.size() > MAX_VISIBLE) {
             int sX = lx + lw + 2, sH = lh, tH = Math.max(20, sH * MAX_VISIBLE / filteredEnchants.size()), tY = ly + (sH - tH) * scrollOffset / (filteredEnchants.size() - MAX_VISIBLE);
-            if (mx >= sX && mx <= sX + 8 && my >= tY && my <= tY + tH) { isDragging = true; return true; }
-            if (mx >= sX && mx <= sX + 8 && my >= ly && my <= ly + sH) {
-                double r = (my - ly - tH / 2.0) / (sH - tH);
+            if (zmx >= sX && zmx <= sX + 8 && zmy >= tY && zmy <= tY + tH) { isDragging = true; return true; }
+            if (zmx >= sX && zmx <= sX + 8 && zmy >= ly && zmy <= ly + sH) {
+                double r = (zmy - ly - tH / 2.0) / (sH - tH);
                 scrollOffset = (int)(Math.max(0, Math.min(1, r)) * (filteredEnchants.size() - MAX_VISIBLE));
                 return true;
             }
@@ -428,8 +427,8 @@ public class UniversalEnchantmentBookScreen extends Screen {
         for (int i = 0; i < MAX_VISIBLE && (i + scrollOffset) < filteredEnchants.size(); i++) {
             int idx = i + scrollOffset;
             EnchantInfo ei = filteredEnchants.get(idx);
-            int y = ly + 5 + i * 20, mxb = lx + lw - 50, myb = y + 2, px = lx + lw - 12, py = y + 2, bs = 14;
-            if (mx >= mxb && mx <= mxb + bs && my >= myb && my <= myb + bs) {
+            int y = ly + 5 + i * 20, mxb = lx + lw - 50, myb = y + 2, pbx = lx + lw - 12, pby = y + 2, bs = 14;
+            if (zmx >= mxb && zmx <= mxb + bs && zmy >= myb && zmy <= myb + bs) {
                 int t = getLevelAdjustment(ei.enchantment);
                 if (t > 0) setLevelAdjustment(ei.enchantment, t - 1);
                 showSingleEffectMode = false; descScrollOffset = 0;
@@ -437,7 +436,7 @@ public class UniversalEnchantmentBookScreen extends Screen {
                 return true;
             }
             int ix = lx + lw - 33;
-            if (mx >= ix && mx <= ix + 18 && my >= myb && my <= myb + 14) {
+            if (zmx >= ix && zmx <= ix + 18 && zmy >= myb && zmy <= myb + 14) {
                 editingEnchant = ei.enchantment;
                 levelEditBox.setValue(String.valueOf(getLevelAdjustment(ei.enchantment)));
                 levelEditBox.setX(ix); levelEditBox.setY(myb); levelEditBox.setWidth(18); levelEditBox.setHeight(14);
@@ -445,7 +444,7 @@ public class UniversalEnchantmentBookScreen extends Screen {
                 showSingleEffectMode = false; descScrollOffset = 0;
                 return true;
             }
-            if (mx >= px && mx <= px + bs && my >= py && my <= py + bs) {
+            if (zmx >= pbx && zmx <= pbx + bs && zmy >= pby && zmy <= pby + bs) {
                 int t = getLevelAdjustment(ei.enchantment);
                 if (canInc(ei.enchantment, t)) setLevelAdjustment(ei.enchantment, t + 1);
                 showSingleEffectMode = false; descScrollOffset = 0;
@@ -453,8 +452,8 @@ public class UniversalEnchantmentBookScreen extends Screen {
                 return true;
             }
         }
-        if (mx >= lx && mx < lx + lw - 50 && my >= ly && my <= ly + lh) {
-            int idx = (int)((my - ly - 5) / 20) + scrollOffset;
+        if (zmx >= lx && zmx < lx + lw - 50 && zmy >= ly && zmy <= ly + lh) {
+            int idx = (int)((zmy - ly - 5) / 20) + scrollOffset;
             if (idx >= 0 && idx < filteredEnchants.size()) {
                 EnchantInfo clicked = filteredEnchants.get(idx);
                 // 右键复制附魔ID
@@ -476,15 +475,15 @@ public class UniversalEnchantmentBookScreen extends Screen {
             int mv = (ph - 35) / 10, tl = sl.size();
             if (tl > mv) {
                 int sH = ph - 35, ms = tl - mv, tH = Math.max(15, sH * mv / tl), tY = py + 18 + (sH - tH) * descScrollOffset / ms;
-                if (mx >= px + pw - 8 && mx <= px + pw - 2 && my >= tY && my <= tY + tH) { isDescDragging = true; return true; }
-                if (mx >= px + pw - 8 && mx <= px + pw - 2 && my >= py + 18 && my <= py + 18 + sH) {
-                    double r = (my - py - 18 - tH / 2.0) / (sH - tH);
+                if (zmx >= px + pw - 8 && zmx <= px + pw - 2 && zmy >= tY && zmy <= tY + tH) { isDescDragging = true; return true; }
+                if (zmx >= px + pw - 8 && zmx <= px + pw - 2 && zmy >= py + 18 && zmy <= py + 18 + sH) {
+                    double r = (zmy - py - 18 - tH / 2.0) / (sH - tH);
                     descScrollOffset = (int)(Math.max(0, Math.min(1, r)) * ms);
                     return true;
                 }
             }
         }
-        return super.mouseClicked(origMX, origMY, btn);
+        return super.mouseClicked(zmx, zmy, btn);
     }
 
     @Override
@@ -495,7 +494,7 @@ public class UniversalEnchantmentBookScreen extends Screen {
         my = zoom.my(my, height);
         isDragging = false; isDescDragging = false;
         if (categoryBar != null) categoryBar.mouseReleased();
-        return super.mouseReleased(origMX, origMY, btn);
+        return super.mouseReleased(mx, my, btn);
     }
 
     @Override
@@ -504,7 +503,7 @@ public class UniversalEnchantmentBookScreen extends Screen {
         double origMX = mx, origMY = my;
         mx = zoom.mx(mx, width);
         my = zoom.my(my, height);
-        if (categoryBar != null && categoryBar.mouseDragged(origMX)) return true;
+        if (categoryBar != null && categoryBar.mouseDragged(mx)) return true;
         if (isDragging) {
             int lh = listH(), tH = Math.max(20, lh * MAX_VISIBLE / filteredEnchants.size()), rng = filteredEnchants.size() - MAX_VISIBLE;
             if (rng > 0) { double ra = (my - listY() - tH / 2.0) / (lh - tH); scrollOffset = (int)(Math.max(0, Math.min(1, ra)) * rng); }
@@ -517,16 +516,16 @@ public class UniversalEnchantmentBookScreen extends Screen {
             if (ms > 0) { int sH = ph - 35, tH = Math.max(15, sH * mv / sl.size()); double ra = (my - descY() - 18 - tH / 2.0) / (sH - tH); descScrollOffset = (int)(Math.max(0, Math.min(1, ra)) * ms); }
             return true;
         }
-        return super.mouseDragged(origMX, origMY, btn, dx, dy);
+        return super.mouseDragged(mx, my, btn, dx, dy);
     }
 
     @Override
     public boolean mouseScrolled(double mx, double my, double delta) {
-        if (mx >= width - 32) { zoom.scroll(delta); return true; }
+        if (zoom.isOverPanel(mx, width)) { zoom.scroll(delta); return true; }
         double origMX = mx, origMY = my;
         mx = zoom.mx(mx, width);
         my = zoom.my(my, height);
-        if (categoryBar != null && categoryBar.mouseScrolled(origMX, origMY, delta)) return true;
+        if (categoryBar != null && categoryBar.mouseScrolled(mx, my, delta)) return true;
         int lx = listX(), ly = listY(), lw = listW(), lh = listH();
         if (mx >= lx && mx <= lx + lw && my >= ly && my <= ly + lh) {
             scrollOffset = (int)Math.max(0, Math.min(scrollOffset - delta, Math.max(0, filteredEnchants.size() - MAX_VISIBLE)));

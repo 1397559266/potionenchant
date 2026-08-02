@@ -365,21 +365,20 @@ public class UniversalPotionBottleScreen extends Screen {
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(guiGraphics);
         int scrMX = mouseX, scrMY = mouseY;
+        zoom.push(guiGraphics, width, height);
+        mouseX = (int) zoom.mx(mouseX, width);
+        mouseY = (int) zoom.my(mouseY, height);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         
         // 绘制标题
         guiGraphics.drawCenteredString(font, title, width / 2, 10, 0xFFFFFF);
-        zoom.renderHeaderZoom(guiGraphics, font, width / 2 + 60, 6, 50, scrMX, scrMY, partialTick);
+        zoom.renderHeaderZoom(guiGraphics, font, width / 2 + 60, 6, 50, mouseX, mouseY, partialTick);
         
         // 绘制副手物品信息
         String itemInfo = Component.translatable("gui.potionenchant.target_item", targetItem.getHoverName().getString()).getString();
         
         // 分类按钮
         if (categoryBar != null) categoryBar.render(guiGraphics, font, mouseX, mouseY, width, height);
-        
-        zoom.push(guiGraphics, width, height);
-        mouseX = (int) zoom.mx(mouseX, width);
-        mouseY = (int) zoom.my(mouseY, height);
         
         PoseStack poseStack = guiGraphics.pose();
         
@@ -392,7 +391,7 @@ public class UniversalPotionBottleScreen extends Screen {
         int descX = listX + listWidth + 20;  // 描述在列表右侧，间隔20px
         int descY = listY;
         guiGraphics.drawString(font, itemInfo, descX, descY - 15, 0xAAAAAA);
-        int descWidth = width - descX - listX;  // 描述区域宽度
+        int descWidth = 230;
         int descHeight = listHeight;  // 与列表同高
 
         // 绘制列表背景
@@ -729,24 +728,23 @@ public class UniversalPotionBottleScreen extends Screen {
     
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (mouseX >= width - 32) {
+        if (zoom.isOverPanel(mouseX, width)) {
             if (zoom.editBox.isMouseOver(mouseX, mouseY)) { setFocused(zoom.editBox); return zoom.editBox.mouseClicked(mouseX, mouseY, button); }
-            if (mouseY >= 50 && mouseY <= height - 20) { zoom.dragging = true; zoom.updateFromMouse(mouseY, height); return true; }
+            if (zoom.isOverDragBar(mouseY, height)) { zoom.dragging = true; zoom.updateFromMouse(mouseY, height); return true; }
             return true;
         }
+        double zmx = zoom.mx(mouseX, width), zmy = zoom.my(mouseY, height);
         double origMX = mouseX, origMY = mouseY;
-        if (zoom.headerEditBox.isMouseOver(mouseX, mouseY)) {
-            setFocused(zoom.headerEditBox); return zoom.headerEditBox.mouseClicked(mouseX, mouseY, button);
+        if (zoom.headerEditBox.isMouseOver(zmx, zmy)) {
+            setFocused(zoom.headerEditBox); return zoom.headerEditBox.mouseClicked(zmx, zmy, button);
         }
-        mouseX = zoom.mx(mouseX, width);
-        mouseY = zoom.my(mouseY, height);
-        if (categoryBar != null && categoryBar.mouseClicked(origMX, origMY)) {
+        if (categoryBar != null && categoryBar.mouseClicked(zmx, zmy)) {
             scrollOffset = 0;
             onSearchTextChanged(searchBox.getValue());
             return true;
         }
 
-        if (levelEditBox.isVisible() && levelEditBox.isMouseOver(mouseX, mouseY) == false) {
+        if (levelEditBox.isVisible() && !levelEditBox.isMouseOver(zmx, zmy)) {
             levelEditBox.setVisible(false);
             editingEffect = null;
         }
@@ -758,7 +756,7 @@ public class UniversalPotionBottleScreen extends Screen {
         
         // 先检查是否点击了滚动条（优先级更高）
         if (filteredEffects.size() > MAX_VISIBLE) {
-            int scrollbarX = listX + listWidth + 2;  // 与绘制位置保持一致
+            int scrollbarX = listX + listWidth + 2;
             int scrollbarY = listY;
             int scrollbarWidth = 8;
             
@@ -766,16 +764,16 @@ public class UniversalPotionBottleScreen extends Screen {
             int thumbY = scrollbarY + (listHeight - thumbHeight) * scrollOffset / (filteredEffects.size() - MAX_VISIBLE);
             
             // 检查是否点击了滚动条滑块
-            if (mouseX >= scrollbarX && mouseX <= scrollbarX + scrollbarWidth &&
-                mouseY >= thumbY && mouseY <= thumbY + thumbHeight) {
+            if (zmx >= scrollbarX && zmx <= scrollbarX + scrollbarWidth &&
+                zmy >= thumbY && zmy <= thumbY + thumbHeight) {
                 isDragging = true;
                 return true;
             }
             
             // 检查是否点击了滚动条轨道（快速跳转）
-            if (mouseX >= scrollbarX && mouseX <= scrollbarX + scrollbarWidth &&
-                mouseY >= scrollbarY && mouseY <= scrollbarY + listHeight) {
-                updateScrollFromMouse(mouseY, scrollbarY, listHeight, thumbHeight);
+            if (zmx >= scrollbarX && zmx <= scrollbarX + scrollbarWidth &&
+                zmy >= scrollbarY && zmy <= scrollbarY + listHeight) {
+                updateScrollFromMouse(zmy, scrollbarY, listHeight, thumbHeight);
                 return true;
             }
         }
@@ -793,8 +791,8 @@ public class UniversalPotionBottleScreen extends Screen {
             int btnSize = 14;
             
             // 检查 - 按钮
-            if (mouseX >= minusBtnX && mouseX <= minusBtnX + btnSize &&
-                mouseY >= minusBtnY && mouseY <= minusBtnY + btnSize) {
+            if (zmx >= minusBtnX && zmx <= minusBtnX + btnSize &&
+                zmy >= minusBtnY && zmy <= minusBtnY + btnSize) {
                 int currentTargetLevel = getLevelAdjustment(info.effect);
                 // 减少目标等级（最低到0）
                 if (currentTargetLevel > 0) {
@@ -812,8 +810,8 @@ public class UniversalPotionBottleScreen extends Screen {
             // 检查等级输入框区域（点击后显示编辑框）
             int inputBoxX = listX + listWidth - 33;
             int inputBoxY = y + 2;
-            if (mouseX >= inputBoxX && mouseX <= inputBoxX + 18 &&
-                mouseY >= inputBoxY && mouseY <= inputBoxY + 14) {
+            if (zmx >= inputBoxX && zmx <= inputBoxX + 18 &&
+                zmy >= inputBoxY && zmy <= inputBoxY + 14) {
                 // 显示编辑框并设置当前目标等级
                 editingEffect = info;
                 int targetLevel = getLevelAdjustment(info.effect);
@@ -831,8 +829,8 @@ public class UniversalPotionBottleScreen extends Screen {
             }
             
             // 检查 + 按钮
-            if (mouseX >= plusBtnX && mouseX <= plusBtnX + btnSize &&
-                mouseY >= plusBtnY && mouseY <= plusBtnY + btnSize) {
+            if (zmx >= plusBtnX && zmx <= plusBtnX + btnSize &&
+                zmy >= plusBtnY && zmy <= plusBtnY + btnSize) {
                 int currentTargetLevel = getLevelAdjustment(info.effect);
                 // 检查是否可以继续提升等级
                 if (canIncreaseLevel(info.effect, currentTargetLevel)) {
@@ -858,10 +856,10 @@ public class UniversalPotionBottleScreen extends Screen {
         }
         
         // 再检查是否点击了列表项（排除滚动条区域和按钮区域）
-        if (mouseX >= listX && mouseX < listX + listWidth - 50 && 
-            mouseY >= listY && mouseY <= listY + listHeight) {
+        if (zmx >= listX && zmx < listX + listWidth - 50 && 
+            zmy >= listY && zmy <= listY + listHeight) {
             
-            int index = (int)((mouseY - listY - 5) / 20) + scrollOffset;
+            int index = (int)((zmy - listY - 5) / 20) + scrollOffset;
             if (index >= 0 && index < filteredEffects.size()) {
                 MobEffectInfo clickedInfo = filteredEffects.get(index);
                 // 右键复制效果ID
@@ -883,7 +881,7 @@ public class UniversalPotionBottleScreen extends Screen {
         // 检查是否点击了右侧面板的滚动条
         int descX = listX + listWidth + 20;
         int descY = listY;
-        int descWidth = width - descX - listX;
+        int descWidth = 230;
         int descHeight = listHeight;
         
         // 计算右侧面板的最大滚动量
@@ -942,7 +940,7 @@ public class UniversalPotionBottleScreen extends Screen {
             }
         }
         
-        return super.mouseClicked(origMX, origMY, button);
+        return super.mouseClicked(zmx, zmy, button);
     }
     
     @Override
@@ -957,7 +955,7 @@ public class UniversalPotionBottleScreen extends Screen {
         int listHeight = MAX_VISIBLE * 20 + 5;
         int descX = listX + listWidth + 20;
         int descY = listY;
-        int descWidth = width - descX - listX;
+        int descWidth = 230;
         int descHeight = listHeight;
         
         // 检查是否拖动左侧列表滚动条
@@ -1010,7 +1008,7 @@ public class UniversalPotionBottleScreen extends Screen {
             }
         }
         
-        return super.mouseDragged(origMX, origMY, button, dragX, dragY);
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
     
     @Override
@@ -1021,12 +1019,12 @@ public class UniversalPotionBottleScreen extends Screen {
         mouseY = zoom.my(mouseY, height);
         isDescDragging = false;
         if (categoryBar != null) categoryBar.mouseReleased();
-        return super.mouseReleased(origMX, origMY, button);
+        return super.mouseReleased(mouseX, mouseY, button);
     }
     
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        if (mouseX >= width - 32) { zoom.scroll(delta); return true; }
+        if (zoom.isOverPanel(mouseX, width)) { zoom.scroll(delta); return true; }
         double origMX = mouseX, origMY = mouseY;
         mouseX = zoom.mx(mouseX, width);
         mouseY = zoom.my(mouseY, height);
@@ -1036,7 +1034,7 @@ public class UniversalPotionBottleScreen extends Screen {
         int listHeight = MAX_VISIBLE * 20 + 5;
         int descX = listX + listWidth + 20;
         int descY = listY;
-        int descWidth = width - descX - listX;
+        int descWidth = 230;
         int descHeight = listHeight;
         // 检查鼠标是否在右侧面板区域
         if (mouseX >= descX && mouseX <= descX + descWidth &&
@@ -1094,7 +1092,7 @@ public class UniversalPotionBottleScreen extends Screen {
             return true;
         }
         
-        return super.mouseScrolled(origMX, origMY, delta);
+        return super.mouseScrolled(mouseX, mouseY, delta);
     }
     
     @Override

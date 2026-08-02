@@ -161,12 +161,12 @@ public class PotionEnchantingTableScreen extends Screen {
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         renderBackground(g);
         int scrMX = mouseX, scrMY = mouseY;
-        g.drawCenteredString(font, getTitle().getString(), width / 2, 10, 0xFFFFFF);
-        zoom.renderHeaderZoom(g, font, width / 2 + 60, 6, 50, mouseX, mouseY, partialTick);
-        categoryBar.render(g, font, mouseX, mouseY, width, height);
         zoom.push(g, width, height);
         mouseX = (int) zoom.mx(mouseX, width);
         mouseY = (int) zoom.my(mouseY, height);
+        g.drawCenteredString(font, getTitle().getString(), width / 2, 10, 0xFFFFFF);
+        zoom.renderHeaderZoom(g, font, width / 2 + 60, 6, 50, mouseX, mouseY, partialTick);
+        categoryBar.render(g, font, mouseX, mouseY, width, height);
         // LEFT PANEL
         g.fill(leftX, leftY, leftX + leftW, leftY + leftH, 0x80000000);
         String powerText = Component.translatable("gui.potionenchant.power", power).getString();
@@ -294,27 +294,25 @@ public class PotionEnchantingTableScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
-        // 分类筛选按钮点击（使用原始屏幕坐标，categoryBar 渲染在 zoom 之前）
-        if (categoryBar.mouseClicked(mx, my)) {
+        if (zoom.isOverPanel(mx, width)) {
+            if (zoom.editBox.isMouseOver(mx, my)) { setFocused(zoom.editBox); return zoom.editBox.mouseClicked(mx, my, btn); }
+            if (zoom.isOverDragBar(my, height)) { zoom.dragging = true; zoom.updateFromMouse(my, height); return true; }
+            return true;
+        }
+        double zmx = zoom.mx(mx, width);
+        double zmy = zoom.my(my, height);
+        if (zoom.headerEditBox.isMouseOver(zmx, zmy)) {
+            setFocused(zoom.headerEditBox); return zoom.headerEditBox.mouseClicked(zmx, zmy, btn);
+        }
+        if (categoryBar.mouseClicked(zmx, zmy)) {
             if (targetItem.isEmpty()) {
                 regenerateOptions();
             } else {
-                // 已选中物品时切换分类，保留物品但重新生成选项
                 selectedSlot = -1;
                 regenerateOptions();
             }
             return true;
         }
-        if (mx >= width - 32) {
-            if (zoom.editBox.isMouseOver(mx, my)) { setFocused(zoom.editBox); return zoom.editBox.mouseClicked(mx, my, btn); }
-            if (my >= 50 && my <= height - 20) { zoom.dragging = true; zoom.updateFromMouse(my, height); return true; }
-            return true;
-        }
-        if (zoom.headerEditBox.isMouseOver(mx, my)) {
-            setFocused(zoom.headerEditBox); return zoom.headerEditBox.mouseClicked(mx, my, btn);
-        }
-        double zmx = zoom.mx(mx, width);
-        double zmy = zoom.my(my, height);
         // Confirm
         if (zmx >= confirmX && zmx < confirmX + 80 && zmy >= btnY && zmy < btnY + 20) {
             if (selectedSlot >= 0 && !targetItem.isEmpty()) applyOption(selectedSlot);
@@ -365,7 +363,7 @@ public class PotionEnchantingTableScreen extends Screen {
         if (zmx >= rightX + 6 && zmx < rightX + 30 && zmy >= tgtY + 10 && zmy < tgtY + 34) {
             targetItem = ItemStack.EMPTY; selectedSlot = -1; regenerateOptions(); return true;
         }
-        return super.mouseClicked(mx, my, btn);
+        return super.mouseClicked(zmx, zmy, btn);
     }
 
     private void applyOption(int slot) {
@@ -418,10 +416,10 @@ public class PotionEnchantingTableScreen extends Screen {
     }
     @Override public void removed() { zoom.saveToConfig(); super.removed(); }
     @Override public boolean mouseScrolled(double mx, double my, double delta) {
-        if (mx >= width - 32) { zoom.scroll(delta); return true; }
+        if (zoom.isOverPanel(mx, width)) { zoom.scroll(delta); return true; }
         double zmx = zoom.mx(mx, width);
         double zmy = zoom.my(my, height);
-        if (categoryBar.mouseScrolled(mx, my, delta)) return true;
+        if (categoryBar.mouseScrolled(zmx, zmy, delta)) return true;
         int cell = 18, cols = Math.min(9, (rightW - 16) / cell);
         int gridY = rightY + 16 + 52;
         if (zmx >= rightX && zmx < rightX + rightW) {
@@ -430,19 +428,19 @@ public class PotionEnchantingTableScreen extends Screen {
             invScroll = Mth.clamp(invScroll - (int)delta, 0, Math.max(0, totalRows - visRows));
             return true;
         }
-        return super.mouseScrolled(mx, my, delta);
+        return super.mouseScrolled(zmx, zmy, delta);
     }
     @Override public boolean mouseDragged(double mx, double my, int btn, double dx, double dy) {
         if (zoom.dragging) { zoom.updateFromMouse(my, height); return true; }
         double zmx = zoom.mx(mx, width);
         double zmy = zoom.my(my, height);
-        return categoryBar.mouseDragged(mx) || super.mouseDragged(mx, my, btn, dx, dy);
+        return categoryBar.mouseDragged(zmx) || super.mouseDragged(zmx, zmy, btn, dx, dy);
     }
     @Override public boolean mouseReleased(double mx, double my, int btn) {
         zoom.dragging = false;
         double zmx = zoom.mx(mx, width);
         double zmy = zoom.my(my, height);
-        categoryBar.mouseReleased(); return super.mouseReleased(mx, my, btn);
+        categoryBar.mouseReleased(); return super.mouseReleased(zmx, zmy, btn);
     }
     @Override public boolean keyPressed(int kc, int sc, int mod) {
         if (zoom.editBox.isFocused()) return zoom.editBox.keyPressed(kc, sc, mod);
@@ -465,4 +463,3 @@ public class PotionEnchantingTableScreen extends Screen {
     }
 
 }
-

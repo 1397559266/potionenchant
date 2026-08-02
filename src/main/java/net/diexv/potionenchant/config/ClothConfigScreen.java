@@ -99,6 +99,13 @@ public class ClothConfigScreen {
                 .setTooltip(Component.translatable("config.potionenchant.allow_enchant_level_beyond_cap.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.SERVER.allowEnchantLevelBeyondCap::set).build());
 
+        pe.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.super_enchant_mode"),
+                PotionEnchantConfig.SERVER.superEnchantMode.get())
+                .setDefaultValue(false)
+
+                .setTooltip(Component.translatable("config.potionenchant.super_enchant_mode.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.SERVER.superEnchantMode::set).build());
+
         pe.addEntry(eb.startIntField(Component.translatable("config.potionenchant.enchant_book_xp_cost"),
                 PotionEnchantConfig.SERVER.enchantBookXpCost.get())
                 .setDefaultValue(1000).setMin(1).setMax(Integer.MAX_VALUE)
@@ -305,6 +312,11 @@ public class ClothConfigScreen {
 
                 .setTooltip(Component.translatable("config.potionenchant.effect.firmness.lock_duration_per_level.tooltip"))
                 .setSaveConsumer(cfg.firmnessLockDurationPerLevel::set).build());
+        ec.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.effect.firmness.disable_lock_refresh"), cfg.firmnessDisableLockRefresh.get())
+                .setDefaultValue(false)
+
+                .setTooltip(Component.translatable("config.potionenchant.effect.firmness.disable_lock_refresh.tooltip"))
+                .setSaveConsumer(cfg.firmnessDisableLockRefresh::set).build());
         ec.addEntry(eb.startDoubleField(Component.translatable("config.potionenchant.effect.fragility.damage_per_tick"), cfg.fragilityDamagePerTick.get())
                 .setDefaultValue(0.1).setMin(0.0).setMax(100.0)
 
@@ -428,6 +440,13 @@ public class ClothConfigScreen {
 
                 .setTooltip(Component.translatable("config.potionenchant.enable_custom_main_menu.tooltip"))
                 .setSaveConsumer(PotionEnchantConfig.CLIENT.enableCustomMainMenu::set).build());
+
+        cm.addEntry(eb.startStrList(Component.translatable("config.potionenchant.custom_main_menu_music"),
+                (List<String>) PotionEnchantConfig.CLIENT.customMainMenuMusic.get())
+                .setDefaultValue(List.of("potionenchant:menu_music"))
+
+                .setTooltip(Component.translatable("config.potionenchant.custom_main_menu_music.tooltip"))
+                .setSaveConsumer(PotionEnchantConfig.CLIENT.customMainMenuMusic::set).build());
 
 
         cm.addEntry(eb.startBooleanToggle(Component.translatable("config.potionenchant.enable_menu_parallax"),

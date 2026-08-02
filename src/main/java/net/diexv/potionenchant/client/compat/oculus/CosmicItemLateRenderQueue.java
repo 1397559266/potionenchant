@@ -75,6 +75,7 @@ public final class CosmicItemLateRenderQueue {
                 PoseStack poseStack = new PoseStack();
                 poseStack.last().pose().set(entry.pose());
                 poseStack.last().normal().set(entry.normal());
+                CosmicBakeModel.renderSnowflakes(entry.context(), poseStack, buffers, entry.packedLight(), entry.packedOverlay());
                 entry.renderer().renderShaderLayer(entry.stack(), entry.context(), poseStack, buffers, entry.packedLight(), entry.packedOverlay(), entry.model(), entry.renderType(), true);
 
                 buffers.endBatch(AvaritiaShaders.COSMIC_ITEM_AFTER_LEVEL_RENDER_TYPE);

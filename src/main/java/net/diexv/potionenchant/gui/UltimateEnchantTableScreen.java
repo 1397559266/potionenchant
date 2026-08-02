@@ -11,7 +11,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -67,7 +69,7 @@ public class UltimateEnchantTableScreen extends Screen {
         listX = Math.max(2, (width - GUI_W) / 2); listW = 200; listH = MAX_VISIBLE * 22 + 5;
         searchY = 30; modeBtnY = 55; categoryY = 75; listY = categoryY + 22;
         statsY = listY + listH + 5; statsH = 100;
-        rightX = listX + listW + 15; rightW = width - rightX - listX; rightY = 55; rightH = height - rightY - 50;
+        rightX = listX + listW + 15; rightW = 245; rightY = 55; rightH = 150;
         searchBox = new EditBox(font, listX, searchY, listW, 20, Component.translatable("gui.potionenchant.search"));
         searchBox.setMaxLength(50); searchBox.setResponder(this::onSearchChanged); addRenderableWidget(searchBox);
         categoryBar = new CategoryBar("gui.potionenchant.category", new String[]{"all","beneficial","harmful","neutral"}, listW / 4, 14, 4);
@@ -93,6 +95,7 @@ public class UltimateEnchantTableScreen extends Screen {
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
         renderBackground(g); int smx = mx, smy = my;
+        zoom.push(g, width, height); mx = (int) zoom.mx(mx, width); my = (int) zoom.my(my, height);
         super.render(g, mx, my, pt);
         g.drawCenteredString(font, getTitle().getString(), width / 2, 10, 0xFFFFFF);
         zoom.renderHeaderZoom(g, font, width / 2 + 60, 6, 50, mx, my, pt);
@@ -102,7 +105,6 @@ public class UltimateEnchantTableScreen extends Screen {
         renderModeButtons(g, mx, my);
         CategoryBar activeBar = currentMode == Mode.POTION ? categoryBar : enchantCategoryBar;
         if (activeBar != null) activeBar.render(g, font, mx, my, width, height);
-        zoom.push(g, width, height); mx = (int) zoom.mx(mx, width); my = (int) zoom.my(my, height);
         g.fill(listX, listY, listX + listW, listY + listH, 0x80000000);
         g.fill(listX, statsY, listX + listW, statsY + statsH, 0x80000000);
         if (currentMode == Mode.POTION) { renderEffectList(g, mx, my); renderEffectStats(g, mx, my, pt); }
@@ -238,6 +240,13 @@ public class UltimateEnchantTableScreen extends Screen {
             if (hover && !info.effectId.isEmpty()) {
                 g.drawString(font, info.effectId, listX + 6, y + rowH - 3, 0x80808080);
             }
+            if (hover) {
+                String descKey = info.effect.getDescriptionId() + ".description";
+                if (I18n.exists(descKey)) {
+                    List<FormattedCharSequence> lines = font.split(Component.translatable(descKey), 200);
+                    g.renderTooltip(font, lines, mx, my);
+                }
+            }
         }
         if (filteredEffects.size() > MAX_VISIBLE) {
             int th = Math.max(15, listH * MAX_VISIBLE / filteredEffects.size());
@@ -321,6 +330,13 @@ public class UltimateEnchantTableScreen extends Screen {
             if (hover && !info.id().isEmpty()) {
                 g.drawString(font, info.id(), listX + 6, y + rowH - 3, 0x80808080);
             }
+            if (hover) {
+                String descKey = info.enchantment.getDescriptionId() + ".desc";
+                if (I18n.exists(descKey)) {
+                    List<FormattedCharSequence> lines = font.split(Component.translatable(descKey), 200);
+                    g.renderTooltip(font, lines, mx, my);
+                }
+            }
         }
         if (filteredEnchants.size() > MAX_VISIBLE) {
             int th = Math.max(15, listH * MAX_VISIBLE / filteredEnchants.size());
@@ -391,22 +407,21 @@ public class UltimateEnchantTableScreen extends Screen {
     }
 
     @Override public boolean mouseClicked(double mx, double my, int btn) {
-        // Screen-position elements (zoom panel, zoom drag bar) — use RAW screen coordinates
-        if (mx >= width - 32) {
+        // Zoom panel (right side bar) — use RAW screen coordinates
+        if (zoom.isOverPanel(mx, width)) {
             if (zoom.editBox.isMouseOver(mx, my)) { setFocused(zoom.editBox); return zoom.editBox.mouseClicked(mx, my, btn); }
-            if (zoom.headerEditBox.isMouseOver(mx, my)) { setFocused(zoom.headerEditBox); return zoom.headerEditBox.mouseClicked(mx, my, btn); }
-            if (my >= 50 && my <= height - 20) { zoom.dragging = true; zoom.updateFromMouse(my, height); return true; }
+            if (zoom.isOverDragBar(my, height)) { zoom.dragging = true; zoom.updateFromMouse(my, height); return true; }
             return true;
         }
-        // Transform to zoom coordinates for zoomed content
+        // Everything else is inside zoom — use zoomed coordinates
         double zmx = zoom.mx(mx, width), zmy = zoom.my(my, height);
-        // Screen-position elements (mode buttons, category bar rendered before zoom.push) - use RAW screen coords
+        if (zoom.headerEditBox.isMouseOver(zmx, zmy)) { setFocused(zoom.headerEditBox); return zoom.headerEditBox.mouseClicked(zmx, zmy, btn); }
         CategoryBar activeBar = (currentMode == Mode.POTION) ? categoryBar : enchantCategoryBar;
-        if (activeBar.mouseClicked(mx, my)) { onSearchChanged(searchBox.getValue()); return true; }
+        if (activeBar.mouseClicked(zmx, zmy)) { onSearchChanged(searchBox.getValue()); return true; }
         int btnW = 80, gap = 4, startX = listX;
-        if (my >= modeBtnY && my < modeBtnY + 18) {
-            if (mx >= startX && mx < startX + btnW) { switchMode(Mode.POTION); return true; }
-            if (mx >= startX + btnW + gap && mx < startX + btnW * 2 + gap) { switchMode(Mode.ENCHANT); return true; }
+        if (zmy >= modeBtnY && zmy < modeBtnY + 18) {
+            if (zmx >= startX && zmx < startX + btnW) { switchMode(Mode.POTION); return true; }
+            if (zmx >= startX + btnW + gap && zmx < startX + btnW * 2 + gap) { switchMode(Mode.ENCHANT); return true; }
         }
         if (zmx >= listX && zmx < listX + listW) {
             if (zmy >= listY && zmy < listY + listH) {
@@ -586,16 +601,16 @@ public class UltimateEnchantTableScreen extends Screen {
         }
         // Click outside edit box -> dismiss
         if (levelEditActive) {
-            if (potionLevelBox == null || !potionLevelBox.isMouseOver(mx, my)) {
+            if (potionLevelBox == null || !potionLevelBox.isMouseOver(zmx, zmy)) {
                 levelEditActive = false;
                 if (potionLevelBox != null) potionLevelBox.setVisible(false);
             }
-            if (enchantLevelBox == null || !enchantLevelBox.isMouseOver(mx, my)) {
+            if (enchantLevelBox == null || !enchantLevelBox.isMouseOver(zmx, zmy)) {
                 levelEditActive = false;
                 if (enchantLevelBox != null) enchantLevelBox.setVisible(false);
             }
         }
-        return super.mouseClicked(mx, my, btn);
+        return super.mouseClicked(zmx, zmy, btn);
     }
 
     private void onConfirm() {
@@ -725,7 +740,7 @@ public class UltimateEnchantTableScreen extends Screen {
     private void onEnchantLevelChanged(String t) { if (selectedEnchant != null && !t.isEmpty()) { try { int val = Integer.parseInt(t); int maxLv = selectedEnchant.enchantment.getMaxLevel(); val = Math.max(0, Math.min(maxLv, val)); enchantLevelAdjustments.put(selectedEnchant.enchantment, val); if (!enchantLevelBox.getValue().equals(String.valueOf(val))) enchantLevelBox.setValue(String.valueOf(val)); } catch (Exception ignored) {} } }
 
     @Override public boolean mouseScrolled(double mx, double my, double d) {
-        if (mx >= width - 32) { zoom.scroll(d); return true; }
+        if (zoom.isOverPanel(mx, width)) { zoom.scroll(d); return true; }
         double zmx = zoom.mx(mx, width), zmy = zoom.my(my, height);
         int tgtY = rightY + 28;
         if (zmx >= rightX && zmx < rightX + rightW) {
@@ -747,24 +762,25 @@ public class UltimateEnchantTableScreen extends Screen {
             }
         }
         CategoryBar activeBar = (currentMode == Mode.POTION) ? categoryBar : enchantCategoryBar;
-        if (activeBar.mouseScrolled(mx, my, d)) return true;
+        if (activeBar.mouseScrolled(zmx, zmy, d)) return true;
         if (zmx >= listX && zmx < listX + listW && zmy >= listY && zmy < listY + listH) {
             if (currentMode == Mode.POTION && filteredEffects.size() > MAX_VISIBLE) potionScroll = net.minecraft.util.Mth.clamp(potionScroll - (int)d, 0, filteredEffects.size() - MAX_VISIBLE);
             else if (currentMode == Mode.ENCHANT && filteredEnchants.size() > MAX_VISIBLE) enchantScroll = net.minecraft.util.Mth.clamp(enchantScroll - (int)d, 0, filteredEnchants.size() - MAX_VISIBLE);
             return true;
         }
-        return super.mouseScrolled(mx, my, d);
+        return super.mouseScrolled(zmx, zmy, d);
     }
 
     @Override public boolean mouseDragged(double mx, double my, int btn, double dx, double dy) {
         if (zoom.dragging) { zoom.updateFromMouse(my, height); return true; }
-        if (currentMode == Mode.POTION ? categoryBar.mouseDragged(mx) : enchantCategoryBar.mouseDragged(mx)) return true;
-        return super.mouseDragged(mx, my, btn, dx, dy);
+        double zmx = zoom.mx(mx, width), zmy = zoom.my(my, height);
+        if (currentMode == Mode.POTION ? categoryBar.mouseDragged(zmx) : enchantCategoryBar.mouseDragged(zmx)) return true;
+        return super.mouseDragged(zmx, zmy, btn, dx, dy);
     }
     @Override public boolean mouseReleased(double mx, double my, int btn) {
         zoom.dragging = false;
         (currentMode == Mode.POTION ? categoryBar : enchantCategoryBar).mouseReleased();
-        return super.mouseReleased(mx, my, btn);
+        return super.mouseReleased(zoom.mx(mx, width), zoom.my(my, height), btn);
     }
     @Override public boolean keyPressed(int kc, int sc, int mod) {
         if (zoom.editBox.isFocused()) return zoom.editBox.keyPressed(kc, sc, mod);

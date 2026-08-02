@@ -27,8 +27,17 @@ public class GuiZoom {
         this.screenId = screenId;
     }
 
+    /** 鼠标是否在右侧缩放面板区域内 */
+    public boolean isOverPanel(double mx, int screenW) {
+        return mx >= screenW - PANEL;
+    }
+
+    /** 鼠标是否在右侧面板的拖拽条区域内 */
+    public boolean isOverDragBar(double my, int screenH) {
+        return my >= 50 && my <= screenH - 20;
+    }
+
     public void init(Font font, int screenW, int screenH) {
-        // 从配置文件加载持久化的缩放值
         GuiZoomManager.ZoomData data = GuiZoomManager.get(screenId);
         level = data.level;
         headerLevel = data.headerLevel;

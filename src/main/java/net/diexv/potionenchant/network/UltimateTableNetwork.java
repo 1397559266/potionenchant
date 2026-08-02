@@ -140,9 +140,13 @@ public class UltimateTableNetwork {
                 ItemStack actualTarget = findItemInInventory(sp, p.target);
                 if (actualTarget == null || actualTarget.isEmpty()) return;
 
+                // 读取物品上已有的药水附魔，用于保留 isArmor 标记
+                List<PotionEnchantData> existingEnchants = PotionEnchantManager.getPotionEnchantments(actualTarget);
+
                 // 验证每个效果：黑名单检查 + 等级上限
                 int maxLevel = PotionEnchantConfig.SERVER.maxPotionEnchantLevel.get();
                 List<PotionEnchantData> toApply = new ArrayList<>();
+                java.util.Set<MobEffect> toRemove = new java.util.HashSet<>();
                 for (int i = 0; i < p.effectIds.length; i++) {
                     MobEffect effect = MobEffect.byId(p.effectIds[i]);
                     if (effect == null) continue;
@@ -153,11 +157,23 @@ public class UltimateTableNetwork {
 
                     // 等级上限检查
                     int level = Math.min(p.levels[i], maxLevel);
-                    if (level <= 0) continue;
 
-                    toApply.add(new PotionEnchantData(effect, level - 1, true));
+                    if (level <= 0) {
+                        // 等级为0：移除该药水附魔
+                        toRemove.add(effect);
+                    } else {
+                        // 保留已有的 isArmor 标记
+                        boolean isArmor = true;
+                        for (PotionEnchantData existing : existingEnchants) {
+                            if (existing.getEffect() == effect) {
+                                isArmor = existing.isArmorEnchant();
+                                break;
+                            }
+                        }
+                        toApply.add(new PotionEnchantData(effect, level - 1, isArmor));
+                    }
                 }
-                if (toApply.isEmpty()) return;
+                if (toApply.isEmpty() && toRemove.isEmpty()) return;
 
                 // 扣除经验值
                 if (!sp.isCreative()) {
@@ -170,6 +186,9 @@ public class UltimateTableNetwork {
                 ItemStack result = actualTarget.copy();
                 for (PotionEnchantData data : toApply) {
                     PotionEnchantManager.addPotionEnchantment(result, data);
+                }
+                for (MobEffect effect : toRemove) {
+                    removePotionEnchantment(result, effect);
                 }
 
                 // 替换物品
@@ -261,5 +280,22 @@ public class UltimateTableNetwork {
 
     static void removeXpPoints(ServerPlayer player, int points) {
         player.giveExperiencePoints(-points);
+    }
+
+    private static void removePotionEnchantment(ItemStack item, MobEffect effect) {
+        if (item == null || effect == null) return;
+        net.minecraft.nbt.CompoundTag tag = item.getTag();
+        if (tag == null) return;
+        net.minecraft.nbt.ListTag enchantments = tag.getList("PotionEnchantments", 10);
+        if (enchantments.isEmpty()) return;
+        String targetEffectId = ForgeRegistries.MOB_EFFECTS.getKey(effect).toString();
+        for (int i = 0; i < enchantments.size(); i++) {
+            net.minecraft.nbt.CompoundTag enchantTag = enchantments.getCompound(i);
+            if (enchantTag.getString("Effect").equals(targetEffectId)) {
+                enchantments.remove(i);
+                tag.put("PotionEnchantments", enchantments);
+                break;
+            }
+        }
     }
 }

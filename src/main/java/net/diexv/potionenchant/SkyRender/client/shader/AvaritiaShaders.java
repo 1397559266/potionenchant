@@ -154,7 +154,6 @@ public final class AvaritiaShaders {
             cosmicShader.onApply(() -> {
                 float time = (renderTime + renderFrame) / 20.0F;
                 cosmicTime.set(time);
-                uploadCosmicUniforms();
             });
         });
 
@@ -268,4 +267,3 @@ public final class AvaritiaShaders {
 
     private AvaritiaShaders() {}
 }
-

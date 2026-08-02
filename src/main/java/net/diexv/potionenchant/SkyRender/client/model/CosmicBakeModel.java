@@ -11,6 +11,7 @@ import net.diexv.potionenchant.SkyRender.client.shader.AvaritiaShaders;
 import net.diexv.potionenchant.SkyRender.util.client.TransformUtils;
 import net.diexv.potionenchant.client.compat.oculus.CosmicItemLateRenderQueue;
 import net.diexv.potionenchant.client.compat.oculus.ItemShaderModCompat;
+import net.diexv.potionenchant.client.renderer.gl.SnowflakeRenderer;
 import net.diexv.potionenchant.item.ModItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -106,6 +107,9 @@ public final class CosmicBakeModel implements BakedModel {
             return;
         }
 
+        // 雪花飘落粒子特效（非延迟模式）
+        renderSnowflakes(transformType, pStack, buffers, packedLight, packedOverlay);
+
         // 正常渲染星空层
         renderShaderLayer(stack, transformType, pStack, buffers, packedLight, packedOverlay, model, renderType, false);
     }
@@ -116,7 +120,6 @@ public final class CosmicBakeModel implements BakedModel {
         }
 
         Minecraft mc = Minecraft.getInstance();
-        boolean isGUIMode = AvaritiaShaders.inventoryRender || transformType == ItemDisplayContext.GUI;
 
         // 提前上传 uniform（使用 AvaritiaShaders 的统一方法）
         AvaritiaShaders.uploadCosmicUniforms();
@@ -125,8 +128,8 @@ public final class CosmicBakeModel implements BakedModel {
             renderType = lateRenderType(renderType, transformType);
         }
 
-        // GUI 模式下放大 scale 让星星更明显
-        if (isGUIMode) {
+        // GUI 模式：缩小星体 + 固定视角
+        if (AvaritiaShaders.inventoryRender || transformType == ItemDisplayContext.GUI) {
             if (AvaritiaShaders.cosmicExternalScale != null) {
                 AvaritiaShaders.cosmicExternalScale.set(100.0F);
             }
@@ -204,6 +207,35 @@ public final class CosmicBakeModel implements BakedModel {
             && AvaritiaShaders.cosmicExternalScale != null
             && AvaritiaShaders.cosmicOpacity != null
             && AvaritiaShaders.cosmicUVs != null;
+    }
+
+    public static void renderSnowflakes(ItemDisplayContext transformType, PoseStack pStack, MultiBufferSource buffers, int packedLight, int packedOverlay) {
+        pStack.pushPose();
+        if (transformType != ItemDisplayContext.GUI) {
+            org.joml.Matrix4f mat = pStack.last().pose();
+            float sx = (float)Math.sqrt(mat.m00() * mat.m00() + mat.m10() * mat.m10() + mat.m20() * mat.m20());
+            float sy = (float)Math.sqrt(mat.m01() * mat.m01() + mat.m11() * mat.m11() + mat.m21() * mat.m21());
+            float sz = (float)Math.sqrt(mat.m02() * mat.m02() + mat.m12() * mat.m12() + mat.m22() * mat.m22());
+            float avgScale = (sx + sy + sz) / 3.0f;
+
+            org.joml.Matrix4f invRot = new org.joml.Matrix4f();
+            invRot.m00(mat.m00() / sx); invRot.m01(mat.m10() / sx); invRot.m02(mat.m20() / sx); invRot.m03(0);
+            invRot.m10(mat.m01() / sy); invRot.m11(mat.m11() / sy); invRot.m12(mat.m21() / sy); invRot.m13(0);
+            invRot.m20(mat.m02() / sz); invRot.m21(mat.m12() / sz); invRot.m22(mat.m22() / sz); invRot.m23(0);
+            invRot.m30(0); invRot.m31(0); invRot.m32(0); invRot.m33(1);
+
+            pStack.last().pose().mul(invRot);
+            pStack.scale(1.0f / avgScale, 1.0f / avgScale, 1.0f / avgScale);
+        } else {
+            org.joml.Matrix4f mat = pStack.last().pose();
+            float sx = (float)Math.sqrt(mat.m00() * mat.m00() + mat.m10() * mat.m10() + mat.m20() * mat.m20());
+            float sy = (float)Math.sqrt(mat.m01() * mat.m01() + mat.m11() * mat.m11() + mat.m21() * mat.m21());
+            float sz = (float)Math.sqrt(mat.m02() * mat.m02() + mat.m12() * mat.m12() + mat.m22() * mat.m22());
+            float invScale = 1.0f / ((sx + sy + sz) / 3.0f);
+            pStack.scale(invScale, invScale, invScale);
+        }
+        SnowflakeRenderer.renderSnowflakes(pStack, buffers, packedLight, packedOverlay);
+        pStack.popPose();
     }
 
     private static RenderType lateRenderType(RenderType renderType, ItemDisplayContext context) {

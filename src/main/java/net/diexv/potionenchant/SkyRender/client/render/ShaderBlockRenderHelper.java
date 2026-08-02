@@ -32,7 +32,7 @@ public final class ShaderBlockRenderHelper {
         if (mc.level == null || !isCosmicShaderReady()) return;
 
         float yaw = 0.0F, pitch = 0.0F;
-        float scale = AvaritiaShaders.inventoryRender ? 100 : WORLD_BLOCK_COSMIC_SCALE;
+        float scale = AvaritiaShaders.inventoryRender ? 1 : WORLD_BLOCK_COSMIC_SCALE;
         if (!AvaritiaShaders.inventoryRender && mc.player != null) {
             yaw = (float) (mc.player.getYRot() * 2.0F * Math.PI / 360.0);
             pitch = -(float) (mc.player.getXRot() * 2.0F * Math.PI / 360.0);

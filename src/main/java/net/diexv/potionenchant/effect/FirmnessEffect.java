@@ -90,9 +90,13 @@ public class FirmnessEffect extends MobEffect {
     private static void setHealthLock(LivingEntity entity, float healthFloor, int ticks) {
         UUID uuid = entity.getUUID();
         HealthLockData existing = healthLocks.get(uuid);
-        if (existing != null && existing.remainingTicks > 0 && existing.lockedHealth > healthFloor) {
-            // Don't lower the floor if current lock is higher
-            return;
+        if (existing != null && existing.remainingTicks > 0) {
+            if (EffectConfigValues.CONFIG.firmnessDisableLockRefresh.get()) {
+                return;
+            }
+            if (existing.lockedHealth >= healthFloor) {
+                return;
+            }
         }
         healthLocks.put(uuid, new HealthLockData(healthFloor, ticks));
     }

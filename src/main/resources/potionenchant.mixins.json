@@ -35,7 +35,6 @@
     "PotionEnchantTooltipMixin",
     "PotionHudMixin",
     "TooltipScrollMouseMixin",
-    "UniversalHandRenderMixin",
     "UniversalPotionBottleTooltipBackgroundMixin",
     "XSwordTooltipFontMixin",
     "accessor.FontAccessor",

@@ -50,6 +50,7 @@ public class EffectConfigValues {
         public final ForgeConfigSpec.DoubleValue firmnessMaxDamagePerLevel;
         public final ForgeConfigSpec.DoubleValue firmnessLockDurationBase;
         public final ForgeConfigSpec.DoubleValue firmnessLockDurationPerLevel;
+        public final ForgeConfigSpec.BooleanValue firmnessDisableLockRefresh;
 
         // ===== 脆弱 (Fragility) =====
         public final ForgeConfigSpec.DoubleValue fragilityDamagePerTick;
@@ -149,6 +150,9 @@ public class EffectConfigValues {
             firmnessLockDurationPerLevel = builder
                     .comment("每级增加锁定持续时间（秒）", "Lock duration per level (seconds)", "Default: 0.5")
                     .defineInRange("lock_duration_per_level", 0.5, 0.0, 10.0);
+            firmnessDisableLockRefresh = builder
+                    .comment("冷却时间内受伤不会重复刷新锁血时长", "Prevent lock blood from refreshing during cooldown", "Default: false")
+                    .define("disable_lock_refresh", false);
             builder.pop();
 
             // --- 脆弱 ---
