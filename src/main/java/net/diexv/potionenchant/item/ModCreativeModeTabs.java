@@ -61,6 +61,10 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.X_SHOVEL.get());
                         output.accept(ModItems.X_HOE.get());
 
+                        // 添加 DiexvSword（特效剑）与 Code
+                        output.accept(ModItems.DIEXV_SWORD.get());
+                        output.accept(ModItems.CODE.get());
+
                         // 添加易伤药水
                         addPotionAndVariants(output, VulnerabilityPotion.VULNERABILITY.get());
                         addPotionAndVariants(output, VulnerabilityPotion.LONG_VULNERABILITY.get());

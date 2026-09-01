@@ -25,6 +25,20 @@ public final class ItemShaderModCompat {
         }
     }
 
+    /** 是否正在渲染 Oculus 阴影 pass（世界空间特效应跳过，避免画进阴影贴图） */
+    public static boolean isRenderingShadowPass() {
+        if (!OCULUS_LOADED) return false;
+
+        try {
+            Class<?> apiClass = Class.forName("net.irisshaders.iris.api.v0.IrisApi");
+            Object api = apiClass.getMethod("getInstance").invoke(null);
+            Object result = apiClass.getMethod("isRenderingShadowPass").invoke(api);
+            return Boolean.TRUE.equals(result);
+        } catch (ReflectiveOperationException | LinkageError ignored) {
+            return false;
+        }
+    }
+
     public static boolean shouldDeferItemShaderLayer(ItemDisplayContext context) {
         if (!isOculusShaderPackActive()) {
             return false;

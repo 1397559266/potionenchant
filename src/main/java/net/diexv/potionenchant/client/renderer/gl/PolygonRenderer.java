@@ -348,6 +348,21 @@ public class PolygonRenderer {
                         .setCullState(NO_CULL)
                         .createCompositeState(false));
 
+        /** 无光照加法混合（激光光柱/冲击环等世界空间特效用） */
+        public static final RenderType UNLIT_ADDITIVE = create(
+                MODID + ":unlit_additive",
+                DefaultVertexFormat.POSITION_COLOR,
+                VertexFormat.Mode.QUADS, 256, false, true,
+                CompositeState.builder()
+                        .setShaderState(POSITION_COLOR_SHADER)
+                        .setLayeringState(VIEW_OFFSET_Z_LAYERING)
+                        .setTransparencyState(LIGHTNING_TRANSPARENCY)
+                        .setTextureState(NO_TEXTURE)
+                        .setCullState(NO_CULL)
+                        .setLightmapState(NO_LIGHTMAP)
+                        .setWriteMaskState(COLOR_WRITE)
+                        .createCompositeState(false));
+
         public static RenderType additiveEntityTranslucent(ResourceLocation texture) {
             return create(MODID + ":additive_entity_translucent",
                     DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, true,

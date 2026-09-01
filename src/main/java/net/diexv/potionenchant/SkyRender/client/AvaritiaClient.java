@@ -3,6 +3,7 @@ package net.diexv.potionenchant.SkyRender.client;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.diexv.potionenchant.SkyRender.client.model.CosmicModelLoader;
 import net.diexv.potionenchant.SkyRender.client.shader.AvaritiaShaders;
+import net.diexv.potionenchant.SkyRender.client.shader.DiexvSwordShaders;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterShadersEvent;
@@ -15,6 +16,7 @@ public final class AvaritiaClient {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onRegisterShaders(RegisterShadersEvent event) {
         AvaritiaShaders.onRegisterShaders(event);
+        DiexvSwordShaders.onRegisterShaders(event);
     }
 
     @SubscribeEvent

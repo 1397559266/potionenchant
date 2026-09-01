@@ -58,6 +58,16 @@ public class XSwordItem extends SwordItem {
         return SUPERMODE.getOrDefault(playerUuid, false);
     }
 
+    /**
+     * 玩家是否手持X剑（主手或副手）。
+     * 超级模式的伤害/无敌效果只应在真正手持X剑时生效，
+     * 防止放下/丢弃X剑后仍保留秒杀或无敌效果。
+     */
+    public static boolean isHoldingXSword(Player player) {
+        return player.getMainHandItem().getItem() instanceof XSwordItem
+            || player.getOffhandItem().getItem() instanceof XSwordItem;
+    }
+
     @Nullable
     public static Float getBlockingHealth(UUID uuid) {
         return BLOCKING_HEALTH.get(uuid);
@@ -205,22 +215,26 @@ public class XSwordItem extends SwordItem {
             return;
         }
 
-        // 释放时执行冲刺
+        // 释放时执行冲刺（仅在服务端执行）
         BLOCKING_HEALTH.remove(uuid);
 
-        Vec3 look = player.getLookAngle();
-        Vec3 dashVelocity = look.scale(DASH_STRENGTH);
-        player.setDeltaMovement(player.getDeltaMovement().add(dashVelocity));
-        player.hurtMarked = true;
-        player.setOnGround(false);
-        player.setSprinting(true);
+        if (!level.isClientSide) {
+            Vec3 look = player.getLookAngle();
+            Vec3 dashVelocity = look.scale(DASH_STRENGTH);
+            player.setDeltaMovement(player.getDeltaMovement().add(dashVelocity));
+            player.hurtMarked = true;
+            player.setOnGround(false);
 
-        level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                net.minecraft.sounds.SoundEvent.createVariableRangeEvent(new ResourceLocation("potionenchant", "sprint")),
-                SoundSource.PLAYERS, 1.0F, 1.0F);
+            // 不设置 setSprinting(true)：冲刺速度已由 setDeltaMovement 提供，
+            // 强行开启疾跑会让客户端 FOV 反复伸缩；与《永恒枪械工坊：零》(TACZ) 等
+            // 枪械模组同时加载时，其相机/开镜系统会把这个 FOV 抖动放大成视角抽搐。
+            level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    net.minecraft.sounds.SoundEvent.createVariableRangeEvent(new ResourceLocation("potionenchant", "sprint")),
+                    SoundSource.PLAYERS, 1.0F, 1.0F);
 
-        player.fallDistance = 0;
-        player.resetFallDistance();
+            player.fallDistance = 0;
+            player.resetFallDistance();
+        }
 
         DASH_AIRBORNE.put(uuid, true);
 

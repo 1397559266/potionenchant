@@ -24,6 +24,9 @@
     {"type": "single", "resource": "potionenchant:item/cosmic_21"},
     {"type": "single", "resource": "potionenchant:item/cosmic_22"},
     {"type": "single", "resource": "potionenchant:item/cosmic_23"},
-    {"type": "single", "resource": "potionenchant:item/cosmic_24"}
+    {"type": "single", "resource": "potionenchant:item/cosmic_24"},
+    {"type": "single", "resource": "potionenchant:item/diexv_sword"},
+    {"type": "single", "resource": "potionenchant:item/mask_diexv_sword"},
+    {"type": "single", "resource": "potionenchant:item/mask_code"}
   ]
 }

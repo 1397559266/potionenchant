@@ -226,13 +226,10 @@ public class UniversalPotionBottleScreen extends Screen {
                 ResourceLocation key = ForgeRegistries.MOB_EFFECTS.getKey(effect);
                 if (key != null && !PotionEnchantConfig.getBlacklistedEffects().contains(key)) {
                     String name = effect.getDisplayName().getString();
-                    String descriptionKey = "effect." + key.getNamespace() + "." + key.getPath() + ".description";
-                    String description = net.minecraft.client.resources.language.I18n.get(descriptionKey, "");
-                    
-                    // 如果没有描述，使用默认描述
-                    if (description.isEmpty() || description.equals(descriptionKey)) {
-                        description = Component.translatable("gui.potionenchant.no_description").getString();
-                    }
+                    // 使用描述提供器：本模组效果数值自动取自配置文件，原版/其他模组读取语言文件
+                    String description = net.diexv.potionenchant.client.PotionDescriptionProvider.hasEffectDescription(effect)
+                        ? net.diexv.potionenchant.client.PotionDescriptionProvider.getEffectDescription(effect).getString()
+                        : Component.translatable("gui.potionenchant.no_description").getString();
                     
                     // 判断是否为增益效果
                     boolean isBeneficial = effect.isBeneficial();

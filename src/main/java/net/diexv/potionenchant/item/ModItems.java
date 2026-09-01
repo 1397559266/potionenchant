@@ -189,5 +189,11 @@ public class ModItems {
                     });
                 }
             });
+    // DiexvSword（DiexvDreamItem 移植，仅特效渲染，无攻击功能）
+    public static final RegistryObject<Item> DIEXV_SWORD = ITEMS.register("diexv_sword",
+            () -> new DiexvSwordItem());
+    // Code（code 物品移植，仅特效渲染，无实际功能）
+    public static final RegistryObject<Item> CODE = ITEMS.register("code",
+            () -> new CodeItem());
 }
 

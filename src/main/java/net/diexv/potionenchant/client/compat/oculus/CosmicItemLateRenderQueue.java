@@ -4,8 +4,13 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import net.diexv.potionenchant.SkyRender.client.model.CosmicBakeModel;
+import net.diexv.potionenchant.SkyRender.client.model.DiexvSwordVoxelMesh;
+import net.diexv.potionenchant.SkyRender.client.shader.DiexvSwordShaders;
+import net.diexv.potionenchant.client.renderer.coderain.CodeRainRenderer;
 import net.diexv.potionenchant.client.renderer.gl.DeferredParticleQueue;
+import net.diexv.potionenchant.client.renderer.gl.PolygonRenderer;
 import net.diexv.potionenchant.SkyRender.client.shader.AvaritiaShaders;
+import net.diexv.potionenchant.item.ModItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -75,11 +80,25 @@ public final class CosmicItemLateRenderQueue {
                 PoseStack poseStack = new PoseStack();
                 poseStack.last().pose().set(entry.pose());
                 poseStack.last().normal().set(entry.normal());
-                CosmicBakeModel.renderSnowflakes(entry.context(), poseStack, buffers, entry.packedLight(), entry.packedOverlay());
+                // DiexvSword（diexv_sword）：常态即体素多面体替代（剑形自实现模型）
+                if (entry.stack().getItem() == ModItems.DIEXV_SWORD.get()
+                        && DiexvSwordVoxelMesh.shouldVoxelReplace(entry.context())) {
+                    DiexvSwordVoxelMesh.renderMesh(poseStack, buffers);
+                }
+                // 粒子特效：剑/code → 3D 环绕代码雨；其余 → 雪花
+                if (CosmicBakeModel.isCodeRainItem(entry.stack())) {
+                    CodeRainRenderer.renderCodeRain(poseStack, buffers, entry.packedLight(), entry.packedOverlay());
+                } else {
+                    CosmicBakeModel.renderSnowflakes(entry.context(), poseStack, buffers, entry.packedLight(), entry.packedOverlay());
+                }
                 entry.renderer().renderShaderLayer(entry.stack(), entry.context(), poseStack, buffers, entry.packedLight(), entry.packedOverlay(), entry.model(), entry.renderType(), true);
 
                 buffers.endBatch(AvaritiaShaders.COSMIC_ITEM_AFTER_LEVEL_RENDER_TYPE);
                 buffers.endBatch(AvaritiaShaders.COSMIC_HAND_AFTER_LEVEL_RENDER_TYPE);
+                buffers.endBatch(DiexvSwordShaders.SWORD_COSMIC_ITEM_AFTER_LEVEL_RENDER_TYPE);
+                buffers.endBatch(DiexvSwordShaders.SWORD_COSMIC_HAND_AFTER_LEVEL_RENDER_TYPE);
+                buffers.endBatch(PolygonRenderer.RenderTypes.HIGHLIGHT);
+                buffers.endBatch(DiexvSwordShaders.DIEXVSWORD_MESH_RENDER_TYPE);
                 iterator.remove();
             }
         } finally {

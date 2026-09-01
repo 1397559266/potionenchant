@@ -18,9 +18,19 @@ public class ModSounds {
     public static final RegistryObject<SoundEvent> MENU_MUSIC_CUSTOM = register(CustomMenuMusicPack.VIRTUAL_SOUND_NAME);
     public static final RegistryObject<SoundEvent> SPRINT = register("sprint");
 
+    // ===== DiexvSword 激光音效（蓄力/发射/飞行） =====
+    public static final RegistryObject<SoundEvent> DIEXV_CREEPER_RAY = registerFixed("diexvcreeper/ray", 128);
+    public static final RegistryObject<SoundEvent> DIEXV_CREEPER_RAY_OS = registerFixed("diexvcreeper/ray_os", 128);
+    public static final RegistryObject<SoundEvent> DIEXV_CREEPER_RAY_SKYLANCE = registerFixed("diexvcreeper/ray_skylance", 128);
+
     private static RegistryObject<SoundEvent> register(String name) {
         ResourceLocation id = new ResourceLocation(PotionEnchantMod.MODID, name);
         return SOUND_EVENTS.register(name, () -> SoundEvent.createVariableRangeEvent(id));
+    }
+
+    private static RegistryObject<SoundEvent> registerFixed(String name, float range) {
+        ResourceLocation id = new ResourceLocation(PotionEnchantMod.MODID, name);
+        return SOUND_EVENTS.register(name, () -> SoundEvent.createFixedRangeEvent(id, range));
     }
 
     public static void register(IEventBus modEventBus) {

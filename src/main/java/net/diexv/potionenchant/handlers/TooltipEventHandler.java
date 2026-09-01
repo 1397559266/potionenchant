@@ -37,14 +37,6 @@ public class TooltipEventHandler {
             event.getToolTip().add(Component.translatable("item.potionenchant.mysterious_empty_bottle.tooltip").withStyle(net.minecraft.ChatFormatting.GRAY));
             event.getToolTip().add(Component.translatable("item.potionenchant.mysterious_empty_bottle.tooltip2").withStyle(net.minecraft.ChatFormatting.GRAY));
         }
-        
-        // 检查是否为药水物品
-        if (isPotionItem(stack) && PotionEnchantConfig.SERVER.enableCustomPotionTooltip.get()) {
-            List<Component> tooltip = event.getToolTip();
-            // 保留第一行（物品名称），避免删除所有行导致Tooltip为空引发崩溃
-            Component firstLine = tooltip.isEmpty() ? null : tooltip.get(0);
-            tooltip.removeIf(line -> line != firstLine && (line.getString().contains("effect.") || line.getString().contains("potion.whenDrank")));
-        }
     }
     
     @SubscribeEvent

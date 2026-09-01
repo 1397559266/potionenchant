@@ -241,9 +241,9 @@ public class UltimateEnchantTableScreen extends Screen {
                 g.drawString(font, info.effectId, listX + 6, y + rowH - 3, 0x80808080);
             }
             if (hover) {
-                String descKey = info.effect.getDescriptionId() + ".description";
-                if (I18n.exists(descKey)) {
-                    List<FormattedCharSequence> lines = font.split(Component.translatable(descKey), 200);
+                // 使用描述提供器：本模组效果数值自动取自配置文件
+                if (net.diexv.potionenchant.client.PotionDescriptionProvider.hasEffectDescription(info.effect)) {
+                    List<FormattedCharSequence> lines = font.split(net.diexv.potionenchant.client.PotionDescriptionProvider.getEffectDescription(info.effect), 200);
                     g.renderTooltip(font, lines, mx, my);
                 }
             }
@@ -331,9 +331,9 @@ public class UltimateEnchantTableScreen extends Screen {
                 g.drawString(font, info.id(), listX + 6, y + rowH - 3, 0x80808080);
             }
             if (hover) {
-                String descKey = info.enchantment.getDescriptionId() + ".desc";
-                if (I18n.exists(descKey)) {
-                    List<FormattedCharSequence> lines = font.split(Component.translatable(descKey), 200);
+                // 使用描述提供器：本模组附魔数值自动取自配置文件
+                if (net.diexv.potionenchant.client.PotionDescriptionProvider.hasEnchantmentDescription(info.enchantment)) {
+                    List<FormattedCharSequence> lines = font.split(net.diexv.potionenchant.client.PotionDescriptionProvider.getEnchantmentDescription(info.enchantment), 200);
                     g.renderTooltip(font, lines, mx, my);
                 }
             }
@@ -783,12 +783,24 @@ public class UltimateEnchantTableScreen extends Screen {
         return super.mouseReleased(zoom.mx(mx, width), zoom.my(my, height), btn);
     }
     @Override public boolean keyPressed(int kc, int sc, int mod) {
+        // ESC 优先处理：正在编辑等级时先取消编辑，否则交给父类关闭界面
+        if (kc == 256) {
+            if (levelEditActive ||
+                    (potionLevelBox != null && potionLevelBox.isFocused()) ||
+                    (enchantLevelBox != null && enchantLevelBox.isFocused())) {
+                if (potionLevelBox != null) { potionLevelBox.setFocused(false); potionLevelBox.setVisible(false); }
+                if (enchantLevelBox != null) { enchantLevelBox.setFocused(false); enchantLevelBox.setVisible(false); }
+                levelEditActive = false;
+                return true;
+            }
+            return super.keyPressed(kc, sc, mod);
+        }
         if (zoom.editBox.isFocused()) return zoom.editBox.keyPressed(kc, sc, mod);
         if (zoom.headerEditBox.isFocused()) return zoom.headerEditBox.keyPressed(kc, sc, mod);
         if (potionLevelBox.isFocused()) return potionLevelBox.keyPressed(kc, sc, mod);
         if (enchantLevelBox.isFocused()) return enchantLevelBox.keyPressed(kc, sc, mod);
         if (searchBox.isFocused()) return searchBox.keyPressed(kc, sc, mod);
-        if (kc == 256 || kc == 257 || kc == 335) {
+        if (kc == 257 || kc == 335) {
             if (potionLevelBox != null) { potionLevelBox.setFocused(false); potionLevelBox.setVisible(false); }
             if (enchantLevelBox != null) { enchantLevelBox.setFocused(false); enchantLevelBox.setVisible(false); }
             levelEditActive = false;

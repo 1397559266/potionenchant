@@ -61,6 +61,42 @@ mixin {
 
 sourceSets.main.resources { srcDir "src/generated/resources" }
 
+// ==================== JavaAgent（Attach 动态附加） ====================
+configurations {
+    asmToRelocate
+}
+
+sourceSets {
+    javaagent {
+        java { srcDir 'src/javaagent/java' }
+        compileClasspath += configurations.asmToRelocate
+    }
+}
+
+dependencies {
+    asmToRelocate 'org.ow2.asm:asm:9.6'
+    asmToRelocate 'org.ow2.asm:asm-tree:9.6'
+    asmToRelocate 'org.ow2.asm:asm-commons:9.6'
+}
+
+// 打包独立 agent jar（ASM 一并并入，Premain/Agent-Class 入口）
+tasks.register('buildJavaAgent', Jar) {
+    archiveFileName = 'potionenchant-agent.jar'
+    from sourceSets.javaagent.output
+    from({ configurations.asmToRelocate.collect { it.isDirectory() ? it : zipTree(it) } }) {
+        exclude 'META-INF/**', 'module-info.class'
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes('Premain-Class'       : 'net.diexv.potionenchant.agent.DiexvSwordAgentLauncher',
+                   'Agent-Class'         : 'net.diexv.potionenchant.agent.DiexvSwordAgentLauncher',
+                   'Can-Redefine-Classes'    : 'true',
+                   'Can-Retransform-Classes' : 'true',
+                   'Implementation-Title'    : 'DiexvSword JavaAgent',
+                   'Implementation-Version'  : project.version)
+    }
+}
+
 repositories {
     maven { url "https://cursemaven.com" }
     mavenCentral()
@@ -76,6 +112,12 @@ dependencies {
 }
 
 tasks.named("processResources", ProcessResources).configure {
+    // 内置 javaagent，供 PotionEnchantMixinPlugin.onLoad 动态附加（Attach API）
+    dependsOn 'buildJavaAgent'
+    from("$buildDir/libs/potionenchant-agent.jar") {
+        into 'META-INF/potionenchant'
+    }
+
     var replaceProperties = [minecraft_version   : minecraft_version, minecraft_version_range: minecraft_version_range,
                              forge_version       : forge_version, forge_version_range: forge_version_range,
                              loader_version_range: loader_version_range,

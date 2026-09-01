@@ -6,10 +6,6 @@
   "refmap": "potionenchant.refmap.json",
   "plugin": "net.diexv.potionenchant.mixin.plugin.PotionEnchantMixinPlugin",
   "mixins": [
-    "accessor.LivingEntityAccessor",
-    "accessor.MobEffectInstanceAccessor",
-    "accessor.SyncEntityDataAccessor",
-    "accessor.SynchedEntityDataAccessor",
     "AnvilMenuMixin",
     "ArmorCapMixin",
     "BarrageMixin",
@@ -25,25 +21,31 @@
     "RevivalMixin",
     "TaczGunDamageMixin",
     "TooltipColorMixin",
+    "TooltipColorMixin2",
     "TrackingArrowMixin",
     "XSwordSupermodeMixin",
-    "XSwordSyncedDataMixin"
+    "XSwordSyncedDataMixin",
+    "accessor.LivingEntityAccessor",
+    "accessor.MobEffectInstanceAccessor",
+    "accessor.SyncEntityDataAccessor",
+    "accessor.SynchedEntityDataAccessor"
   ],
   "client": [
+    "CosmicAfterLevelMixin",
     "ItemRendererMixin",
+    "LogoRendererMixin",
     "PlayerRendererMixin",
     "PotionEnchantTooltipMixin",
     "PotionHudMixin",
+    "TitleScreenBackgroundMixin",
+    "TitleScreenMusicMixin",
     "TooltipScrollMouseMixin",
     "UniversalPotionBottleTooltipBackgroundMixin",
+    "XSeriesItemRenderMixin",
     "XSwordTooltipFontMixin",
     "accessor.FontAccessor",
     "accessor.ShaderInstanceAccessor",
-    "accessor.UniformAccessor",
-    "CosmicAfterLevelMixin",
-    "XSeriesItemRenderMixin",
-    "TitleScreenMusicMixin","TitleScreenBackgroundMixin",
-    "LogoRendererMixin"
+    "accessor.UniformAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

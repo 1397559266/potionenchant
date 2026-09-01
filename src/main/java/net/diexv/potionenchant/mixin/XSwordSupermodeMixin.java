@@ -26,6 +26,8 @@ public class XSwordSupermodeMixin {
     private void onHurt(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (!(source.getEntity() instanceof Player attacker)) return;
         if (!XSwordItem.isSupermode(attacker.getUUID())) return;
+        // 只有真正手持X剑时才触发毁灭标记，防止不手持X剑时仍能秒杀目标
+        if (!XSwordItem.isHoldingXSword(attacker)) return;
 
         LivingEntity self = (LivingEntity)(Object)this;
         if (self == attacker) return;

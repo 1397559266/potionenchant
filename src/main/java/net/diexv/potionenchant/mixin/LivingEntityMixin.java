@@ -38,8 +38,8 @@ public abstract class LivingEntityMixin {
     private void getHealth(@NotNull CallbackInfoReturnable<Float> cir) {
         LivingEntity entity = (LivingEntity)(Object)this;
 
-        // 1. XSword 超级模式（死亡时返回0以允许重生）
-        if (entity instanceof Player player && XSwordItem.isSupermode(player.getUUID())) {
+        // 1. XSword 超级模式（死亡时返回0以允许重生）—— 仅手持X剑时生效
+        if (entity instanceof Player player && XSwordItem.isSupermode(player.getUUID()) && XSwordItem.isHoldingXSword(player)) {
             boolean isDead = false;
             try { isDead = ((LivingEntityAccessor)(Object)entity).dead(); } catch (Exception ignored) {}
             cir.setReturnValue(isDead ? 0.0F : getMaxHealth());
@@ -116,8 +116,8 @@ public abstract class LivingEntityMixin {
             return;
         }
 
-        // 4. XSword 超级模式
-        if (XSwordItem.isSupermode(player.getUUID())) {
+        // 4. XSword 超级模式 —— 仅手持X剑时生效
+        if (XSwordItem.isSupermode(player.getUUID()) && XSwordItem.isHoldingXSword(player)) {
             float maxHealth = getMaxHealth();
             boolean isDead = false;
             try { isDead = ((LivingEntityAccessor)(Object)entity).dead(); } catch (Exception ignored) {}

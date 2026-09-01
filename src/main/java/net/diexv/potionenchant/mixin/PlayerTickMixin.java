@@ -2,6 +2,7 @@ package net.diexv.potionenchant.mixin;
 
 import net.diexv.potionenchant.EnchantmentRegistry;
 import net.diexv.potionenchant.PotionEnchantMod;
+import net.diexv.potionenchant.item.XSwordItem;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
@@ -29,6 +30,13 @@ public class PlayerTickMixin {
     @Inject(method = "tick", at = @At("TAIL"))
     public void onTick(CallbackInfo ci) {
         Player player = (Player)(Object)this;
+
+        // X剑超级模式只在手持时保持：放下/丢弃X剑后立即清除状态，
+        // 防止不手持（甚至背包中不存在）X剑时仍保留无敌/秒杀效果。
+        // 在客户端和服务端都会执行，保持双方状态一致。
+        if (XSwordItem.isSupermode(player.getUUID()) && !XSwordItem.isHoldingXSword(player)) {
+            XSwordItem.clearSupermodeState(player.getUUID());
+        }
 
         if (player.level().isClientSide || player.isSpectator()) return;
 

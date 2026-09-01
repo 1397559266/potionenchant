@@ -288,9 +288,10 @@ public class UniversalEnchantmentBookScreen extends Screen {
             if (Minecraft.getInstance().player != null) g.drawString(font, Component.translatable("gui.potionenchant.enchant_book.total_xp").getString() + ": " + fmt(Minecraft.getInstance().player.totalExperience), px + 5, y, 0xAAAAAA);
         }
         int descStartY = y;
-        String descKey = ei.enchantment.getDescriptionId() + ".desc";
-        String descStr = Component.translatable(descKey).getString();
-        if (!descStr.equals(descKey)) {
+        // 使用描述提供器：本模组附魔数值自动取自配置文件
+        String descStr = net.diexv.potionenchant.client.PotionDescriptionProvider.getEnchantmentDescription(ei.enchantment).getString();
+        String noDesc = Component.translatable("gui.potionenchant.no_description").getString();
+        if (!descStr.isEmpty() && !descStr.equals(noDesc)) {
             g.fill(px + 5, descStartY, px + pw - 5, descStartY + 1, 0x55555555);
             descStartY += 6;
             List<String> descLines = wrapTextByWidth(descStr, pw - 14);

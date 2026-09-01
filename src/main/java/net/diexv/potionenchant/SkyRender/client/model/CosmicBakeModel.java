@@ -8,9 +8,11 @@ import com.mojang.math.Transformation;
 import net.diexv.potionenchant.PotionEnchantMod;
 import net.diexv.potionenchant.SkyRender.api.client.model.PerspectiveModelState;
 import net.diexv.potionenchant.SkyRender.client.shader.AvaritiaShaders;
+import net.diexv.potionenchant.SkyRender.client.shader.DiexvSwordShaders;
 import net.diexv.potionenchant.SkyRender.util.client.TransformUtils;
 import net.diexv.potionenchant.client.compat.oculus.CosmicItemLateRenderQueue;
 import net.diexv.potionenchant.client.compat.oculus.ItemShaderModCompat;
+import net.diexv.potionenchant.client.renderer.coderain.CodeRainRenderer;
 import net.diexv.potionenchant.client.renderer.gl.SnowflakeRenderer;
 import net.diexv.potionenchant.item.ModItems;
 import net.minecraft.client.Minecraft;
@@ -56,6 +58,11 @@ public final class CosmicBakeModel implements BakedModel {
         };
     }
 
+    /** 剑/code 物品：3D 环绕代码雨粒子 */
+    public static boolean isCodeRainItem(ItemStack stack) {
+        return stack != null && (stack.getItem() == ModItems.CODE.get() || stack.getItem() == ModItems.DIEXV_SWORD.get());
+    }
+
     public CosmicBakeModel(final BakedModel wrapped, final List<ResourceLocation> maskSprite) {
         this.overrideList = new ItemOverrides() {
             @Override
@@ -73,7 +80,7 @@ public final class CosmicBakeModel implements BakedModel {
     public void renderItem(ItemStack stack, ItemDisplayContext transformType, PoseStack pStack, MultiBufferSource buffers, int packedLight, int packedOverlay) {
         RenderType renderType = AvaritiaShaders.COSMIC_RENDER_TYPE;
 
-        if (stack.getItem() == ModItems.UNIVERSAL_POTION_BOTTLE.get()) {
+        if (stack.getItem() == ModItems.UNIVERSAL_POTION_BOTTLE.get() || stack.getItem() == ModItems.DIEXV_SWORD.get()) {
             this.parentState = TransformUtils.DEFAULT_TOOL;
         } else {
             this.parentState = TransformUtils.stateFromItemTransforms(wrapped.getTransforms());
@@ -83,15 +90,26 @@ public final class CosmicBakeModel implements BakedModel {
         BakedModel model = this.wrapped.getOverrides().resolve(this.wrapped, stack, this.world, this.entity, 0);
         ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
         assert model != null;
-        Set<RenderType> baseRenderTypes = new LinkedHashSet<>();
-        for (BakedModel bakedModel : model.getRenderPasses(stack, true)) {
-            for (RenderType rendertype : bakedModel.getRenderTypes(stack, true)) {
-                itemRenderer.renderModelLists(bakedModel, stack, packedLight, packedOverlay, pStack, buffers.getBuffer(rendertype));
-                baseRenderTypes.add(rendertype);
+
+        // DiexvSword（diexv_sword）：常态即用自实现体素多面体替代原贴图（剑形，自识别贴图构建）。
+        boolean voxelReplace = stack.getItem() == ModItems.DIEXV_SWORD.get()
+                && DiexvSwordVoxelMesh.shouldVoxelReplace(transformType);
+        if (voxelReplace) {
+            DiexvSwordVoxelMesh.renderMesh(pStack, buffers);
+            if (buffers instanceof MultiBufferSource.BufferSource source) {
+                source.endBatch();
             }
-        }
-        if (buffers instanceof MultiBufferSource.BufferSource source) {
-            baseRenderTypes.forEach(source::endBatch);
+        } else {
+            Set<RenderType> baseRenderTypes = new LinkedHashSet<>();
+            for (BakedModel bakedModel : model.getRenderPasses(stack, true)) {
+                for (RenderType rendertype : bakedModel.getRenderTypes(stack, true)) {
+                    itemRenderer.renderModelLists(bakedModel, stack, packedLight, packedOverlay, pStack, buffers.getBuffer(rendertype));
+                    baseRenderTypes.add(rendertype);
+                }
+            }
+            if (buffers instanceof MultiBufferSource.BufferSource source) {
+                baseRenderTypes.forEach(source::endBatch);
+            }
         }
 
         // 光影兼容：延迟渲染（包含手持渲染用的GUI上下文）
@@ -100,45 +118,64 @@ public final class CosmicBakeModel implements BakedModel {
             && (ItemShaderModCompat.shouldDeferItemShaderLayer(transformType)
                 || (ItemShaderModCompat.shouldDeferCosmicItemRendering() && transformType == ItemDisplayContext.GUI));
         if (shouldDefer) {
-            if (!isShaderLayerReady(renderType)) {
+            // 剑/code 的 mask 流光用源项目 cosmic（代码雨），其余用本模组 cosmic
+            boolean codeRainMask = isCodeRainItem(stack);
+            if (codeRainMask ? !DiexvSwordShaders.isSwordCosmicReady() : !isShaderLayerReady(renderType)) {
                 return;
             }
             CosmicItemLateRenderQueue.enqueue(this, stack, transformType, pStack, packedLight, packedOverlay, model, renderType);
             return;
         }
 
-        // 雪花飘落粒子特效（非延迟模式）
-        renderSnowflakes(transformType, pStack, buffers, packedLight, packedOverlay);
+        // 粒子特效：剑/code → 3D 环绕代码雨；其余 → 雪花飘落粒子
+        if (isCodeRainItem(stack)) {
+            CodeRainRenderer.renderCodeRain(pStack, buffers, packedLight, packedOverlay);
+        } else {
+            renderSnowflakes(transformType, pStack, buffers, packedLight, packedOverlay);
+        }
 
         // 正常渲染星空层
         renderShaderLayer(stack, transformType, pStack, buffers, packedLight, packedOverlay, model, renderType, false);
     }
 
     public void renderShaderLayer(ItemStack stack, ItemDisplayContext transformType, PoseStack pStack, MultiBufferSource buffers, int packedLight, int packedOverlay, BakedModel model, RenderType renderType, boolean lateRender) {
-        if (!isShaderLayerReady(renderType)) {
+        // 剑/code：mask 流光使用源项目 cosmic（天空代码雨）着色器；其他物品：本模组 cosmic
+        boolean codeRainMask = isCodeRainItem(stack);
+        if (codeRainMask) {
+            if (!DiexvSwordShaders.isSwordCosmicReady()) {
+                return;
+            }
+        } else if (!isShaderLayerReady(renderType)) {
             return;
         }
 
         Minecraft mc = Minecraft.getInstance();
 
-        // 提前上传 uniform（使用 AvaritiaShaders 的统一方法）
-        AvaritiaShaders.uploadCosmicUniforms();
+        if (codeRainMask) {
+            // GUI 模式：缩小星体 + 固定视角（upload 内部处理）；时间基准按延迟/非延迟与源项目一致
+            boolean gui = AvaritiaShaders.inventoryRender || transformType == ItemDisplayContext.GUI;
+            renderType = DiexvSwordShaders.SWORD_COSMIC_RENDER_TYPE;
+            DiexvSwordShaders.uploadSwordCosmicUniforms(gui, lateRender);
+        } else {
+            // 提前上传 uniform（使用 AvaritiaShaders 的统一方法）
+            AvaritiaShaders.uploadCosmicUniforms();
 
-        if (lateRender) {
-            renderType = lateRenderType(renderType, transformType);
+            // GUI 模式：缩小星体 + 固定视角
+            if (AvaritiaShaders.inventoryRender || transformType == ItemDisplayContext.GUI) {
+                if (AvaritiaShaders.cosmicExternalScale != null) {
+                    AvaritiaShaders.cosmicExternalScale.set(100.0F);
+                }
+                if (AvaritiaShaders.cosmicYaw != null) {
+                    AvaritiaShaders.cosmicYaw.set(0.0F);
+                }
+                if (AvaritiaShaders.cosmicPitch != null) {
+                    AvaritiaShaders.cosmicPitch.set(0.0F);
+                }
+            }
         }
 
-        // GUI 模式：缩小星体 + 固定视角
-        if (AvaritiaShaders.inventoryRender || transformType == ItemDisplayContext.GUI) {
-            if (AvaritiaShaders.cosmicExternalScale != null) {
-                AvaritiaShaders.cosmicExternalScale.set(100.0F);
-            }
-            if (AvaritiaShaders.cosmicYaw != null) {
-                AvaritiaShaders.cosmicYaw.set(0.0F);
-            }
-            if (AvaritiaShaders.cosmicPitch != null) {
-                AvaritiaShaders.cosmicPitch.set(0.0F);
-            }
+        if (lateRender) {
+            renderType = lateRenderType(renderType, transformType, codeRainMask);
         }
 
         try {
@@ -165,26 +202,14 @@ public final class CosmicBakeModel implements BakedModel {
                 }
                 mc.getItemRenderer().renderQuadList(pStack, buffersBuffer, overlayQuads, stack, packedLight, packedOverlay);
             } else {
-                // 平面/精灵层模型（书、药水瓶）
+                // 平面/精灵层模型（书、药水瓶、剑/code）—— 源项目 bakeMaskQuads
+                LinkedList<BakedQuad> quads = new LinkedList<>();
                 List<TextureAtlasSprite> atlasSprite = new ArrayList<>();
                 for (ResourceLocation res : maskSprite) {
                     atlasSprite.add(mc.getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(res));
                 }
-
-                LinkedList<BakedQuad> quads = new LinkedList<>();
                 for (int i = 0; i < atlasSprite.size(); i++) {
-                    TextureAtlasSprite sprite = atlasSprite.get(i);
-                    List<BlockElement> unbaked = ITEM_MODEL_GENERATOR.processFrames(i, "layer" + i, sprite.contents());
-                    for (BlockElement element : unbaked) {
-                        for (Map.Entry<Direction, BlockElementFace> entry : element.faces.entrySet()) {
-                            quads.add(FACE_BAKERY.bakeQuad(
-                                    element.from, element.to, entry.getValue(),
-                                    sprite, entry.getKey(),
-                                    new PerspectiveModelState(ImmutableMap.of()),
-                                    element.rotation, element.shade,
-                                    PotionEnchantMod.rl("dynamic")));
-                        }
-                    }
+                    quads.addAll(bakeMaskQuads(atlasSprite.get(i), i));
                 }
                 mc.getItemRenderer().renderQuadList(pStack, buffersBuffer, quads, stack, packedLight, packedOverlay);
             }
@@ -196,7 +221,22 @@ public final class CosmicBakeModel implements BakedModel {
     }
 
     private static boolean supportsLateRenderType(RenderType renderType) {
-        return renderType == AvaritiaShaders.COSMIC_RENDER_TYPE;
+        return renderType == AvaritiaShaders.COSMIC_RENDER_TYPE
+                || renderType == DiexvSwordShaders.SWORD_COSMIC_RENDER_TYPE;
+    }
+
+    /** 源项目同款：把 mask 贴图烘焙为单层 quad（processFrames + bakeQuad） */
+    private LinkedList<BakedQuad> bakeMaskQuads(TextureAtlasSprite sprite, int layerIndex) {
+        LinkedList<BakedQuad> quads = new LinkedList<>();
+        List<BlockElement> unbaked = ITEM_MODEL_GENERATOR.processFrames(layerIndex, "layer" + layerIndex, sprite.contents());
+        for (BlockElement element : unbaked) {
+            for (Map.Entry<Direction, BlockElementFace> entry : element.faces.entrySet()) {
+                quads.add(FACE_BAKERY.bakeQuad(element.from, element.to, entry.getValue(), sprite, entry.getKey(),
+                        new PerspectiveModelState(ImmutableMap.of()), element.rotation, element.shade,
+                        PotionEnchantMod.rl("dynamic")));
+            }
+        }
+        return quads;
     }
 
     private static boolean isShaderLayerReady(RenderType renderType) {
@@ -238,7 +278,12 @@ public final class CosmicBakeModel implements BakedModel {
         pStack.popPose();
     }
 
-    private static RenderType lateRenderType(RenderType renderType, ItemDisplayContext context) {
+    private static RenderType lateRenderType(RenderType renderType, ItemDisplayContext context, boolean swordCosmic) {
+        if (swordCosmic) {
+            return isFirstPersonHandContext(context)
+                    ? DiexvSwordShaders.SWORD_COSMIC_HAND_AFTER_LEVEL_RENDER_TYPE
+                    : DiexvSwordShaders.SWORD_COSMIC_ITEM_AFTER_LEVEL_RENDER_TYPE;
+        }
         if (isFirstPersonHandContext(context)) {
             return AvaritiaShaders.COSMIC_HAND_AFTER_LEVEL_RENDER_TYPE;
         }

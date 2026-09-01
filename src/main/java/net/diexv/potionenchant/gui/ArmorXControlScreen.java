@@ -260,10 +260,10 @@ public class ArmorXControlScreen extends Screen {
                 ResourceLocation key = ForgeRegistries.MOB_EFFECTS.getKey(effect);
                 if (key != null) {
                     String name = effect.getDisplayName().getString();
-                    String dk = "effect." + key.getNamespace() + "." + key.getPath() + ".description";
-                    String desc = net.minecraft.client.resources.language.I18n.get(dk, "");
-                    if (desc.isEmpty() || desc.equals(dk))
-                        desc = Component.translatable("gui.potionenchant.no_description").getString();
+                    // 使用描述提供器：本模组效果数值自动取自配置文件，原版/其他模组读取语言文件
+                    String desc = net.diexv.potionenchant.client.PotionDescriptionProvider.hasEffectDescription(effect)
+                        ? net.diexv.potionenchant.client.PotionDescriptionProvider.getEffectDescription(effect).getString()
+                        : Component.translatable("gui.potionenchant.no_description").getString();
                     allEffects.add(new MobEffectInfo(effect, key, name, desc, effect.isBeneficial()));
                 }
             });
@@ -1058,9 +1058,21 @@ public class ArmorXControlScreen extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        // ESC 优先处理：正在编辑等级时先取消编辑，否则交给父类关闭界面
+        if (keyCode == 256) {
+            if (levelEditActive ||
+                    (potionLevelBox != null && potionLevelBox.isFocused()) ||
+                    (enchantLevelBox != null && enchantLevelBox.isFocused())) {
+                if (potionLevelBox != null) { potionLevelBox.setVisible(false); potionLevelBox.setFocused(false); }
+                if (enchantLevelBox != null) { enchantLevelBox.setVisible(false); enchantLevelBox.setFocused(false); }
+                levelEditActive = false;
+                return true;
+            }
+            return super.keyPressed(keyCode, scanCode, modifiers);
+        }
         if (zoom.editBox.isFocused()) return zoom.editBox.keyPressed(keyCode, scanCode, modifiers);
         if (zoom.headerEditBox.isFocused()) return zoom.headerEditBox.keyPressed(keyCode, scanCode, modifiers);
-        if (keyCode == 256 || keyCode == 257 || keyCode == 335) {
+        if (keyCode == 257 || keyCode == 335) {
             if (potionLevelBox != null) { potionLevelBox.setVisible(false); }
             if (enchantLevelBox != null) { enchantLevelBox.setVisible(false); }
             levelEditActive = false;

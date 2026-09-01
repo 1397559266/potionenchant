@@ -1,0 +1,10 @@
+{
+  "loader": "potionenchant:cosmic",
+  "parent": "item/handheld",
+  "textures": {
+    "layer0": "potionenchant:item/diexv_sword"
+  },
+  "cosmic": {
+    "mask": "potionenchant:item/mask_diexv_sword"
+  }
+}

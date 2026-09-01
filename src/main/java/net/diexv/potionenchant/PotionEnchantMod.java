@@ -40,8 +40,6 @@ public class PotionEnchantMod {
 
     @SuppressWarnings("removal")
     public PotionEnchantMod() {
-        System.out.println("[PotionEnchant] ===== MOD CONSTRUCTOR START =====");
-
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         // 注册配置
@@ -98,6 +96,7 @@ public class PotionEnchantMod {
         UniversalBottlePacketHandler.register();
         EnchantBookPacketHandler.register();
         ArmorXPacketHandler.register();
+        net.diexv.potionenchant.network.DiexvSwordLaserNetwork.register();
         net.diexv.potionenchant.network.PotionEnchantTableNetwork.register();
         net.diexv.potionenchant.network.UltimateTableNetwork.register();
         // 注册事件处理器（服务端和客户端通用）

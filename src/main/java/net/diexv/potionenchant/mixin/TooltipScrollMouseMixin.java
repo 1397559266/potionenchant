@@ -30,6 +30,9 @@ public class TooltipScrollMouseMixin {
 
         if (!PotionEnchantConfig.SERVER.enablePotionEnchantTooltip.get()) return;
 
+        // 只在独立tooltip实际渲染时才允许滚动（渲染器通过 setTooltipVisible 标记）
+        if (!TooltipScrollState.isTooltipVisible()) return;
+
         boolean shiftPressed = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS ||
                 GLFW.glfwGetKey(window, GLFW.GLFW_KEY_RIGHT_SHIFT) == GLFW.GLFW_PRESS;
         if (!shiftPressed) return;
@@ -58,17 +61,13 @@ public class TooltipScrollMouseMixin {
 
     @Unique
     private static ItemStack getHoveredStack(Minecraft mc) {
+        // 独立tooltip只会在容器界面（背包/箱子等）悬停物品时渲染，
+        // 这里只取鼠标悬停槽位，不再回退到手持物品，避免与渲染目标不一致。
         if (mc.screen instanceof AbstractContainerScreen<?> containerScreen) {
             Slot slot = containerScreen.getSlotUnderMouse();
             if (slot != null && slot.hasItem()) {
                 return slot.getItem();
             }
-        }
-        if (mc.player != null) {
-            ItemStack mainHand = mc.player.getMainHandItem();
-            if (!mainHand.isEmpty()) return mainHand;
-            ItemStack offHand = mc.player.getOffhandItem();
-            if (!offHand.isEmpty()) return offHand;
         }
         return ItemStack.EMPTY;
     }

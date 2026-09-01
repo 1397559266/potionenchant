@@ -1,21 +1,30 @@
 package net.diexv.potionenchant.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.diexv.potionenchant.client.PotionDescriptionProvider;
 import net.diexv.potionenchant.config.PotionEnchantConfig;
 import net.diexv.potionenchant.data.PotionEnchantData;
 import net.diexv.potionenchant.client.font.DiexvFont;
 import net.diexv.potionenchant.util.TooltipScrollState;
 import net.diexv.potionenchant.util.PotionEnchantManager;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -50,6 +59,10 @@ public class PotionEnchantTooltipMixin {
     @Unique
     private static ItemStack lastHoveredStack = null;
 
+    // GuiGraphics 当前正在渲染tooltip的物品（仅物品型tooltip会被设置）
+    @Shadow(remap = false)
+    private ItemStack tooltipStack;
+
     // 总效果行数（由 limitTooltipLines 设置，用于滚动计算）
     @Unique
     private static int totalEffectLines = 0;
@@ -77,13 +90,13 @@ public class PotionEnchantTooltipMixin {
             }
         }
 
-        // 如果没有从容器界面获取到物品，尝试从玩家手中获取
+        // 非容器界面（如JEI等）：使用 GuiGraphics 当前正在渲染tooltip的物品。
+        // 注意：绝不能回退到玩家手持物品，否则手持药水附魔物品时，
+        // 其他所有物品的tooltip上都会错误地显示药水附魔UI。
         if (stack == null || stack.isEmpty()) {
-            if (mc.player != null) {
-                stack = mc.player.getMainHandItem();
-                if (stack.isEmpty()) {
-                    stack = mc.player.getOffhandItem();
-                }
+            ItemStack hovered = this.tooltipStack;
+            if (hovered != null && !hovered.isEmpty()) {
+                stack = hovered;
             }
         }
 
@@ -103,9 +116,13 @@ public class PotionEnchantTooltipMixin {
 
         List<Component> customTooltipLines = null;
 
-        // 检查是否有药水附魔且配置启用独立tooltip
+        // 分支1：药水附魔物品 —— 显示效果名+等级列表（受 enable_potion_enchant_tooltip 控制）
         if (PotionEnchantManager.hasPotionEnchantments(stack) && PotionEnchantConfig.SERVER.enablePotionEnchantTooltip.get()) {
             customTooltipLines = buildPotionEnchantTooltip(stack, font);
+        }
+        // 分支2：药水瓶（普通/喷溅/滞留/药箭）—— 显示瓶内效果的描述（受 enable_custom_potion_tooltip 控制）
+        else if (isPotionBottleItem(stack) && PotionEnchantConfig.SERVER.enableCustomPotionTooltip.get()) {
+            customTooltipLines = buildPotionBottleDescriptionTooltip(stack, font);
         }
 
         if (customTooltipLines == null || customTooltipLines.isEmpty()) {
@@ -148,6 +165,7 @@ public class PotionEnchantTooltipMixin {
         TooltipScrollState.setTooltipBounds(x, y, tooltipWidth, tooltipHeight);
         TooltipScrollState.setTooltipVisible(true);
 
+
         // 渲染自定义 Tooltip
         renderCustomTooltipSafe(guiGraphics, x, y, limitedTooltipLines, font, diexvFont, mc, needsScrollbar, totalEffectLines);
 
@@ -165,6 +183,61 @@ public class PotionEnchantTooltipMixin {
     // 下一次进入该方法时会因为没有 customTooltipLines 而执行 setTooltipVisible(false)。
     // 但为了在 tooltip 消失后立即清除，我们可以在 "if (customTooltipLines == null)" 处调用 setTooltipVisible(false)。
     // 已经做了。所以无需额外操作。
+
+    @Unique
+    private boolean isPotionBottleItem(ItemStack stack) {
+        return stack.getItem() instanceof net.minecraft.world.item.PotionItem ||
+               stack.getItem() instanceof net.minecraft.world.item.TippedArrowItem ||
+               stack.getItem() instanceof net.minecraft.world.item.SplashPotionItem ||
+               stack.getItem() instanceof net.minecraft.world.item.LingeringPotionItem;
+    }
+
+    /**
+     * 为药水瓶构建独立描述tooltip的行。
+     * - 原版效果（minecraft命名空间）受 enable_vanilla_potion_description 控制
+     * - 本模组/其他模组效果受 enable_all_potion_description 控制
+     * - 描述文本来自语言文件 effect.&lt;modid&gt;.&lt;name&gt;.description，
+     *   本模组效果的数值由配置文件动态填充（PotionDescriptionProvider）
+     */
+    @Unique
+    private List<Component> buildPotionBottleDescriptionTooltip(ItemStack stack, Font font) {
+        List<MobEffectInstance> effects = PotionUtils.getMobEffects(stack);
+        if (effects.isEmpty()) {
+            return null;
+        }
+
+        List<Component> lines = new ArrayList<>();
+        for (MobEffectInstance effectInstance : effects) {
+            MobEffect effect = effectInstance.getEffect();
+            if (effect == null) continue;
+
+            ResourceLocation key = ForgeRegistries.MOB_EFFECTS.getKey(effect);
+            if (key == null) continue;
+
+            boolean vanilla = key.getNamespace().equals("minecraft");
+            if (vanilla && !PotionEnchantConfig.SERVER.enableVanillaPotionDescription.get()) continue;
+            if (!vanilla && !PotionEnchantConfig.SERVER.enableAllPotionDescription.get()) continue;
+
+            if (!PotionDescriptionProvider.hasEffectDescription(effect)) continue;
+
+            // 长描述按宽度换行，避免tooltip超出屏幕
+            Component desc = PotionDescriptionProvider.getEffectDescription(effect).copy().withStyle(ChatFormatting.GRAY);
+            List<FormattedCharSequence> wrapped = font.split(desc, MAX_TOOLTIP_WIDTH);
+            if (wrapped.isEmpty()) {
+                lines.add(desc);
+                continue;
+            }
+            for (FormattedCharSequence fcs : wrapped) {
+                StringBuilder sb = new StringBuilder();
+                fcs.accept((index, style, codePoint) -> {
+                    sb.appendCodePoint(codePoint);
+                    return true;
+                });
+                lines.add(Component.literal(sb.toString()).withStyle(ChatFormatting.GRAY));
+            }
+        }
+        return lines.isEmpty() ? null : lines;
+    }
 
     @Unique
     private List<Component> buildPotionEnchantTooltip(ItemStack stack, Font font) {

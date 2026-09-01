@@ -38,15 +38,14 @@ public class XSwordTooltipFontMixin {
     private void onRenderTooltipInternal(Font font, List<ClientTooltipComponent> components,
                                           int x, int y, ClientTooltipPositioner positioner,
                                           CallbackInfo ci) {
-        // 检查 XSword 超模模式
+        // 只对X剑自身的tooltip应用超模字体，
+        // 避免手持X剑时其他所有物品的tooltip文字被染成彩色/晃动
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
 
-        ItemStack mainHand = player.getMainHandItem();
-        ItemStack offHand = player.getOffhandItem();
-        boolean isXSword = (mainHand.getItem() == ModItems.X_SWORD.get()) ||
-                           (offHand.getItem() == ModItems.X_SWORD.get());
-        if (!isXSword || !XSwordItem.isSupermode(player.getUUID())) return;
+        ItemStack hovered = tooltipStack;
+        if (hovered == null || hovered.getItem() != ModItems.X_SWORD.get()) return;
+        if (!XSwordItem.isSupermode(player.getUUID())) return;
 
         if (components.isEmpty()) return;
 

@@ -34,5 +34,28 @@
         "stream": false
       }
     ]
+  },
+  "diexvcreeper/ray": {
+    "category": "player",
+    "sounds": [
+      { "name": "potionenchant:diexvcreeper/ray_1", "stream": false },
+      { "name": "potionenchant:diexvcreeper/ray_2", "stream": false },
+      { "name": "potionenchant:diexvcreeper/ray_3", "stream": false },
+      { "name": "potionenchant:diexvcreeper/ray_4", "stream": false },
+      { "name": "potionenchant:diexvcreeper/ray_5", "stream": false },
+      { "name": "potionenchant:diexvcreeper/ray_6", "stream": false }
+    ]
+  },
+  "diexvcreeper/ray_os": {
+    "category": "player",
+    "sounds": [
+      { "name": "potionenchant:diexvcreeper/ray_os", "stream": false }
+    ]
+  },
+  "diexvcreeper/ray_skylance": {
+    "category": "player",
+    "sounds": [
+      { "name": "potionenchant:diexvcreeper/ray_skylance", "stream": false }
+    ]
   }
 }

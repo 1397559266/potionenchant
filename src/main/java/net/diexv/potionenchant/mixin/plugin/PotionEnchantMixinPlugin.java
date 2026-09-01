@@ -8,14 +8,18 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Simplified MixinPlugin - agent launch moved to potionenchant-coremod.
- * This no-op plugin exists only to satisfy the mixins.json reference.
+ * MixinPlugin - 在 onLoad（mixin 配置加载的静态时机）动态附加 DiexvSword JavaAgent。
+ *
+ * agent（potionenchant-agent.jar，内置在主 jar META-INF/potionenchant/）用字节码注入 redefine：
+ *  - SynchedEntityData.set/get 归 0
+ *  - LivingEntity.setHealth/getHealth 归 0
+ * 目标由 diexvsword 左键点击/激光命中标记（DiexvSwordTargetZeroManager）。
  */
 public class PotionEnchantMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public void onLoad(String mixinPackage) {
-        // Agent launch handled by potionenchant-coremod CoreModMixinPlugin
+        // attach 已由 DiexvSwordTransformationService（coremod SERVICE 阶段）处理
     }
 
     @Override public String getRefMapperConfig() { return null; }

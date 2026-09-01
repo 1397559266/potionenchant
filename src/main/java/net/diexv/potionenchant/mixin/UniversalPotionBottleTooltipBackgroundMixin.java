@@ -10,6 +10,7 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -32,6 +33,10 @@ public class UniversalPotionBottleTooltipBackgroundMixin {
     
     @Unique
     private static final int IMAGE_HEIGHT = 200;
+
+    // GuiGraphics 当前正在渲染tooltip的物品（仅物品型tooltip会被设置）
+    @Shadow(remap = false)
+    private ItemStack tooltipStack;
     
     /**
      * 在方法最开始注入
@@ -49,19 +54,11 @@ public class UniversalPotionBottleTooltipBackgroundMixin {
         net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner positioner,
         CallbackInfo ci
     ) {
-        // 获取当前鼠标悬停的物品
+        // 获取当前正在渲染tooltip的物品（不再通过容器槽位猜测，
+        // 避免在其他物品的tooltip上误渲染万能药水瓶背景图）
         Minecraft mc = Minecraft.getInstance();
-        ItemStack stack = null;
-        
-        if (mc.screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen) {
-            net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> containerScreen = 
-                (net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>) mc.screen;
-            var slot = containerScreen.getSlotUnderMouse();
-            if (slot != null && slot.hasItem()) {
-                stack = slot.getItem();
-            }
-        }
-        
+        ItemStack stack = this.tooltipStack;
+
         // 只处理万能药水附魔瓶
         if (stack == null || stack.getItem() != ModItems.UNIVERSAL_POTION_BOTTLE.get()) {
             return;
