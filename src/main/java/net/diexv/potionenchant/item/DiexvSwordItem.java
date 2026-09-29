@@ -53,6 +53,21 @@ public class DiexvSwordItem extends Item {
             public @NotNull net.minecraft.client.gui.Font getFont(ItemStack stack, IClientItemExtensions.FontContext context) {
                 return DiexvSwordFont.getFont();
             }
+
+            /** 左键攻击动画*/
+            @Override
+            public boolean applyForgeHandTransform(com.mojang.blaze3d.vertex.PoseStack poseStack,
+                                                   net.minecraft.client.player.LocalPlayer player,
+                                                   net.minecraft.world.entity.HumanoidArm arm,
+                                                   ItemStack itemInHand, float partialTick,
+                                                   float equipProcess, float swingProcess) {
+                if (net.diexv.potionenchant.client.renderer.CutterAttackAnimation.apply(poseStack, swingProcess,
+                        arm == net.minecraft.world.entity.HumanoidArm.LEFT)) {
+                    return true;
+                }
+                return super.applyForgeHandTransform(poseStack, player, arm, itemInHand, partialTick,
+                        equipProcess, swingProcess);
+            }
         });
     }
 

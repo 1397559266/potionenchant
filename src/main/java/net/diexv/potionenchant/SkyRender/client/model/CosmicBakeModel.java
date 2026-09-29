@@ -12,6 +12,9 @@ import net.diexv.potionenchant.SkyRender.client.shader.DiexvSwordShaders;
 import net.diexv.potionenchant.SkyRender.util.client.TransformUtils;
 import net.diexv.potionenchant.client.compat.oculus.CosmicItemLateRenderQueue;
 import net.diexv.potionenchant.client.compat.oculus.ItemShaderModCompat;
+import net.diexv.potionenchant.client.compat.oculus.WorldRenderPhase;
+import net.diexv.potionenchant.client.renderer.CutterAttackAnimation;
+import net.diexv.potionenchant.client.renderer.SwordAuraRenderer;
 import net.diexv.potionenchant.client.renderer.coderain.CodeRainRenderer;
 import net.diexv.potionenchant.client.renderer.gl.SnowflakeRenderer;
 import net.diexv.potionenchant.item.ModItems;
@@ -103,7 +106,8 @@ public final class CosmicBakeModel implements BakedModel {
             Set<RenderType> baseRenderTypes = new LinkedHashSet<>();
             for (BakedModel bakedModel : model.getRenderPasses(stack, true)) {
                 for (RenderType rendertype : bakedModel.getRenderTypes(stack, true)) {
-                    itemRenderer.renderModelLists(bakedModel, stack, packedLight, packedOverlay, pStack, buffers.getBuffer(rendertype));
+                    itemRenderer.renderModelLists(bakedModel, stack, packedLight, packedOverlay, pStack,
+                            buffers.getBuffer(rendertype));
                     baseRenderTypes.add(rendertype);
                 }
             }
@@ -112,8 +116,21 @@ public final class CosmicBakeModel implements BakedModel {
             }
         }
 
-        // 光影兼容：延迟渲染（包含手持渲染用的GUI上下文）
+        // 月牙剑气：只在【第一人称手持】渲染里绘制。
+        // 绝不能包含 GUI（物品栏/快捷栏）——否则挥一把剑时，物品栏里那把也会跟着放剑气；
+        // 第三人称手持也不在这里画（那条由 SwordAuraThirdPerson 的事件单独负责）。
+        if (CutterAttackAnimation.isSwinging()
+                && (transformType == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND
+                    || transformType == ItemDisplayContext.FIRST_PERSON_LEFT_HAND)) {
+            SwordAuraRenderer.renderFirstPerson(pStack, buffers);
+        }
+
+        // 光影兼容：延迟渲染（包含手持渲染用的 GUI 上下文）。
+        // 【必须限定在 GameRenderer.renderLevel 期间】原因见 WorldRenderPhase 注释：
+        // 快捷栏/HUD 的 GUI 物品是在 renderLevel 之后、主渲染目标上画的，不需要也无法延迟
+        // （延迟到世界 pass 反而会被随后绘制的 HUD 盖掉 → 表现为"快捷栏里没有着色器效果"）。
         boolean shouldDefer = !AvaritiaShaders.inventoryRender
+            && WorldRenderPhase.isInWorldRender()
             && supportsLateRenderType(renderType)
             && (ItemShaderModCompat.shouldDeferItemShaderLayer(transformType)
                 || (ItemShaderModCompat.shouldDeferCosmicItemRendering() && transformType == ItemDisplayContext.GUI));
@@ -127,12 +144,11 @@ public final class CosmicBakeModel implements BakedModel {
             return;
         }
 
-        // 粒子特效：剑/code → 3D 环绕代码雨；其余 → 雪花飘落粒子
-        if (isCodeRainItem(stack)) {
-            CodeRainRenderer.renderCodeRain(pStack, buffers, packedLight, packedOverlay);
-        } else {
-            renderSnowflakes(transformType, pStack, buffers, packedLight, packedOverlay);
-        }
+        // 粒子特效：剑/code → 3D 环绕代码雨；其余 → 雪花飘落粒子。
+        // 注意：Oculus 光影下 renderItem 会在上面的 shouldDefer 分支直接 return，
+        // 粒子改由 CosmicItemLateRenderQueue 重画 —— 所以粒子必须走这个公共方法，
+        // 否则挥砍期间的"不跟随模型"补偿在光影下不会生效。
+        renderItemParticles(stack, transformType, pStack, buffers, packedLight, packedOverlay);
 
         // 正常渲染星空层
         renderShaderLayer(stack, transformType, pStack, buffers, packedLight, packedOverlay, model, renderType, false);
@@ -239,8 +255,56 @@ public final class CosmicBakeModel implements BakedModel {
         return quads;
     }
 
-    private static boolean isShaderLayerReady(RenderType renderType) {
-        return AvaritiaShaders.cosmicShader != null
+    /**
+     * 物品 GL 粒子的统一绘制入口（雪花 / 代码雨）。
+     *
+     * <p>【挥砍期间】粒子不跟着模型运动：粒子仍按自己的时间下落/滚动，只是不再继承挥砍变换 ——
+     * 做法是把"挥砍变换"换成"原版持握变换"（只作用于粒子这一段，模型本体照旧挥动）。
+     *
+     * <p><b>两条渲染路径都必须调用本方法</b>：普通即时渲染（{@code renderItem}）与
+     * Oculus 光影下的延迟渲染（{@code CosmicItemLateRenderQueue}）。后者是光影把世界合成到
+     * 主渲染目标之后再补画的一遍，之前漏掉这里，导致光影模式下粒子仍然跟着挥动。
+     */
+    public static void renderItemParticles(ItemStack stack, ItemDisplayContext transformType, PoseStack pStack,
+                                           MultiBufferSource buffers, int packedLight, int packedOverlay) {
+        boolean firstPersonSwing = CutterAttackAnimation.isSwinging()
+                && (transformType == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND
+                    || transformType == ItemDisplayContext.FIRST_PERSON_LEFT_HAND);
+        if (firstPersonSwing) {
+            pStack.pushPose();
+            pStack.mulPoseMatrix(particleHoldMatrix(transformType == ItemDisplayContext.FIRST_PERSON_LEFT_HAND));
+        }
+        if (isCodeRainItem(stack)) {
+            CodeRainRenderer.renderCodeRain(pStack, buffers, packedLight, packedOverlay);
+        } else {
+            renderSnowflakes(transformType, pStack, buffers, packedLight, packedOverlay);
+        }
+        if (firstPersonSwing) {
+            pStack.popPose();
+        }
+    }
+
+    /**
+     * 挥砍期间给粒子用的补偿矩阵：把 pose 里的"挥砍变换"换成"原版持握变换"，
+     * 于是粒子留在原地（不再跟着刀身挥动），而它自己的下落/滚动动画不受影响。
+     * <pre>
+     *   pose = V · 挥砍 · D · T(-0.5)，目标 = V · 持握 · D · T(-0.5)
+     *   补偿 = (D·T(-0.5))⁻¹ · 挥砍⁻¹ · 持握 · D·T(-0.5)      （外层 V 会被抵消，无需知道）
+     * </pre>
+     */
+    public static org.joml.Matrix4f particleHoldMatrix(boolean leftHand) {
+        org.joml.Matrix4f dispHalf = SwordAuraRenderer.displayMatrix(leftHand).translate(-0.5F, -0.5F, -0.5F);
+        org.joml.Matrix4f swing = SwordAuraRenderer.chainMatrix(CutterAttackAnimation.currentProgress());
+        float side = leftHand ? -1.0F : 1.0F;
+        // 原版 applyItemArmTransform（equip 视为 0：挥砍时手早已落位）
+        org.joml.Matrix4f hold = new org.joml.Matrix4f().translate(side * 0.56F, -0.52F, -0.72F);
+        return new org.joml.Matrix4f(dispHalf).invert()
+                .mul(new org.joml.Matrix4f(swing).invert())
+                .mul(hold)
+                .mul(dispHalf);
+    }
+
+    private static boolean isShaderLayerReady(RenderType renderType) {        return AvaritiaShaders.cosmicShader != null
             && AvaritiaShaders.cosmicTime != null
             && AvaritiaShaders.cosmicYaw != null
             && AvaritiaShaders.cosmicPitch != null
@@ -325,7 +389,19 @@ public final class CosmicBakeModel implements BakedModel {
 
     @Override
     public @NotNull List<BakedQuad> getQuads(BlockState state, Direction side, @NotNull RandomSource rand) {
-        return Collections.emptyList();
+        // 本模型的视觉效果全部由 renderItem(...) 用代码画（贴图模型只作为形状/变换来源），
+        // 所以这里的四边形原本是空的。但"空四边形 + isCustomRenderer()==true"有隐患：
+        // 没有声明 getCustomRenderer 接缝的路径（别的物品用到本模型、或第三方渲染器直接走四边形路径）
+        // 会退化成【什么都不画】。回落到被包裹模型后，这些路径至少画出原贴图，不会出现空白物品；
+        // 本物品的正常路径不受影响（它走 renderItem）。
+        if (this.wrapped instanceof CosmicBakeModel) {
+            return Collections.emptyList();   // 防自递归（正常路径下 wrapped 是贴图模型，不是本类）
+        }
+        try {
+            return this.wrapped.getQuads(state, side, rand);
+        } catch (Throwable ignored) {
+            return Collections.emptyList();
+        }
     }
 
     @Override

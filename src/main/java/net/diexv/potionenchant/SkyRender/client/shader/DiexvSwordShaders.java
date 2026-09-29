@@ -175,10 +175,10 @@ public final class DiexvSwordShaders {
             meshAnimMode = Objects.requireNonNull(diexvSwordMeshShader.getUniform("animMode"));
             meshAnimSpeed = Objects.requireNonNull(diexvSwordMeshShader.getUniform("animSpeed"));
 
-            meshTime.set((float) AvaritiaShaders.renderTime + AvaritiaShaders.renderFrame);
+            meshTime.set(AvaritiaShaders.cosmicTimeSeconds());
             diexvSwordMeshShader.onApply(() -> {
-                // 慢速时间基准：每秒 1 单位（暂停时冻结），动画平滑不闪烁
-                meshTime.set(((float) AvaritiaShaders.renderTime + AvaritiaShaders.renderFrame) / 20.0F);
+                // 统一墙钟时间基准：每秒 1 单位（暂停也继续走，与其余着色器/特效同一个时钟）
+                meshTime.set(AvaritiaShaders.cosmicTimeSeconds());
                 meshOpacity.set(OPACITY);
                 meshTint.set(TINT_R, TINT_G, TINT_B);
                 meshTintMode.set(TINT_MODE);
@@ -199,9 +199,9 @@ public final class DiexvSwordShaders {
             swordCosmicOpacity = Objects.requireNonNull(swordCosmicShader.getUniform("opacity"));
             swordCosmicUvs = swordCosmicShader.getUniform("cosmicuvs"); // 源 cosmic.fsh 未使用，可为 null
 
-            // 与源项目 AvaritiaShaders 一致：onApply 只刷 time = renderTime + renderFrame
-            // （不覆盖 externalScale/opacity，GUI 的 scale=100 由 upload 设置并保持）
-            swordCosmicShader.onApply(() -> swordCosmicTime.set((float) AvaritiaShaders.renderTime + AvaritiaShaders.renderFrame));
+            // 与源项目 AvaritiaShaders 一致：onApply 只刷 time（不覆盖 externalScale/opacity，
+            // GUI 的 scale=100 由 upload 设置并保持）；时间统一走墙钟 tick 等价单位
+            swordCosmicShader.onApply(() -> swordCosmicTime.set(AvaritiaShaders.cosmicTimeTicks()));
         });
     }
 
@@ -218,9 +218,7 @@ public final class DiexvSwordShaders {
                 && swordCosmicExternalScale != null && swordCosmicOpacity != null;
     }
 
-    /** 上传剑 cosmic uniform（时间基准与源项目一致）：
-     *  - 非延迟（renderItem 内联路径）：currentTime = (currentTimeMillis - renderTime) / 2000.0F
-     *  - 延迟（Oculus renderShaderLayer）：time = renderTime + renderFrame
+    /** 上传剑 cosmic uniform（时间基准：统一墙钟 tick 等价单位，与其余着色器/特效同一个时钟）：
      *  yaw/pitch 随玩家视角，GUI 固定视角 + 缩小星体。 */
     public static void uploadSwordCosmicUniforms(boolean gui, boolean lateRender) {
         if (!isSwordCosmicReady()) return;
@@ -232,15 +230,7 @@ public final class DiexvSwordShaders {
             pitch = -(float) (mc.player.getXRot() * Math.PI / 180.0F);
         }
         float scale = gui ? 100.0F : 1.0F;
-        float time;
-        if (lateRender) {
-            // 延迟路径（源 AvaritiaShaders.uploadCosmicUniforms）：tick 数
-            time = (float) AvaritiaShaders.renderTime + AvaritiaShaders.renderFrame;
-        } else {
-            // 非延迟路径（源 renderItem 内联）：实时毫秒 / 2000
-            time = (System.currentTimeMillis() - AvaritiaShaders.renderTime) / 2000.0F;
-        }
-        swordCosmicTime.set(time);
+        swordCosmicTime.set(AvaritiaShaders.cosmicTimeTicks());
         swordCosmicYaw.set(yaw);
         swordCosmicPitch.set(pitch);
         swordCosmicExternalScale.set(scale);

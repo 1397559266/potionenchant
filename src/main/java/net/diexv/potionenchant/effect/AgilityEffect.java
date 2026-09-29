@@ -57,6 +57,13 @@ public class AgilityEffect extends MobEffect {
         if (event.getEntity() instanceof Player player &&
                 player.hasEffect(EffectRegistry.AGILITY.get())) {
             updateSprintingSpeed(player);
+            // 攻速必须每 tick 补一次，原因：
+            // 服务端走 addEffect() → 会触发 MobEffectEvent.Added → 攻速修饰符加上了；
+            // 客户端是从网络包同步效果，走的是 LivingEntity#forceAddEffect()，**不触发该事件**，
+            // 于是客户端玩家的 ATTACK_SPEED 少这一份加成 → 客户端算出的物品冷却/攻击指示条不加速
+            // （服务端伤害蓄力却是正常的）。这里与移动速度用同一套"每 tick 重加"的写法兜住，
+            // 同一 UUID 先移除再加，幂等。
+            applyAttackSpeedModifier(player, player.getEffect(EffectRegistry.AGILITY.get()).getAmplifier());
         }
     }
 

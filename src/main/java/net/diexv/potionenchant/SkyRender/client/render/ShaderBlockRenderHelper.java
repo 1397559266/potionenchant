@@ -38,7 +38,8 @@ public final class ShaderBlockRenderHelper {
             pitch = -(float) (mc.player.getXRot() * 2.0F * Math.PI / 360.0);
         }
 
-        AvaritiaShaders.cosmicTime.set((System.currentTimeMillis() - AvaritiaShaders.renderTime) / 2000.0F);
+        // 统一墙钟时间（原写法把 tick 计数器当纪元毫秒去减 → float 精度吃掉每帧变化、动画静止）
+        AvaritiaShaders.applyCosmicTime();
         AvaritiaShaders.cosmicYaw.set(yaw);
         AvaritiaShaders.cosmicPitch.set(pitch);
         AvaritiaShaders.cosmicExternalScale.set(scale);

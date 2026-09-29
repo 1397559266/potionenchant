@@ -28,3 +28,8 @@ temp_build.txt
 build_raw.txt
 check_errors.py
 port_*.py
+
+# Mixin refmap 由注解处理器在构建时生成，禁止提交手工/陈旧副本
+# （陈旧副本会覆盖生成结果，导致 @Inject 目标无法重映射，启动即崩）
+/potionenchant.refmap.json
+**/potionenchant.refmap.json

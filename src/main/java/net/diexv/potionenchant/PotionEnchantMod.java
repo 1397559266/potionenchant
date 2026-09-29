@@ -42,6 +42,11 @@ public class PotionEnchantMod {
     public PotionEnchantMod() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
+        // 网络通道必须在 registry 冻结前注册：mod 构造早期强制初始化
+        net.diexv.potionenchant.network.StrikeNetwork.ensureInit();
+        // 复活通道（server → client）：真重生期间的"维度伪装开关"，用于消除外维度复活的维度加载界面
+        net.diexv.potionenchant.network.RevivalNetwork.ensureInit();
+
         // 注册配置
         ConfigManager.registerConfigs();
         // 仅在客户端注册配置屏幕（避免服务端崩溃）
@@ -51,6 +56,7 @@ public class PotionEnchantMod {
 
         // 注册效果和药水
         EnchantmentRegistry.ENCHANTMENTS.register(modEventBus);
+        net.diexv.potionenchant.craft.ModRecipeSerializers.SERIALIZERS.register(modEventBus);
         EffectRegistry.EFFECTS.register(modEventBus);
         MendingPotion.POTIONS.register(modEventBus);
         PurificationPotion.POTIONS.register(modEventBus);
@@ -99,6 +105,9 @@ public class PotionEnchantMod {
         net.diexv.potionenchant.network.DiexvSwordLaserNetwork.register();
         net.diexv.potionenchant.network.PotionEnchantTableNetwork.register();
         net.diexv.potionenchant.network.UltimateTableNetwork.register();
+
+        // 复活药水：挂载字节码注入回调（真死亡 + 真重生；无事件、无 Mixin）
+        net.diexv.potionenchant.util.RevivalManager.installHook();
         // 注册事件处理器（服务端和客户端通用）
         // 注册移植附魔的事件处理器
         MinecraftForge.EVENT_BUS.register(new net.diexv.potionenchant.handlers.EnchantmentEventHandler());
@@ -115,6 +124,13 @@ public class PotionEnchantMod {
         // 服务端清除 XSword supermode 残留状态（防止重登后永久无敌）
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent e) -> {
             XSwordItem.clearSupermodeState(e.getEntity().getUUID());
+        });
+
+        // 复活系统：玩家下线时清掉按 UUID 记录的运行期状态。
+        // 不清的话，若在复活窗口内掉线，重登后 RESPAWNING/PENDING_RESTORE 等标记还在
+        // → 真死亡被吞、死亡计时被跳过 → 玩家卡在 0 血不死不活（同时这些表还会无限增长）。
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent e) -> {
+            net.diexv.potionenchant.util.RevivalManager.onPlayerLogout(e.getEntity());
         });
 
         // 仅在客户端注册Tooltip事件处理器（避免服务端加载客户端类）
@@ -136,6 +152,7 @@ public class PotionEnchantMod {
         // 注册药水附魔台方块实体渲染器
         net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(net.diexv.potionenchant.blockentity.ModBlockEntities.POTION_ENCHANTING_TABLE.get(), net.diexv.potionenchant.render.PotionEnchantingTableRenderer::new);
         net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(net.diexv.potionenchant.blockentity.ModBlockEntities.ULTIMATE_ENCHANT_TABLE.get(), net.diexv.potionenchant.render.UltimateEnchantTableRenderer::new);
+        net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(net.diexv.potionenchant.blockentity.ModBlockEntities.DIEXV_CREEPER_TANK.get(), net.diexv.potionenchant.client.renderer.DiexvCreeperTankBlockEntityRenderer::new);
 
         event.enqueueWork(() -> {
 

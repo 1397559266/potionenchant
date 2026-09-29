@@ -44,19 +44,108 @@ public class ArmorXFeatureHandler {
     // 存储每个玩家的右键点击计数（用于防重复触发）
     private static final java.util.Map<UUID, Integer> RIGHT_CLICK_COUNTERS = new java.util.HashMap<>();
 
+    // ==================== 飞行状态：玩家级持久化 + 所有权标记 ====================
+    //
+    // 修复的三类问题：
+    //  1) 原来飞行的唯一依据是每 tick 读头盔 NBT 的 flight_mode。NBT 缺失/被清空时
+    //     getBoolean 默认返回 false，被当成"玩家显式关闭" → 主动 mayfly=false 且不再恢复
+    //     （受伤打碎护甲/换掉护甲后就会永久卡死，只有重新穿戴触发 HEAD 事件才能救回来）。
+    //     现在：玩家的选择存在玩家持久数据里（权威），护甲 NBT 只作为显示/同步载体。
+    //  2) 关闭立刻生效、重新开启却依赖"全套再次齐全" → 现在开关逻辑对称（applyFlightState）。
+    //  3) 原来无条件写 mayfly=false，会把其它模组/饰品授予的飞行一起清掉 →
+    //     现在只回收"本模组授予的那一份"（所有权标记）。
+    private static final String FLIGHT_CHOICE_KEY = "potionenchant$flight_mode";
+    private static final String FLIGHT_OWNED_KEY = "potionenchant$flight_owned";
+
+    /** 读取玩家自己的飞行选择（权威）。从未记录过时从当前头盔 NBT 迁移一次（兼容旧存档）。 */
+    public static boolean getFlightChoice(Player player) {
+        CompoundTag pd = player.getPersistentData();
+        if (pd.contains(FLIGHT_CHOICE_KEY)) {
+            return pd.getBoolean(FLIGHT_CHOICE_KEY);
+        }
+        boolean migrated = readHelmetFlightMode(player);
+        pd.putBoolean(FLIGHT_CHOICE_KEY, migrated);
+        return migrated;
+    }
+
+    /** 写入玩家自己的飞行选择（显式开关时调用）；同时镜像到护甲 NBT 供界面/同步使用。 */
+    public static void setFlightChoice(Player player, boolean enabled) {
+        player.getPersistentData().putBoolean(FLIGHT_CHOICE_KEY, enabled);
+        writeHelmetFlightMode(player, enabled);
+    }
+
+    /** 授予飞行：只在玩家此刻确实没有 mayfly 时才由我们授予，并记下所有权（不抢占他人的飞行）。 */
+    public static void grantFlight(net.minecraft.server.level.ServerPlayer player) {
+        if (player.isCreative() || player.isSpectator()) {
+            return;
+        }
+        if (player.getAbilities().mayfly) {
+            return;                              // 别处已给 → 不抢、也不记所有权
+        }
+        player.getAbilities().mayfly = true;
+        player.getAbilities().flying = false;
+        player.getPersistentData().putBoolean(FLIGHT_OWNED_KEY, true);
+        player.onUpdateAbilities();
+    }
+
+    /** 回收飞行：只回收本模组授予的那一份，其它来源的飞行不动。 */
+    public static void revokeFlight(net.minecraft.server.level.ServerPlayer player) {
+        if (player.isCreative() || player.isSpectator()) {
+            return;
+        }
+        CompoundTag pd = player.getPersistentData();
+        boolean owned = pd.getBoolean(FLIGHT_OWNED_KEY);
+        pd.putBoolean(FLIGHT_OWNED_KEY, false);
+        if (!owned) {
+            return;                              // 不是我们给的 → 不抢
+        }
+        if (player.getAbilities().mayfly) {
+            player.getAbilities().flying = false;
+            player.getAbilities().mayfly = false;
+            player.onUpdateAbilities();
+        }
+    }
+
+    /** 开关对称：该有时授予、不该有时回收；两种情况都不会误伤别处的飞行。 */
+    private static void applyFlightState(net.minecraft.server.level.ServerPlayer player) {
+        if (isWearingFullXArmor(player) && getFlightChoice(player)) {
+            grantFlight(player);
+        } else {
+            revokeFlight(player);
+        }
+    }
+
+    /** 只认"确实写了值"的头盔 NBT；缺失不再等同于"关闭"（那正是原来的坑）。 */
+    private static boolean readHelmetFlightMode(Player player) {
+        ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
+        if (helmet.isEmpty() || helmet.getItem() != ModItems.X_HELMET.get()) {
+            return false;
+        }
+        CompoundTag tag = helmet.getTag();
+        if (tag == null || !tag.contains("ArmorFeatures")) {
+            return false;
+        }
+        CompoundTag ft = tag.getCompound("ArmorFeatures");
+        return ft.contains("flight_mode") && ft.getBoolean("flight_mode");
+    }
+
+    private static void writeHelmetFlightMode(Player player, boolean enabled) {
+        ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
+        if (helmet.isEmpty() || helmet.getItem() != ModItems.X_HELMET.get()) {
+            return;
+        }
+        CompoundTag tag = helmet.getOrCreateTag();
+        CompoundTag ft = tag.getCompound("ArmorFeatures");
+        ft.putBoolean("flight_mode", enabled);
+        tag.put("ArmorFeatures", ft);
+    }
+
     @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         Player player = event.getEntity();
-        for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
-            ItemStack armor = player.getItemBySlot(slot);
-            if (!armor.isEmpty() && isXArmorPiece(armor)) {
-                CompoundTag tag = armor.getOrCreateTag();
-                CompoundTag ft = tag.getCompound("ArmorFeatures");
-                tag.put("ArmorFeatures", ft);
-            }
-        }
+        // 不再在登出时"补一个空的 ArmorFeatures"：那等于把"没有记录"写成"显式 false"，
+        // 正是"读不到就当作关闭"的坑。飞行选择已存在玩家持久数据里，这里无需补 NBT。
         removeAllXBlocksForPlayer(player);
-
     }
     
     /**
@@ -748,136 +837,48 @@ public class ArmorXFeatureHandler {
         // 自定义飞行系统不受落地影响，无需处理
     }
     /**
-     * 监听玩家Tick事件，持续保持飞行能力
+     * 监听玩家Tick事件，持续保持飞行能力。
+     * 判定只看"全套护甲 + 玩家自己的持久选择"，不再依赖当帧头盔 NBT 的默认值。
      */
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) {
             return;
         }
-        
-        net.minecraft.world.entity.player.Player player = event.player;
-        boolean isCreativeOrSpectator = player.isCreative() || player.isSpectator();
-        
-        // 检查是否穿着全套X护甲
-        boolean wearingFull = isWearingFullXArmor(player);
-        
-        if (!wearingFull) {
+        // 只在服务端处理能力（客户端不接受反向同步，避免两端各写一遍）
+        if (!(event.player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)) {
             return;
         }
-        
-        ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
-        var tag = helmet.getTag();
-        if (tag == null) {
-            return;
-        }
-        
-        var featuresTag = tag.getCompound("ArmorFeatures");
-        
-        // 飞行模式：仅在服务端处理能力（仅影响穿戴本护甲的玩家，创造/旁观跳过）
-        if (!isCreativeOrSpectator && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
-            boolean flightModeEnabled = featuresTag.getBoolean("flight_mode");
-            if (flightModeEnabled) {
-                if (!player.getAbilities().mayfly) {
-                    player.getAbilities().flying = false;
-                    player.getAbilities().mayfly = true;
-                    player.onUpdateAbilities();
-                }
-            } else {
-                if (player.getAbilities().mayfly) {
-                    player.getAbilities().flying = false;
-                    player.getAbilities().mayfly = false;
-                    player.onUpdateAbilities();
-                }
-            }
-        }
+        applyFlightState(serverPlayer);
     }
     /**
-     * 监听玩家穿戴装备事件，更新飞行能力
+     * 监听玩家穿戴装备事件：与 tick 使用同一套开关逻辑。
+     * 原来只关注 HEAD，胸甲/护腿/靴子被打碎时不会走这条路径，现在四个槽都关注。
      */
     @SubscribeEvent
     public static void onPlayerEquip(net.minecraftforge.event.entity.living.LivingEquipmentChangeEvent event) {
-        net.minecraft.world.entity.LivingEntity entity = event.getEntity();
-        if (!(entity instanceof net.minecraft.server.level.ServerPlayer player)) {
+        if (!(event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player)) {
             return;
         }
-        
-        // 创造模式和旁观者模式不受影响
         if (player.isCreative() || player.isSpectator()) {
             return;
         }
-        
-        // 只关注头部装备变化
-        if (event.getSlot() != EquipmentSlot.HEAD) {
+        EquipmentSlot slot = event.getSlot();
+        if (slot != EquipmentSlot.HEAD && slot != EquipmentSlot.CHEST
+                && slot != EquipmentSlot.LEGS && slot != EquipmentSlot.FEET) {
             return;
         }
-        
-        // 检查是否穿着全套X护甲
-        boolean wearingFullXArmor = isWearingFullXArmor(player);
-        
-        if (!wearingFullXArmor) {
-            // 脱下X护甲，关闭飞行
-            if (player.getAbilities().mayfly) {
-                player.getAbilities().flying = false;
-                player.getAbilities().mayfly = false;
-                player.onUpdateAbilities();
-            }
-            return;
-        }
-        
-        // 穿着全套X护甲，检查是否开启了飞行模式
-        ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
-        var tag = helmet.getTag();
-        if (tag == null) {
-            return;
-        }
-        var featuresTag = tag.getCompound("ArmorFeatures");
-            if (featuresTag.getBoolean("flight_mode")) {
-                // 开启飞行模式
-                if (!player.getAbilities().mayfly) {
-                    player.getAbilities().flying = false;
-                    player.getAbilities().mayfly = true;
-                    player.onUpdateAbilities();
-                }
-            } else {
-                // 未开启飞行模式
-                if (player.getAbilities().mayfly) {
-                    player.getAbilities().flying = false;
-                    player.getAbilities().mayfly = false;
-                    player.onUpdateAbilities();
-                }
-            }
+        applyFlightState(player);
     }
 
     /**
-     * 同步飞行状态到客户端
+     * 登录后同步飞行状态：走与 tick 相同的开关逻辑（原来会无条件按 NBT 覆盖 mayfly）。
      */
     private static void syncFlightStateToClient(Player player) {
         if (!(player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)) {
             return;
         }
-        
-        // 创造模式和旁观者模式不需要处理
-        if (serverPlayer.isCreative() || serverPlayer.isSpectator()) {
-            return;
-        }
-        
-        // 检查飞行模式
-        ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
-        if (helmet.isEmpty() || helmet.getItem() != ModItems.X_HELMET.get()) {
-            return;
-        }
-        
-        var tag = helmet.getTag();
-        if (tag == null) {
-            return;
-        }
-        var featuresTag = tag.getCompound("ArmorFeatures");
-        boolean flightEnabled = featuresTag.getBoolean("flight_mode");
-        
-        player.getAbilities().mayfly = flightEnabled;
-        player.getAbilities().flying = flightEnabled && player.getAbilities().flying;
-        player.onUpdateAbilities();
+        applyFlightState(serverPlayer);
     }
 
 }

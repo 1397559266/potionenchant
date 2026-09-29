@@ -50,13 +50,15 @@ public final class PotionDescriptionProvider {
     public static Component getEffectDescription(MobEffect effect) {
         String langKey = effectLangKey(effect);
         if (langKey == null) {
-            return Component.translatable(NO_DESCRIPTION);
+            return Component.literal(I18n.get(NO_DESCRIPTION));
         }
         Object[] args = buildModEffectArgs(ForgeRegistries.MOB_EFFECTS.getKey(effect).getPath());
-        if (args != null) {
-            return Component.translatable(langKey, args);
+        // 立即用 I18n.get 完成 %s/%% 格式化并返回 literal，
+        // 避免运行期组件翻译在部分路径丢参导致 %s 原样显示
+        if (args != null && args.length > 0) {
+            return Component.literal(I18n.get(langKey, args));
         }
-        return Component.translatable(langKey);
+        return Component.literal(I18n.get(langKey));
     }
 
     /**
@@ -117,13 +119,13 @@ public final class PotionDescriptionProvider {
     public static Component getEnchantmentDescription(Enchantment enchantment) {
         String langKey = enchantmentLangKey(enchantment);
         if (langKey == null) {
-            return Component.translatable(NO_DESCRIPTION);
+            return Component.literal(I18n.get(NO_DESCRIPTION));
         }
         Object[] args = buildModEnchantArgs(ForgeRegistries.ENCHANTMENTS.getKey(enchantment).getPath());
-        if (args != null) {
-            return Component.translatable(langKey, args);
+        if (args != null && args.length > 0) {
+            return Component.literal(I18n.get(langKey, args));
         }
-        return Component.translatable(langKey);
+        return Component.literal(I18n.get(langKey));
     }
 
     private static String enchantmentLangKey(Enchantment enchantment) {

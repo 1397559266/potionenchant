@@ -35,6 +35,12 @@
       }
     ]
   },
+  "sword_swing": {
+    "category": "player",
+    "sounds": [
+      { "name": "potionenchant:sword_swing", "stream": false }
+    ]
+  },
   "diexvcreeper/ray": {
     "category": "player",
     "sounds": [
@@ -56,6 +62,12 @@
     "category": "player",
     "sounds": [
       { "name": "potionenchant:diexvcreeper/ray_skylance", "stream": false }
+    ]
+  }
+  ,  "diexvcreeper/waring": {
+    "category": "player",
+    "sounds": [
+      { "name": "potionenchant:diexvcreeper/waring", "stream": true }
     ]
   }
 }

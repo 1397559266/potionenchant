@@ -50,11 +50,7 @@ public class UniversalEnchantmentBook extends Item {
     @Override
     @OnlyIn(Dist.CLIENT)
     public void initializeClient(Consumer<IClientItemExtensions> consumer) {
-        consumer.accept(new IClientItemExtensions() {
-            @Override
-            public @NotNull net.minecraft.client.gui.Font getFont(ItemStack stack, IClientItemExtensions.FontContext context) {
-                return DiexvFont.getFont();
-            }
-        });
+        // 字体 + 自定义物品渲染器（Forge 官方接缝，平替 ItemRendererMixin）
+        consumer.accept(net.diexv.potionenchant.client.CosmicClientItemExtensions.INSTANCE);
     }
 }

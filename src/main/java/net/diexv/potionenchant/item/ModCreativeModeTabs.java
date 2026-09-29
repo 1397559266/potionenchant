@@ -48,6 +48,9 @@ public class ModCreativeModeTabs {
                         // 添加终极附魔台
                         output.accept(ModItems.ULTIMATE_ENCHANT_TABLE.get());
 
+                        // 添加苦力怕药水罐
+                        output.accept(ModItems.DIEXV_CREEPER_TANK.get());
+
                         // 添加X套装护甲
                         output.accept(ModItems.X_HELMET.get());
                         output.accept(ModItems.X_CHESTPLATE.get());
@@ -64,6 +67,7 @@ public class ModCreativeModeTabs {
                         // 添加 DiexvSword（特效剑）与 Code
                         output.accept(ModItems.DIEXV_SWORD.get());
                         output.accept(ModItems.CODE.get());
+output.accept(ModItems.RAINBOW_POTION_ESSENCE.get());
 
                         // 添加易伤药水
                         addPotionAndVariants(output, VulnerabilityPotion.VULNERABILITY.get());

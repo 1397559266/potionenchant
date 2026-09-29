@@ -64,14 +64,14 @@ public class PotionEnchantConfig {
                 .defineListAllowEmpty("blacklisted_effects", List.of(), o -> o instanceof String);
 
             limitArmorEnchants = builder
-                .comment("Limit potion enchantments on armor pieces.", "Default: false")
+                .comment("Limit potion enchantments on armor pieces.", "Default: true")
                 .define("limit_armor_enchants", false);
             maxArmorEnchants = builder
                 .comment("Max potion enchants per armor piece.", "Default: 2")
                 .defineInRange("max_armor_enchants", 2, 1, Integer.MAX_VALUE);
 
             limitAllEnchants = builder
-                .comment("Limit potion enchantments for all items.", "Default: false")
+                .comment("Limit potion enchantments for all items.", "Default: true")
                 .define("limit_all_enchants", false);
             maxAllEnchants = builder
                 .comment("Max potion effects on all items.", "Default: 3")
@@ -96,30 +96,30 @@ public class PotionEnchantConfig {
                 .comment("Allow potion enchants on Curios accessories.", "Default: true")
                 .define("allow_curio_potion_enchant", true);
             allowPotionLevelBeyond255 = builder
-                .comment("Allow potion levels beyond 255.", "Default: false")
-                .define("allow_potion_level_beyond_255", false);
+                .comment("Allow potion levels beyond 255.", "Default: true")
+                .define("allow_potion_level_beyond_255", true);
 
             builder.comment("Enchant Settings").push("enchant");
 
             allowEnchantLevelBeyondCap = builder
-                .comment("Allow enchant levels to break vanilla cap.", "Default: false")
+                .comment("Allow enchant levels to break vanilla cap.", "Default: true")
                 .translation("config.potionenchant.allow_enchant_level_beyond_cap")
                 .define("allow_enchant_level_beyond_cap", false);
             superEnchantMode = builder
-                .comment("Super Enchant Mode: ignore enchantment conflicts and item type restrictions.", "Default: false")
+                .comment("Super Enchant Mode: ignore enchantment conflicts and item type restrictions.", "Default: true")
                 .translation("config.potionenchant.super_enchant_mode")
                 .define("super_enchant_mode", false);
             enchantBookXpCost = builder
                 .comment("XP cost per enchant level for Universal Book.", "Default: 1000")
                 .defineInRange("enchant_book_xp_cost", 1000, 1, Integer.MAX_VALUE);
             discoverableInEnchantingTable = builder
-                .comment("Mod enchants obtainable via vanilla table.", "Default: false")
+                .comment("Mod enchants obtainable via vanilla table.", "Default: true")
                 .define("discoverable_in_enchanting_table", false);
             enchantBookChestLoot = builder
-                .comment("Mod enchant books in chest loot.", "Default: false")
+                .comment("Mod enchant books in chest loot.", "Default: true")
                 .define("enchant_book_chest_loot", false);
             enchantBookVillagerTrades = builder
-                .comment("Mod enchant books from villagers.", "Default: false")
+                .comment("Mod enchant books from villagers.", "Default: true")
                 .define("enchant_book_villager_trades", false);
 
             builder.pop();
@@ -212,7 +212,7 @@ public class PotionEnchantConfig {
 
             builder.comment("Main Menu").push("main_menu");
             enableCustomMainMenu = builder
-                .comment("Enable custom main menu.", "Default: false")
+                .comment("Enable custom main menu.", "Default: true")
                 .define("enable_custom_main_menu", false);
             customMainMenuMusic = builder
                 .comment("Custom main menu music.", "Default: []")

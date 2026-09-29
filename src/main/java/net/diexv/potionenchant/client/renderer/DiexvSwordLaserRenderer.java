@@ -107,8 +107,7 @@ public final class DiexvSwordLaserRenderer {
     public static void renderAll(PoseStack view, MultiBufferSource.BufferSource bufferSource, float partialTick) {
         VertexConsumer consumer = bufferSource.getBuffer(PolygonRenderer.RenderTypes.UNLIT_ADDITIVE);
         Matrix4f matrix = view.last().pose();
-        float nowTicks = (float) net.diexv.potionenchant.SkyRender.client.shader.AvaritiaShaders.renderTime
-                + net.diexv.potionenchant.SkyRender.client.shader.AvaritiaShaders.renderFrame;
+        float nowTicks = net.diexv.potionenchant.SkyRender.client.shader.AvaritiaShaders.cosmicTimeTicks();
 
         if (!activeLasers.isEmpty() || !activeRings.isEmpty()) {
             // 冲击环：逐帧推进 age，渲染扩散的蓝色冲击环
@@ -352,7 +351,7 @@ public final class DiexvSwordLaserRenderer {
         Vec3 dir;
         float serverProgress;
         float renderProgress;
-        float fireTime;      // 发射时刻（客户端 tick，余辉年龄基准）
+        float fireTime;      // 发射时刻（统一墙钟 tick 等价单位，余辉年龄基准）
         float lastPartialTick;
 
         LaserEntry(int beamIndex, Vec3 origin, Vec3 dir, float progress) {
@@ -361,8 +360,7 @@ public final class DiexvSwordLaserRenderer {
             this.dir = dir;
             this.serverProgress = progress;
             this.renderProgress = progress;
-            this.fireTime = (float) net.diexv.potionenchant.SkyRender.client.shader.AvaritiaShaders.renderTime
-                    + net.diexv.potionenchant.SkyRender.client.shader.AvaritiaShaders.renderFrame;
+            this.fireTime = net.diexv.potionenchant.SkyRender.client.shader.AvaritiaShaders.cosmicTimeTicks();
             this.lastPartialTick = 0.0f;
         }
     }

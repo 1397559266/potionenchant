@@ -2,17 +2,30 @@ package net.diexv.potionenchant.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import net.diexv.potionenchant.client.renderer.CosmicItemRenderer;
 import net.minecraft.client.model.HumanoidModel.ArmPose;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class DiexvClientItemExtensions implements IClientItemExtensions {
+
+	/**
+	 * 自定义物品渲染器（Forge 官方接缝，平替 ItemRendererMixin）。
+	 * 子类（Code / DiexvSword / XSword）继承本方法即自动接入着色器物品渲染。
+	 */
+	@Override
+	public @NotNull BlockEntityWithoutLevelRenderer getCustomRenderer() {
+		return CosmicItemRenderer.get();
+	}
+
 	@Override
 	public @Nullable ArmPose getArmPose(LivingEntity entityLiving, InteractionHand hand, ItemStack itemStack) {
 		if (entityLiving.isUsingItem() && itemStack.getUseAnimation() == UseAnim.BLOCK) {

@@ -1,178 +1,51 @@
 package net.diexv.potionenchant.mixin;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.diexv.potionenchant.client.compat.oculus.ItemShaderModCompat;
-import net.diexv.potionenchant.client.renderer.gl.DeferredParticleQueue;
-import net.diexv.potionenchant.client.renderer.gl.PolygonRenderer;
-import net.diexv.potionenchant.client.renderer.gl.XSeriesItemRenderer;
-import net.diexv.potionenchant.item.ModItems;
-import net.minecraft.Util;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+// =====================================================================================
+// 【已停用 / 已被平替】原 XSeriesItemRenderMixin —— 保留文件与历史实现，供查阅与回退。
+//
+// 为什么停用：它挂在 ItemRenderer.render 上做三件事（随机心跳缩放 / renderModelLists 重定向染色 /
+// popPose 处生成漂浮粒子）。这与物品渲染走的是同一类 mixin 注入，而 Forge 本来就提供官方接缝：
+//
+//   Item#initializeClient(Consumer<IClientItemExtensions>) → IClientItemExtensions#getCustomRenderer()
+//
+// 现已把同样的两件事搬进自定义物品渲染器（原理一致，只是宿主从 mixin 注入点换成 renderByItem）：
+//   net.diexv.potionenchant.client.renderer.CosmicItemRenderer      （BEWLR；宿主）
+//   net.diexv.potionenchant.client.renderer.gl.XSeriesItemEffects   （两件事的本体）
+//   CosmicBakeModel.renderItem                                      （基底贴图染色读取 baseTint）
+//
+// 【特殊说明 · 三件事全部删除，均不再移植】
+//   * 随机心跳缩放（物品模型抖动）—— 多余效果，先被删；
+//   * renderModelLists 重定向染色（不定时逐帧随机跳色）—— 观感像彩灯频闪，后被删；
+//   * popPose 处生成漂浮贴图粒子（环绕彩色粒子）—— 与已有的雪花/代码雨重复、不需要，本次删除。
+// 随之删除的实现类：XSeriesItemEffects / XSeriesItemRenderer / XItemExtensions / DeferredParticleQueue
+// （四个类都已无任何引用）。物品渲染现在只剩"基底贴图 + 着色器 mask 层 + 代码雨/雪花"这一条主路径。
+//
+// 附带说明：本 mixin 与 ItemRendererMixin 同时挂在 ItemRenderer.render 上，
+// 而 ItemRendererMixin 在 HEAD 就 cancel 了带着色器物品的渲染 —— 也就是说本 mixin 的注入
+// 对带着色器物品【从来没生效过】；v19 改走 BEWLR 后这些特效才第一次生效，随后按需求逐项删除。
+//
+// 原实现（仅供查阅，勿直接启用；若确需回退，把下面注释解开并把本类加回 potionenchant.mixins.json）：
+//
+// @Mixin(ItemRenderer.class)
+// @OnlyIn(Dist.CLIENT)
+// public abstract class XSeriesItemRenderMixin {
+//     @Unique private static final Random RANDOM = new Random();
+//     @Unique private final Set<XSeriesItemRenderer.Particle> xSeriesParticles = new HashSet<>();
+//     @Unique private int xSeriesColor = 0xFFFFFFFF;
+//
+//     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V", ordinal = 0, shift = At.Shift.AFTER))
+//     private void onRenderPre(...) { /* 20s 周期窗口内随机缩放 + 变色 */ }
+//
+//     @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/ItemRenderer;renderModelLists(...)V"))
+//     private void onRenderModel(...) { /* 染色：PolygonRenderer.model(..., quad -> xSeriesColor) */ }
+//
+//     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;popPose()V", ordinal = 1))
+//     private void onRenderPost(...) { /* 生成粒子 + 渲染（Oculus 下延迟到 AFTER_LEVEL） */ }
+// }
+// =====================================================================================
 
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
-
-/**
- * 为 X 系列装备添加物品特效渲染（旋转/闪烁/粒子）
- * 从 Hyperlink 的 ItemRendererMixin 移植
- */
-@Mixin(ItemRenderer.class)
-@OnlyIn(Dist.CLIENT)
-public abstract class XSeriesItemRenderMixin {
-
-    @Unique
-    private static final Random RANDOM = new Random();
-
-    @Unique
-    private final Set<XSeriesItemRenderer.Particle> xSeriesParticles = new HashSet<>();
-
-    @Unique
-    private int xSeriesColor = 0xFFFFFFFF;
-
-    /**
-     * 在渲染前注入变换（旋转/缩放）
-     */
-    @Inject(method = "render", at = @At(value = "INVOKE",
-            target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V",
-            ordinal = 0, shift = At.Shift.AFTER))
-    private void onRenderPre(ItemStack stack, ItemDisplayContext context, boolean leftHand,
-                             PoseStack poseStack, MultiBufferSource buffer,
-                             int combinedLight, int combinedOverlay, BakedModel model,
-                             CallbackInfo ci) {
-        if (!shouldSpawnParticles(stack)) return;
-
-        long millis = Util.getMillis();
-        double cycle = millis % 20000;
-
-        // 随机缩放心跳
-        if (cycle <= 200 || (6000 < cycle && cycle <= 6200) ||
-            (10000 < cycle && cycle <= 10300) || (10400 < cycle && cycle <= 10450)) {
-            float sc = RANDOM.nextFloat(0.7f, 1.5f);
-            poseStack.scale(sc, sc, sc);
-            if (10000 < cycle) {
-                xSeriesColor = (0xFF000000) | RANDOM.nextInt(0xFFFFFF);
-            } else {
-                xSeriesColor = 0xFFFFFFFF;
-            }
-        } else {
-            xSeriesColor = 0xFFFFFFFF;
-        }
-
-        // 持续旋转已禁用
-    }
-
-    /**
-     * 重定向颜色渲染（闪烁变色）
-     */
-    @Redirect(method = "render", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/renderer/entity/ItemRenderer;renderModelLists(Lnet/minecraft/client/resources/model/BakedModel;Lnet/minecraft/world/item/ItemStack;IILcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;)V"))
-    private void onRenderModel(ItemRenderer instance, BakedModel model, ItemStack stack,
-                                int combinedLight, int combinedOverlay,
-                                PoseStack poseStack, VertexConsumer consumer) {
-        if (isXSeries(stack) && xSeriesColor != 0xFFFFFFFF) {
-            PolygonRenderer.model(model, poseStack, consumer, combinedLight, combinedOverlay,
-                    quad -> xSeriesColor);
-        } else {
-            instance.renderModelLists(model, stack, combinedLight, combinedOverlay, poseStack, consumer);
-        }
-    }
-
-    /**
-     * 在渲染后注入粒子
-     */
-    @Inject(method = "render", at = @At(value = "INVOKE",
-            target = "Lcom/mojang/blaze3d/vertex/PoseStack;popPose()V",
-            ordinal = 1))
-    private void onRenderPost(ItemStack stack, ItemDisplayContext context, boolean leftHand,
-                              PoseStack poseStack, MultiBufferSource buffer,
-                              int combinedLight, int combinedOverlay, BakedModel model,
-                              CallbackInfo ci) {
-        if (!shouldSpawnParticles(stack)) return;
-
-        // 生成粒子
-        spawnItemParticles(stack);
-
-        // 渲染粒子（保持在物品上方）
-        // Oculus光影兼容：延迟渲染粒子到 AFTER_LEVEL 阶段
-        if (ItemShaderModCompat.isOculusShaderPackActive()) {
-            if (!xSeriesParticles.isEmpty()) {
-                DeferredParticleQueue.enqueue(stack, context, poseStack, combinedLight, combinedOverlay, new java.util.HashSet<>(xSeriesParticles));
-                xSeriesParticles.clear();
-            }
-        } else {
-            PolygonRenderer.with(poseStack, () -> {
-                if (context == ItemDisplayContext.GUI) {
-                    poseStack.translate(0, 0, 0.1);
-                } else if (context == ItemDisplayContext.FIXED) {
-                    poseStack.translate(0, 0, -0.1);
-                }
-                xSeriesParticles.removeIf(p -> p.render(stack, context, poseStack, buffer, combinedLight, combinedOverlay));
-            });
-        }
-    }
-
-    @Unique
-    private static ResourceLocation getParticleTextureForItem(ItemStack stack) {
-        if (stack.isEmpty()) return null;
-        var item = stack.getItem();
-        if (item == ModItems.UNIVERSAL_POTION_BOTTLE.get())
-            return new ResourceLocation("potionenchant", "textures/item/universal_potion_bottle.png");
-        if (item == ModItems.UNIVERSAL_ENCHANTMENT_BOOK.get())
-            return new ResourceLocation("potionenchant", "textures/item/universal_enchantment_book.png");
-        if (item == ModItems.MYSTERIOUS_EMPTY_BOTTLE.get())
-            return new ResourceLocation("potionenchant", "textures/item/mysterious_empty_bottle.png");
-        if (item == ModItems.ULTIMATE_POTION_AMULET.get())
-            return new ResourceLocation("potionenchant", "textures/item/ultimate_potion_amulet.png");
-        return null;
-    }
-
-    @Unique
-    private static boolean shouldSpawnParticles(ItemStack stack) {
-        if (stack.isEmpty()) return false;
-        return isXSeries(stack) || getParticleTextureForItem(stack) != null;
-    }
-
-    @Unique
-    private void spawnItemParticles(ItemStack stack) {
-        for (int count = 0; count < 2; count++) {
-            if (RANDOM.nextInt(200) == 0) {
-                ResourceLocation tex = getParticleTextureForItem(stack);
-                if (tex != null) {
-                    xSeriesParticles.add(new XSeriesItemRenderer.Particle(stack, tex));
-                } else {
-                    xSeriesParticles.add(new XSeriesItemRenderer.Particle(stack));
-                }
-            }
-        }
-    }
-
-    @Unique
-    private static boolean isXSeries(ItemStack stack) {
-        if (stack.isEmpty()) return false;
-        var item = stack.getItem();
-        return item == ModItems.X_SWORD.get()
-            || item == ModItems.X_PICKAXE.get()
-            || item == ModItems.X_AXE.get()
-            || item == ModItems.X_SHOVEL.get()
-            || item == ModItems.X_HOE.get()
-            || item == ModItems.X_HELMET.get()
-            || item == ModItems.X_CHESTPLATE.get()
-            || item == ModItems.X_LEGGINGS.get()
-            || item == ModItems.X_BOOTS.get();
+/** 停用后的占位：不再带 @Mixin 注解，因此 Mixin 不会处理它；保留类名避免构建脚本/文档引用失效。 */
+final class XSeriesItemRenderMixin {
+    private XSeriesItemRenderMixin() {
     }
 }

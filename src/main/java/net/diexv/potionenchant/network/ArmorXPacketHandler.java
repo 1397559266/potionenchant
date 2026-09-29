@@ -272,36 +272,23 @@ public class ArmorXPacketHandler {
         }
         
         /**
-         * 更新玩家飞行能力
+         * 更新玩家飞行能力。
+         * 现在把玩家的选择写进玩家持久数据（权威），并且只回收/授予"本模组这一份"，
+         * 不再直接覆盖 mayfly（避免清掉其它模组/饰品给的飞行）。
          */
         private static void updatePlayerFlightAbility(ServerPlayer player, boolean enableFlight) {
             // 创造模式和旁观者模式不受影响
             if (player.isCreative() || player.isSpectator()) {
                 return;
             }
-            
+            // 记录显式选择（护甲 NBT 由上面的循环写入，作为界面/同步载体）
+            net.diexv.potionenchant.event.ArmorXFeatureHandler.setFlightChoice(player, enableFlight);
             if (enableFlight) {
-                // 检查是否穿着全套X护甲且开启了飞行模式
                 if (net.diexv.potionenchant.event.ArmorXFeatureHandler.isWearingFullXArmor(player)) {
-                    // 检查是否开启了飞行模式
-                    net.minecraft.world.item.ItemStack helmet = player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD);
-                    if (!helmet.isEmpty()) {
-                        var tag = helmet.getTag();
-                        if (tag != null) {
-                            var featuresTag = tag.getCompound("ArmorFeatures");
-                            if (featuresTag.getBoolean("flight_mode")) {
-                                player.getAbilities().flying = false; // 重置飞行状态
-                                player.getAbilities().mayfly = true; // 允许飞行
-                                player.onUpdateAbilities(); // 同步到客户端
-                            }
-                        }
-                    }
+                    net.diexv.potionenchant.event.ArmorXFeatureHandler.grantFlight(player);
                 }
             } else {
-                // 关闭飞行模式
-                player.getAbilities().flying = false; // 立即停止飞行
-                player.getAbilities().mayfly = false; // 不允许飞行
-                player.onUpdateAbilities(); // 同步到客户端
+                net.diexv.potionenchant.event.ArmorXFeatureHandler.revokeFlight(player);
             }
         }
     }

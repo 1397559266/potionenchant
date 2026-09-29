@@ -241,6 +241,66 @@ public class XSwordItem extends SwordItem {
         super.releaseUsing(stack, level, entity, timeCharged);
     }
 
+    /** 左键挥动的 360° 范围伤害：攻击距离（水平半径） */
+    private static final double SWEEP_RADIUS = 3.5D;
+    /** 垂直方向的容忍高度（相对玩家包围盒上下扩展） */
+    private static final double SWEEP_VERTICAL = 2.0D;
+
+    /**
+     * 360° 范围攻击：攻击距离内的所有实体都吃一次"XSword 左键攻击"的效果 ——
+     * 与原版玩家攻击同一套结算：同源伤害（playerAttack）、同样的属性伤害与蓄力缩放、
+     * 同样的附魔加成（锋利/亡灵杀手/节肢杀手）与附魔后效（火焰附加、击退等）。
+     *
+     * <p>不特意排除"当前直接命中的那只"：原版受击无敌帧（invulnerableTime）本身就会免疫
+     * 二次伤害，所以直接命中的目标不会被同一刀打两遍。
+     */
+    private static void sweepAttack(net.minecraft.server.level.ServerPlayer player, ItemStack stack) {
+        Level level = player.level();
+        AABB area = player.getBoundingBox().inflate(SWEEP_RADIUS, SWEEP_VERTICAL, SWEEP_RADIUS);
+        double maxSqr = SWEEP_RADIUS * SWEEP_RADIUS;
+        List<LivingEntity> targets = level.getEntitiesOfClass(LivingEntity.class, area, e ->
+                e != player
+                        && e.isAlive()
+                        && !e.isSpectator()
+                        && !player.isAlliedTo(e)
+                        && !player.isPassengerOfSameVehicle(e)
+                        && (!(e instanceof net.minecraft.world.entity.decoration.ArmorStand stand) || !stand.isMarker())
+                        && player.distanceToSqr(e) <= maxSqr);
+        if (targets.isEmpty()) {
+            return;
+        }
+
+        net.minecraft.world.damagesource.DamageSource source = player.damageSources().playerAttack(player);
+        float attackDamage = (float) player.getAttributeValue(
+                net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+        float charge = player.getAttackStrengthScale(0.5F);
+        float scale = 0.2F + charge * charge * 0.8F;      // 与原版一致的蓄力缩放（连点伤害低）
+
+        boolean hitAny = false;
+        for (LivingEntity target : targets) {
+            float damage = attackDamage * scale + net.minecraft.world.item.enchantment.EnchantmentHelper
+                    .getDamageBonus(stack, target.getMobType());
+            if (target.hurt(source, damage)) {
+                hitAny = true;
+                net.minecraft.world.item.enchantment.EnchantmentHelper.doPostHurtEffects(target, player);
+                net.minecraft.world.item.enchantment.EnchantmentHelper.doPostDamageEffects(player, target);
+            }
+        }
+
+        if (hitAny) {
+            level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0F, 1.0F);
+            if (level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+                float yaw = player.getYRot() * ((float) Math.PI / 180.0F);
+                serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.SWEEP_ATTACK,
+                        player.getX() - net.minecraft.util.Mth.sin(yaw),
+                        player.getY() + player.getBbHeight() * 0.5D,
+                        player.getZ() + net.minecraft.util.Mth.cos(yaw),
+                        1, 0.0D, 0.0D, 0.0D, 0.0D);
+            }
+        }
+    }
+
     @Override
     public boolean onEntitySwing(ItemStack stack, LivingEntity entity) {
         if (entity instanceof Player player && player.isShiftKeyDown()) {
@@ -263,6 +323,13 @@ public class XSwordItem extends SwordItem {
 
             return true;
         }
+
+        // 左键挥动：360° 范围伤害（ServerPlayer 只存在于服务端，天然只结算一次）
+        if (entity instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+            sweepAttack(serverPlayer, stack);
+        }
+
+        // 返回 false：不取消原版挥动（挥砍动画与挥砍音效照常）
         return false;
     }
 
@@ -277,6 +344,21 @@ public class XSwordItem extends SwordItem {
                     return DiexvFont3.getFont();
                 }
                 return DiexvFont.getFont();
+            }
+
+            /** 左键攻击动画 */
+            @Override
+            public boolean applyForgeHandTransform(com.mojang.blaze3d.vertex.PoseStack poseStack,
+                                                   net.minecraft.client.player.LocalPlayer player,
+                                                   net.minecraft.world.entity.HumanoidArm arm,
+                                                   ItemStack itemInHand, float partialTick,
+                                                   float equipProcess, float swingProcess) {
+                if (net.diexv.potionenchant.client.renderer.CutterAttackAnimation.apply(poseStack, swingProcess,
+                        arm == net.minecraft.world.entity.HumanoidArm.LEFT)) {
+                    return true;
+                }
+                return super.applyForgeHandTransform(poseStack, player, arm, itemInHand, partialTick,
+                        equipProcess, swingProcess);
             }
         });
     }

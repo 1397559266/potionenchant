@@ -55,7 +55,7 @@ public final class DiexvSwordVoxelMesh {
     private static int cachedH;
     private static boolean buildFailed;
 
-    // ===== 特效状态（暂停时随 renderTime 冻结） =====
+    // ===== 特效状态（时间基准统一为墙钟 AvaritiaShaders.cosmicTimeTicks()，暂停也继续走） =====
     private static final RandomSource RANDOM = RandomSource.create();
     /** 活跃触发：单像素索引 → 触发数据（含碎片）；多个可同时存在，动画结束后清理 */
     private static final Map<Integer, TriggerData> ACTIVE_TRIGGERS = new HashMap<>();
@@ -106,8 +106,9 @@ public final class DiexvSwordVoxelMesh {
         List<MergeBlock> blocks = getBlocks();
         if (voxels == null || voxels.isEmpty() || blocks == null || blocks.isEmpty()) return;
 
-        // 连续时间（含帧间插值）：动画平滑，暂停冻结
-        float now = (float) AvaritiaShaders.renderTime + AvaritiaShaders.renderFrame;
+        // 连续时间（统一墙钟，含毫秒精度）：动画平滑，暂停也继续走（与 GL 粒子/着色器一致）
+        // 不要改回 renderTime/renderFrame（那是 tick 基准、暂停冻结）
+        float now = AvaritiaShaders.cosmicTimeTicks();
         updateChargeState();
 
         // 蓝白渐变基础色：固定蓝色 hue=0.6（蓝），饱和度在 0.6 与 0 之间平滑往返
@@ -168,12 +169,12 @@ public final class DiexvSwordVoxelMesh {
         }
     }
 
-    /** 每客户端 tick 推进一次蓄力状态机（暂停冻结） */
+    /** 每客户端 tick 推进一次蓄力状态机（闸门走统一墙钟：粒度不变，但暂停也继续走） */
     private static void updateChargeState() {
         LocalPlayer player = Minecraft.getInstance().player;
         boolean using = player != null && player.isUsingItem()
                 && player.getUseItem().getItem() == ModItems.DIEXV_SWORD.get();
-        int tick = AvaritiaShaders.renderTime;
+        int tick = (int) AvaritiaShaders.cosmicTimeTicks();
         if (tick == lastChargeTick) return;
         lastChargeTick = tick;
 
@@ -230,7 +231,7 @@ public final class DiexvSwordVoxelMesh {
         chargePhaseTick = 0;
         fireTick = 0;
         cooldownTick = 0;
-        fireStartTime = (float) AvaritiaShaders.renderTime + AvaritiaShaders.renderFrame;
+        fireStartTime = AvaritiaShaders.cosmicTimeTicks();
         buildFireTriggers();
     }
 
@@ -282,7 +283,7 @@ public final class DiexvSwordVoxelMesh {
         // 抖动（原平滑晃动）：基于离散 tick 的伪随机跳变——每 tick 变蓝块整体突然
         // 跳变一次（同一 tick 内各帧一致，暂停冻结），顿挫感强；叠加像素级小相位差
         // 保留层次，避免整体过于僵硬
-        int tick = AvaritiaShaders.renderTime;
+        int tick = (int) AvaritiaShaders.cosmicTimeTicks();
         float jit = 0.025F; // 位移幅度（模型空间，约 2 像素）
         float dx = (hash01(tick * 131 + 17) - 0.5F) * 2.0F * jit;
         float dy = (hash01(tick * 197 + 29) - 0.5F) * 2.0F * jit;

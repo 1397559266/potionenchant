@@ -27,4 +27,12 @@ public class ModBlocks {
             .strength(5.0F, 1200.0F)
             .requiresCorrectToolForDrops()
             .noOcclusion()));
+
+    /** 苦力怕药水罐：外观由 BlockEntityRenderer 用缩放苦力怕模型渲染 */
+    public static final RegistryObject<Block> DIEXV_CREEPER_TANK = BLOCKS.register("diexv_creeper_tank",
+        () -> new DiexvCreeperTankBlock(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.COLOR_GREEN)
+            .strength(2.0F, 6.0F)
+            .sound(net.minecraft.world.level.block.SoundType.STONE)
+            .noOcclusion()));
 }

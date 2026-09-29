@@ -55,9 +55,58 @@ public final class AvaritiaShaders {
     public static final float[] COSMIC_UVS = new float[COSMIC_TEXTURE_COUNT * 4]; // 25 * 4 = 100
 
     public static boolean inventoryRender = false;
+    // ===== 旧 tick 计数器（保留兼容；着色器/特效时间已全部改走下面的墙钟 API） =====
     public static int renderTime;
     public static float tick;
     public static float renderFrame;
+
+    // ===== 统一时间基准：墙钟（毫秒）=====
+    /**
+     * 【统一时间基准：墙钟】暂停也继续走（与 GL 粒子一致）。
+     *
+     * 为什么要有这个：原来同一个 time uniform 有多处写入、两种基准 ——
+     *   AvaritiaShaders / DiexvSwordShaders 用 (renderTime + renderFrame)（tick 计数，20 单位/秒）
+     *   ShaderBlockRenderHelper / DiexvSwordShaders 非延迟路径却用
+     *   (System.currentTimeMillis() - renderTime) / 2000
+     * 后者把"tick 计数器"当成"纪元毫秒"去减，结果 ≈ 8.6e8，float 精度（间隔约 64）把每帧变化
+     * 完全吃掉 → 着色器动画静止；只有在着色器 onApply 时被写入正确值的那一瞬间才会动 →
+     * 表现就是"有时候动、有时候静止"。现在全部只准调用下面几个函数。
+     */
+    private static final long WALL_EPOCH_MILLIS = System.currentTimeMillis();
+
+    /** 统一时间（tick 等价单位，20 单位/秒）—— 只有 tick 单位的着色器才能用这个：
+     *  剑 cosmic（代码雨，脚本与参考工程完全一致，参考侧喂的就是 tick）、光柱/激光等特效时钟。
+     *  注意：星体 cosmic / black hole / 体素 mesh 的 time 是【秒】，请用 {@link #cosmicTimeSeconds()}。 */
+    public static float cosmicTimeTicks() {
+        return (System.currentTimeMillis() - WALL_EPOCH_MILLIS) / 50.0F;
+    }
+
+    /** 统一时间（秒，1 单位/秒）—— 必须给"time 单位=秒"的着色器用：
+     *  星体 cosmic、black hole、体素网格 meshTime（它们原本就是 (renderTime+renderFrame)/20 = 秒，
+     *  误喂 tick 会快 20 倍 —— 星体位置变化速度就是被这个拉飞的）。
+     *  见 {@link #cosmicTimeTicks()}。 */
+    public static float cosmicTimeSeconds() {
+        return (System.currentTimeMillis() - WALL_EPOCH_MILLIS) / 1000.0F;
+    }
+
+    /** 统一时间（墙钟毫秒，纪元 = 本模组加载）—— 脉冲/闪烁相位用这个 */
+    public static long cosmicTimeMillis() {
+        return System.currentTimeMillis() - WALL_EPOCH_MILLIS;
+    }
+
+    /** 把统一时间写进宇宙（星体）着色器 uniform（所有路径唯一入口；单位=秒） */
+    public static void applyCosmicTime() {
+        if (cosmicTime != null) {
+            cosmicTime.set(cosmicTimeSeconds());
+        }
+    }
+
+    /** 把统一时间写进黑洞着色器 uniform（所有路径唯一入口；单位=秒） */
+    public static void applyBlackHoleTime() {
+        if (blackHoleTime != null) {
+            blackHoleTime.set(cosmicTimeSeconds());
+        }
+    }
 
     public static CCShaderInstance cosmicShader;
     public static CCUniform cosmicTime;
@@ -146,15 +195,11 @@ public final class AvaritiaShaders {
             cosmicOpacity = Objects.requireNonNull(cosmicShader.getUniform("opacity"));
             cosmicUVs = Objects.requireNonNull(cosmicShader.getUniform("cosmicuvs"));
 
-            float initTime = (renderTime + renderFrame) / 20.0F;
-            cosmicTime.set(initTime);
             cosmicExternalScale.set(1.0F);
             cosmicOpacity.set(0.78F);
+            applyCosmicTime();
 
-            cosmicShader.onApply(() -> {
-                float time = (renderTime + renderFrame) / 20.0F;
-                cosmicTime.set(time);
-            });
+            cosmicShader.onApply(AvaritiaShaders::applyCosmicTime);
         });
 
         // Register black_hole shader
@@ -168,12 +213,8 @@ public final class AvaritiaShaders {
             blackHoleZoom = Objects.requireNonNull(blackHoleShader.getUniform("iZoom"));
             blackHoleScreenSize = Objects.requireNonNull(blackHoleShader.getUniform("screenSize"));
 
-            float initTime = (renderTime + renderFrame) / 20.0F;
-            blackHoleTime.set(initTime);
-            blackHoleShader.onApply(() -> {
-                float time = (renderTime + renderFrame) / 20.0F;
-                blackHoleTime.set(time);
-            });
+            applyBlackHoleTime();
+            blackHoleShader.onApply(AvaritiaShaders::applyBlackHoleTime);
         });
     }
 
@@ -214,7 +255,7 @@ public final class AvaritiaShaders {
             pitch = -(float) (mc.player.getXRot() * Math.PI / 180.0F);
         }
 
-        if (cosmicTime != null) cosmicTime.set((renderTime + renderFrame) / 20.0F);
+        applyCosmicTime();
         if (cosmicYaw != null) cosmicYaw.set(yaw);
         if (cosmicPitch != null) cosmicPitch.set(pitch);
         if (cosmicExternalScale != null) cosmicExternalScale.set(1.0F);

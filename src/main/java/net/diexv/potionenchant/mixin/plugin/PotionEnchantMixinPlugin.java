@@ -1,5 +1,7 @@
 package net.diexv.potionenchant.mixin.plugin;
 
+import net.diexv.potionenchant.agent.AgentLauncher;
+import net.diexv.potionenchant.agent.DiexvSwordAgent;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -8,18 +10,29 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * MixinPlugin - 在 onLoad（mixin 配置加载的静态时机）动态附加 DiexvSword JavaAgent。
+ * MixinPlugin - 以 onLoad（mixin 配置加载时机）作为 agent 的 loadAgent0 启动时机。
  *
- * agent（potionenchant-agent.jar，内置在主 jar META-INF/potionenchant/）用字节码注入 redefine：
- *  - SynchedEntityData.set/get 归 0
- *  - LivingEntity.setHealth/getHealth 归 0
- * 目标由 diexvsword 左键点击/激光命中标记（DiexvSwordTargetZeroManager）。
+ * agent 启动方式（平移自 DiexvMod AgentLauncher）：不再走外部 attach，
+ * 而是反射调用 sun.instrument.InstrumentationImpl.loadAgent0 动态加载，
+ * 拿到 Instrumentation 后注册 DiexvSwordAgent（SynchedEntityData.set 归零注入）。
  */
 public class PotionEnchantMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public void onLoad(String mixinPackage) {
-        // attach 已由 DiexvSwordTransformationService（coremod SERVICE 阶段）处理
+        try {
+            // loadAgent0 启动（配套工具类 DiexvBase/AgentCallback 平移自 DiexvMod）
+            AgentLauncher.start();
+            if (AgentLauncher.INST != null) {
+                DiexvSwordAgent.install(AgentLauncher.INST);
+                System.out.println("[PotionEnchantMixinPlugin] agent 已通过 loadAgent0 启动并注册转换器");
+            } else {
+                System.err.println("[PotionEnchantMixinPlugin] loadAgent0 未拿到 Instrumentation，agent 未启动");
+            }
+        } catch (Throwable t) {
+            System.err.println("[PotionEnchantMixinPlugin] loadAgent0 启动失败: " + t);
+            t.printStackTrace();
+        }
     }
 
     @Override public String getRefMapperConfig() { return null; }

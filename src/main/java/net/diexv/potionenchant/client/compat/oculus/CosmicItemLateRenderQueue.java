@@ -6,8 +6,9 @@ import com.mojang.blaze3d.vertex.VertexSorting;
 import net.diexv.potionenchant.SkyRender.client.model.CosmicBakeModel;
 import net.diexv.potionenchant.SkyRender.client.model.DiexvSwordVoxelMesh;
 import net.diexv.potionenchant.SkyRender.client.shader.DiexvSwordShaders;
+import net.diexv.potionenchant.client.renderer.CutterAttackAnimation;
+import net.diexv.potionenchant.client.renderer.SwordAuraRenderer;
 import net.diexv.potionenchant.client.renderer.coderain.CodeRainRenderer;
-import net.diexv.potionenchant.client.renderer.gl.DeferredParticleQueue;
 import net.diexv.potionenchant.client.renderer.gl.PolygonRenderer;
 import net.diexv.potionenchant.SkyRender.client.shader.AvaritiaShaders;
 import net.diexv.potionenchant.item.ModItems;
@@ -61,8 +62,6 @@ public final class CosmicItemLateRenderQueue {
         modelViewStack.pushPose();
         try {
             LateShaderLayerState.prepareMainTargetPass();
-            // Render deferred particles first with correct projection
-            DeferredParticleQueue.renderAll(buffers);
             Iterator<Entry> iterator = ENTRIES.iterator();
             while (iterator.hasNext()) {
                 Entry entry = iterator.next();
@@ -86,10 +85,14 @@ public final class CosmicItemLateRenderQueue {
                     DiexvSwordVoxelMesh.renderMesh(poseStack, buffers);
                 }
                 // 粒子特效：剑/code → 3D 环绕代码雨；其余 → 雪花
-                if (CosmicBakeModel.isCodeRainItem(entry.stack())) {
-                    CodeRainRenderer.renderCodeRain(poseStack, buffers, entry.packedLight(), entry.packedOverlay());
-                } else {
-                    CosmicBakeModel.renderSnowflakes(entry.context(), poseStack, buffers, entry.packedLight(), entry.packedOverlay());
+                // 必须走这个公共入口：挥砍期间它会给粒子加"不跟随模型挥动"的补偿
+                CosmicBakeModel.renderItemParticles(entry.stack(), entry.context(), poseStack, buffers,
+                        entry.packedLight(), entry.packedOverlay());
+                // 月牙剑气：renderItem 在延迟分支就 return 了，第一人称剑气只能在延迟路径这里补画
+                if (CutterAttackAnimation.isSwinging()
+                        && (entry.context() == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND
+                            || entry.context() == ItemDisplayContext.FIRST_PERSON_LEFT_HAND)) {
+                    SwordAuraRenderer.renderFirstPerson(poseStack, buffers);
                 }
                 entry.renderer().renderShaderLayer(entry.stack(), entry.context(), poseStack, buffers, entry.packedLight(), entry.packedOverlay(), entry.model(), entry.renderType(), true);
 

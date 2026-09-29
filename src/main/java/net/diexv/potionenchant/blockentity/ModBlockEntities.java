@@ -27,6 +27,13 @@ public class ModBlockEntities {
                 getBlock("ultimate_enchant_table")
             ).build(null));
 
+    public static final RegistryObject<BlockEntityType<DiexvCreeperTankBlockEntity>> DIEXV_CREEPER_TANK =
+        BLOCK_ENTITIES.register("diexv_creeper_tank",
+            () -> BlockEntityType.Builder.of(
+                DiexvCreeperTankBlockEntity::new,
+                getBlock("diexv_creeper_tank")
+            ).build(null));
+
     @SuppressWarnings("removal")
     private static Block getBlock(String name) {
         return ForgeRegistries.BLOCKS.getValue(

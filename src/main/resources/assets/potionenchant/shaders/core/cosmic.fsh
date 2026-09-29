@@ -8,6 +8,11 @@ const int cosmiccount = 25;
 const int cosmicoutof = 253;
 const float lightmix = 0.2f;
 
+// 星体位置漂移速度（v 单位/秒）。
+// time 的单位是【秒】（Java 侧 AvaritiaShaders.cosmicTimeSeconds）—— 源项目就是 (renderTime+renderFrame)/20。
+// 原值 0.007，按需求整体放慢到一半；要更慢/更快只改这一个常数即可。
+const float starDriftSpeed = 0.0035;
+
 uniform sampler2D Sampler0;
 
 uniform vec4 ColorModulator;
@@ -99,7 +104,7 @@ void main (void)
 
         float scale = mult * 0.5 + 2.75;
         float u = rawu * scale * externalScale;
-        float v = (rawv + time * 0.007 * oneOverExternalScale) * scale * 0.6 * externalScale;
+        float v = (rawv + time * starDriftSpeed * oneOverExternalScale) * scale * 0.6 * externalScale;
 
         vec2 tex = vec2(u, v);
 
