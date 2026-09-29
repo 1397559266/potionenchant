@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " A ",
+    " G ",
+    "G G"
+  ],
+  "key": {
+    "A": {
+      "item": "potionenchant:ultimate_potion_amulet"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    }
+  },
+  "result": {
+    "item": "potionenchant:diexv_creeper_tank",
+    "count": 1
+  }
+}
